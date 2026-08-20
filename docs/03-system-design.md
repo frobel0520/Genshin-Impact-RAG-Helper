@@ -4,7 +4,7 @@
 |---|---|
 | 文件版本 | 0.1 SD Baseline Draft |
 | 文件日期 | 2026-08-20 |
-| 文件狀態 | 待 SD Review Gate |
+| 文件狀態 | Approved — SD Review passed 2026-08-20 |
 | 上游文件 | [`docs/02-system-analysis.md`](02-system-analysis.md) |
 | 適用分支 | `dev` |
 | 設計方向 | 固定技術基線、Local-first、fixture-first |
@@ -486,6 +486,8 @@ Release Gate 只檢查 SA 已核准的功能／品質項目：回答正確率、
 
 ## 10. SD Review Gate
 
+**Review 結果**：2026-08-20，專案擁有者確認 SD 通過。固定基線、契約、Task DAG 與「不做效能驗證／不規劃替換路線」方向依本文件執行。
+
 SD 通過前需確認：
 
 - 固定技術基線已由 T00 登錄；不包含替換方案或 benchmark 承諾。
@@ -502,5 +504,4 @@ SD 通過前需確認：
 1. 由專案擁有者確認 T00 的固定技術基線值。
 2. 將 T00～T31 轉成 GitHub Issues／Milestone，保持 `depends_on` 與平行線欄位。
 3. 先完成 T02、T03、T07、T08、T09 等契約 Task，再平行展開 Data、Query、Evaluation、UI 線。
-4. SD Review 通過後，依 Task DAG 開始第一批可獨立驗收的工作。
-
+4. SD 通過後，依 Task DAG 開始第一批可獨立驗收的工作。
