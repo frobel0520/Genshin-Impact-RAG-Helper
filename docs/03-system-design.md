@@ -490,7 +490,7 @@ Release Gate 只檢查 SA 已核准的功能／品質項目：回答正確率、
 
 SD 通過前需確認：
 
-- 固定技術基線已由 T00 登錄；不包含替換方案或 benchmark 承諾。
+- T00 已被列為第一個實作前置 Task；實際固定基線值尚待 T00 登錄，不包含替換方案或 benchmark 承諾。
 - 元件邊界、依賴方向與契約符合 SA FR／NFR。
 - Domain、Source、Query、Evidence、Answer、Eval 契約可由 fixture 驗證。
 - Task DAG 無循環；每個 Task 有單一交付物、完成條件與明確硬依賴。
