@@ -1,0 +1,68 @@
+{
+  "entity_types": [
+    "character",
+    "weapon",
+    "material",
+    "quest",
+    "region",
+    "world_lore"
+  ],
+  "source_kinds": ["hoyolab", "genshin-db", "fandom"],
+  "answer_statuses": ["answered", "uncertain", "refused", "error"],
+  "version_statuses": ["explicit", "range", "unknown"],
+  "validity_statuses": ["active", "superseded", "unknown", "conflict"],
+  "query_categories": [
+    "structured",
+    "narrative",
+    "version",
+    "composite",
+    "out_of_scope"
+  ],
+  "version_constraints": [
+    "exact",
+    "range",
+    "current-unspecified",
+    "unknown"
+  ],
+  "retrieval_modes": ["structured", "document", "hybrid", "none"],
+  "spoiler_levels": ["none", "notice", "explicit"],
+  "support_types": ["direct", "contextual", "conflicting"],
+  "answerability": ["answerable", "refuse"],
+  "uncertainty_reasons": [
+    "insufficient_evidence",
+    "source_conflict",
+    "version_unknown",
+    "out_of_scope",
+    "entity_unknown"
+  ],
+  "run_statuses": ["passed", "failed", "partial"],
+  "error_codes": [
+    "invalid_request",
+    "out_of_scope",
+    "insufficient_evidence",
+    "source_conflict",
+    "version_unknown",
+    "entity_unknown",
+    "configuration_error",
+    "dependency_unavailable",
+    "internal_error"
+  ],
+  "authority_ranks": {
+    "hoyolab": 1,
+    "genshin-db": 2,
+    "fandom": 3
+  },
+  "id_prefixes": {
+    "source": "src",
+    "entity": "ent",
+    "fact": "fact",
+    "claim": "claim",
+    "chunk": "chunk",
+    "query": "qry",
+    "evidence": "evd",
+    "answer": "ans",
+    "case": "case",
+    "run": "run",
+    "citation": "cit"
+  }
+}
