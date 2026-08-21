@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "requests": [
+    {
+      "question": "雷電將軍的元素爆發是什麼？",
+      "locale": "zh-TW",
+      "game_version": null,
+      "spoiler_level": "notice",
+      "request_id": "client-request-001"
+    },
+    {
+      "question": "神里綾華在 5.0 的故事背景",
+      "locale": "zh-TW",
+      "game_version": "5.0",
+      "spoiler_level": "explicit",
+      "request_id": "client-request-002"
+    },
+    {
+      "question": "這個問題沒有指定 locale",
+      "game_version": "unknown",
+      "spoiler_level": "none"
+    }
+  ],
+  "plans": [
+    {
+      "query_category": "structured",
+      "normalized_entities": [
+        {
+          "entity_id": "ent:raiden-shogun",
+          "text": "雷電將軍",
+          "entity_type": "character",
+          "aliases_used": ["雷神"]
+        }
+      ],
+      "version_constraint": "current-unspecified",
+      "retrieval_mode": "structured",
+      "spoiler_level": "notice"
+    },
+    {
+      "query_category": "narrative",
+      "normalized_entities": [
+        {
+          "entity_id": "ent:kamisato-ayaka",
+          "text": "神里綾華",
+          "entity_type": "character",
+          "aliases_used": []
+        }
+      ],
+      "version_constraint": "exact",
+      "retrieval_mode": "document",
+      "spoiler_level": "explicit"
+    },
+    {
+      "query_category": "out_of_scope",
+      "normalized_entities": [
+        {
+          "text": "不存在的角色",
+          "aliases_used": [],
+          "entity_id": null,
+          "entity_type": null
+        }
+      ],
+      "version_constraint": "unknown",
+      "retrieval_mode": "none",
+      "spoiler_level": "none"
+    },
+    {
+      "query_category": "composite",
+      "normalized_entities": [],
+      "version_constraint": "range",
+      "retrieval_mode": "hybrid",
+      "spoiler_level": "notice"
+    }
+  ]
+}
