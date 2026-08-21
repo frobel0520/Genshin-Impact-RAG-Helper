@@ -1,0 +1,99 @@
+{
+  "schema_version": 1,
+  "source_metadata": [
+    {
+      "source_id": "src:hoyolab-version-5-0",
+      "source_kind": "hoyolab",
+      "published_at": "2026-08-20T12:00:00Z",
+      "retrieved_at": "2026-08-21T00:00:00Z"
+    },
+    {
+      "source_id": "src:genshin-db-repository",
+      "source_kind": "genshin-db",
+      "published_at": "2026-08-18T12:00:00Z",
+      "retrieved_at": "2026-08-21T00:00:00Z"
+    },
+    {
+      "source_id": "src:fandom-genshin-impact",
+      "source_kind": "fandom",
+      "published_at": "2026-08-19T08:30:00+08:00",
+      "retrieved_at": "2026-08-21T00:00:00Z"
+    }
+  ],
+  "structured_facts": [
+    {
+      "fact_id": "fact:kamisato-ayaka-element",
+      "entity_id": "ent:kamisato-ayaka",
+      "field_key": "element",
+      "value": "Cryo",
+      "unit": null,
+      "game_version": "5.0",
+      "source_id": "src:genshin-db-repository",
+      "validity": "active"
+    },
+    {
+      "fact_id": "fact:the-catch-rarity",
+      "entity_id": "ent:the-catch",
+      "field_key": "rarity",
+      "value": 4,
+      "unit": "stars",
+      "game_version": "unknown",
+      "source_id": "src:genshin-db-repository",
+      "validity": "unknown"
+    },
+    {
+      "fact_id": "fact:sumeru-release-window",
+      "entity_id": "ent:sumeru",
+      "field_key": "release_window",
+      "value": {
+        "start": "3.0",
+        "end": "3.8"
+      },
+      "unit": null,
+      "game_version": "3.0-3.8",
+      "source_id": "src:fandom-genshin-impact",
+      "validity": "superseded"
+    }
+  ],
+  "claims": [
+    {
+      "claim_id": "claim:kamisato-ayaka-story-title",
+      "claim_key": "story_title",
+      "entity_id": "ent:kamisato-ayaka",
+      "claim_text": "神里綾華的故事標題可由來源文件追溯。",
+      "game_version": "5.0",
+      "source_id": "src:fandom-genshin-impact",
+      "authority_rank": 3,
+      "conflict_group_id": null
+    },
+    {
+      "claim_id": "claim:kamisato-ayaka-burst-official",
+      "claim_key": "elemental_burst_name",
+      "entity_id": "ent:kamisato-ayaka",
+      "claim_text": "官方版本公告使用霜見雪關扉作為元素爆發名稱。",
+      "game_version": "5.0",
+      "source_id": "src:hoyolab-version-5-0",
+      "authority_rank": 1,
+      "conflict_group_id": "conflict:kamisato-ayaka-burst-name"
+    },
+    {
+      "claim_id": "claim:kamisato-ayaka-burst-wiki",
+      "claim_key": "elemental_burst_name",
+      "entity_id": "ent:kamisato-ayaka",
+      "claim_text": "Wiki 條目將霜見雪關扉列為元素爆發名稱。",
+      "game_version": "5.0",
+      "source_id": "src:fandom-genshin-impact",
+      "authority_rank": 3,
+      "conflict_group_id": "conflict:kamisato-ayaka-burst-name"
+    }
+  ],
+  "conflict_groups": [
+    {
+      "conflict_group_id": "conflict:kamisato-ayaka-burst-name",
+      "claim_ids": [
+        "claim:kamisato-ayaka-burst-official",
+        "claim:kamisato-ayaka-burst-wiki"
+      ]
+    }
+  ]
+}
