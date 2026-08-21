@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "chunks": [
+    {
+      "chunk_id": "chunk:hoyolab-version-5-0-overview",
+      "source_id": "src:hoyolab-version-5-0",
+      "document_locator": "https://www.hoyolab.com/#section-version-5-0",
+      "text": "版本公告摘要：本段內容保留來源文字與版本範圍。",
+      "token_hint": 32,
+      "game_version": "5.0",
+      "entity_ids": ["ent:kamisato-ayaka"]
+    },
+    {
+      "chunk_id": "chunk:fandom-unclassified-lore",
+      "source_id": "src:fandom-genshin-impact",
+      "document_locator": "wiki:Genshin_Impact#unclassified-lore",
+      "text": "尚未辨識實體的來源段落可保留，但不可當成精確結構化事實。",
+      "token_hint": 24,
+      "game_version": "unknown",
+      "entity_ids": []
+    },
+    {
+      "chunk_id": "chunk:genshin-db-sumeru-facts",
+      "source_id": "src:genshin-db-repository",
+      "document_locator": "repo:data/regions/sumeru",
+      "text": "須彌資料段落示例，適用版本為 3.0 至 3.8。",
+      "token_hint": 18,
+      "game_version": "3.0-3.8",
+      "entity_ids": ["ent:sumeru"]
+    }
+  ]
+}
