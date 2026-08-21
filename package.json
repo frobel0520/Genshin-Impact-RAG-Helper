@@ -1,0 +1,17 @@
+{
+  "name": "genshin-impact-rag-helper",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local-first Traditional Chinese Genshin Impact RAG helper",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "start": "node --env-file=.env src/server.js",
+    "start:local": "node src/server.js",
+    "test": "node --test",
+    "lint": "node scripts/check-boundaries.js",
+    "check": "npm run lint && npm test"
+  }
+}
