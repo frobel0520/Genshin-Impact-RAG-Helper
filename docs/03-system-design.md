@@ -22,7 +22,7 @@
 - 資料來源的實際擷取介面、授權與保存量仍需依 SA 的 OPEN-01～OPEN-07 完成確認。
 - 需求與輸出契約先用 fixture 固定，讓不同 Task 可平行開發；真實資料不作為上游 Task 的必要前置條件。
 
-本文件不捏造尚未提供的模型名稱、版本或框架版本。`T00` 只負責把實際固定基線補入決策紀錄，不比較替代方案；在 `T00` 完成前，後續 Task 仍可依本文件的契約與 fixture 進行。
+本文件不捏造尚未提供的模型名稱、版本或框架版本。`T00` 已將實際固定基線補入決策紀錄；後續 Task 依本文件的契約與 fixture 進行，不比較替代方案。
 
 ## 2. 固定基線與邊界
 
@@ -32,10 +32,12 @@
 |---|---|---|
 | 作業環境 | Windows 10、Intel i7-12700KF、31.8 GB RAM、RTX 3060 12 GB VRAM | 已確認 |
 | 語言與資料格式 | 繁體中文；來源、版本、時間與權利欄位必須可追溯 | 已確認 |
-| LLM／推論器 | 本機固定基線；具體名稱與版本於 T00 登錄 | 待登錄，不做替代比較 |
-| Embedding | 本機固定基線；具體名稱與版本於 T00 登錄 | 待登錄，不做替代比較 |
-| Vector DB／索引 | 本機固定基線；具體名稱與版本於 T00 登錄 | 待登錄，不做替代比較 |
-| 後端／UI | 本機固定基線；具體框架於 T00 登錄 | 待登錄，不做替代比較 |
+| LLM／推論器 | Ollama 0.32.14；`qwen2.5-coder:14b`；digest `9ec8897f747e246e970bc5cfdda85d22f1123dc2e3d34978a010a75968716849`；Q4_K_M、14.8B、32K context | 已驗證；不做替代比較 |
+| Embedding | Ollama 0.32.14；`bge-m3:latest`；digest `7907646426070047a77226ac3e684fbbe8410524f7b4a74d02837e43f2146bab`；1024 dimensions | 已下載並完成 API smoke test；不做替代比較 |
+| Structured Store | Node `node:sqlite` `DatabaseSync` | 固定；Node 顯示 experimental warning |
+| Vector DB／索引 | SQLite BLOB 儲存向量 + Node `Float32Array` cosine scorer；不引入外部 Vector DB | 固定；不做替代比較 |
+| 後端／UI | Node built-in `node:http` + 靜態 HTML／CSS／ES modules | 固定；不引入替代框架 |
+| 測試 | Node built-in `node:test` | 固定 |
 | 外部部署 | 不屬 MVP 核心相依 | 排除 |
 
 ### 2.2 元件責任邊界
@@ -88,6 +90,33 @@ Domain Contracts → Data Contracts → Query Contracts → API/UI Integration
 - Evaluator 依賴 UI DOM 或真實外部來源才能執行。
 - Ingest Task 以模型輸出作為資料正確性的唯一依據。
 - 任一資料來源的專用欄位滲透到通用 Query／Answer Contract。
+
+### 2.4 T00 固定基線紀錄（2026-08-21）
+
+T00 已完成本機基線盤點與固定值登錄：
+
+- Node.js `24.14.1`、npm `11.12.1`。
+- Ollama `0.32.14`；`qwen2.5-coder:14b` 可用於固定本機生成基線。
+- Ollama `bge-m3:latest` 已下載約 1.2 GB；`/api/embed` 對繁中 smoke input 回傳 1 個 1024 維向量。
+- GPU 為 NVIDIA GeForce RTX 3060、12,288 MiB；只作硬體記錄，不執行效能驗證。
+- Node `node:sqlite` 可載入 `DatabaseSync`；experimental warning 接受為固定基線的一部分。
+- Python Windows Store alias 無法執行，不列入基線；Docker 可用但不列入核心啟動路徑。
+
+### 2.5 本機啟動命令契約
+
+T01 建立程式骨架後，預期使用下列命令啟動；T00 只先固定命令與環境變數名稱，不宣稱 `src/server.js` 已存在：
+
+```powershell
+# 1. 確認 Ollama 服務可用（若桌面服務尚未啟動，再執行 ollama serve）
+Invoke-RestMethod http://127.0.0.1:11434/api/tags
+ollama list
+
+# 2. 啟動本機應用（T01 建立 src/server.js 後）
+$env:OLLAMA_HOST = "http://127.0.0.1:11434"
+node --env-file=.env src/server.js
+```
+
+必要模型固定為 `qwen2.5-coder:14b` 與 `bge-m3:latest`；啟動前若缺少任一模型，應直接失敗並指出模型名稱，不下載替代模型。
 
 ## 3. 領域與資料模型
 
@@ -318,7 +347,7 @@ API 邊界規則：
 
 **狀態**：Accepted（本次方向）
 
-**決策**：MVP 採一套固定的本機 LLM／Embedding／索引／後端／UI 基線；不做效能 benchmark、不比較替代方案、不保留第二套實作路線。實際名稱與版本由 T00 登錄。
+**決策**：MVP 固定採 Ollama `qwen2.5-coder:14b`、Ollama `bge-m3:latest`、Node `node:sqlite`、SQLite BLOB cosine index、Node built-in HTTP／靜態 UI 與 `node:test`；不做效能 benchmark、不比較替代方案、不保留第二套實作路線。
 
 **理由**：專案資源有限，優先完成可跑且正確的端到端契約；使用者明確要求不做效能驗證與替換規劃。
 
@@ -341,6 +370,8 @@ API 邊界規則：
 每個 Task 只允許一個主要交付物與一個驗收邊界；Task 不跨越多個 owner 邊界。每個 Task 必須能單獨在分支中完成、測試或文件驗證，並列出硬依賴。`depends_on` 不得形成循環。
 
 Task 狀態：`Planned → In Progress → Review → Done`。若等待的是最終真實來源、模型輸出或 E2E Gate，仍可先以 fixture 開發，不標記為 blocked。
+
+T00 狀態：**Done**。固定基線、模型 digest、embedding smoke test 與本機啟動命令契約已記錄；T01 接續建立程式骨架。
 
 ### 8.2 Task 清單
 
@@ -490,7 +521,7 @@ Release Gate 只檢查 SA 已核准的功能／品質項目：回答正確率、
 
 SD 通過前需確認：
 
-- T00 已被列為第一個實作前置 Task；實際固定基線值尚待 T00 登錄，不包含替換方案或 benchmark 承諾。
+- T00 已完成固定基線登錄與 smoke test；不包含替換方案或 benchmark 承諾。
 - 元件邊界、依賴方向與契約符合 SA FR／NFR。
 - Domain、Source、Query、Evidence、Answer、Eval 契約可由 fixture 驗證。
 - Task DAG 無循環；每個 Task 有單一交付物、完成條件與明確硬依賴。
@@ -501,7 +532,7 @@ SD 通過前需確認：
 
 ## 11. 下一步
 
-1. 由專案擁有者確認 T00 的固定技術基線值。
+1. 執行 T01，建立專案目錄、模組邊界與最小啟動入口。
 2. 將 T00～T31 轉成 GitHub Issues／Milestone，保持 `depends_on` 與平行線欄位。
 3. 先完成 T02、T03、T07、T08、T09 等契約 Task，再平行展開 Data、Query、Evaluation、UI 線。
-4. SD 通過後，依 Task DAG 開始第一批可獨立驗收的工作。
+4. 依 Task DAG 開始第一批可獨立驗收的工作。
