@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+    branches: [dev, main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  repository-baseline:
+    name: Repository baseline
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js baseline
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Verify project contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f docs/01-project-plan.md
+          test -f docs/02-system-analysis.md
+          test -f docs/03-system-design.md
+          git diff --check
+
+      - name: Verify local handoff is not tracked
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git ls-files --error-unmatch artifacts/session-summaries/Progress.md >/dev/null 2>&1; then
+            echo "Progress.md must remain a local ignored handoff file."
+            exit 1
+          fi
