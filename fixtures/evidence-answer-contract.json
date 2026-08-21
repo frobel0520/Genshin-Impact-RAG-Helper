@@ -1,0 +1,147 @@
+{
+  "schema_version": 1,
+  "evidence_bundles": [
+    {
+      "query_id": "qry:kamisato-ayaka-element",
+      "items": [
+        {
+          "evidence_id": "evd:kamisato-ayaka-element-fact",
+          "source_kind": "genshin-db",
+          "source_url": "https://github.com/theBowja/genshin-db",
+          "source_title": "genshin-db source metadata example",
+          "source_published_at": "2026-08-18T12:00:00Z",
+          "source_retrieved_at": "2026-08-21T00:00:00Z",
+          "game_version": "5.0",
+          "fact_id": "fact:kamisato-ayaka-element",
+          "rank": 1,
+          "support_type": "direct"
+        },
+        {
+          "evidence_id": "evd:kamisato-ayaka-story-chunk",
+          "source_kind": "fandom",
+          "source_url": "https://genshin-impact.fandom.com/wiki/Genshin_Impact",
+          "source_title": "Genshin Impact Fandom source metadata example",
+          "source_retrieved_at": "2026-08-21T00:00:00Z",
+          "game_version": "unknown",
+          "claim_id": "claim:kamisato-ayaka-story-title",
+          "chunk_id": "chunk:fandom-unclassified-lore",
+          "rank": 2,
+          "support_type": "contextual"
+        },
+        {
+          "evidence_id": "evd:kamisato-ayaka-burst-conflict",
+          "source_kind": "hoyolab",
+          "source_url": "https://www.hoyolab.com/",
+          "source_title": "HoYoLAB source metadata example",
+          "source_published_at": "2026-08-20T12:00:00Z",
+          "source_retrieved_at": "2026-08-21T00:00:00Z",
+          "game_version": "5.0",
+          "claim_id": "claim:kamisato-ayaka-burst-official",
+          "rank": 3,
+          "support_type": "conflicting"
+        }
+      ],
+      "conflict_groups": [
+        {
+          "conflict_group_id": "conflict:kamisato-ayaka-burst-name",
+          "claim_ids": [
+            "claim:kamisato-ayaka-burst-official",
+            "claim:kamisato-ayaka-burst-wiki"
+          ]
+        }
+      ]
+    },
+    {
+      "query_id": "qry:unknown-lore-question",
+      "items": [],
+      "conflict_groups": []
+    }
+  ],
+  "responses": [
+    {
+      "answer_status": "answered",
+      "answer_text": "神里綾華的元素是冰元素。",
+      "query_category": "structured",
+      "citations": [
+        {
+          "source_url": "https://github.com/theBowja/genshin-db",
+          "title": "genshin-db source metadata example",
+          "source_kind": "genshin-db",
+          "published_at": "2026-08-18T12:00:00Z",
+          "retrieved_at": "2026-08-21T00:00:00Z",
+          "game_version": "5.0"
+        }
+      ],
+      "version_scope": "5.0",
+      "trace_id": "run:kamisato-ayaka-element"
+    },
+    {
+      "answer_status": "answered",
+      "answer_text": "這個複合問題可分別由結構化資料與來源文件回答。",
+      "query_category": "composite",
+      "citations": [
+        {
+          "source_url": "https://www.hoyolab.com/",
+          "title": "HoYoLAB source metadata example",
+          "source_kind": "hoyolab",
+          "retrieved_at": "2026-08-21T00:00:00Z",
+          "game_version": "5.0"
+        },
+        {
+          "source_url": "https://genshin-impact.fandom.com/wiki/Genshin_Impact",
+          "title": "Genshin Impact Fandom source metadata example",
+          "source_kind": "fandom",
+          "published_at": "2026-08-19T08:30:00+08:00",
+          "retrieved_at": "2026-08-21T00:00:00Z",
+          "game_version": "unknown"
+        }
+      ],
+      "version_scope": "multiple versions; see citations",
+      "spoiler_notice": "回答涉及任務與世界觀內容。",
+      "trace_id": "run:composite-answer"
+    },
+    {
+      "answer_status": "answered",
+      "answer_text": "版本公告資料顯示此變更適用於 5.0。",
+      "query_category": "version",
+      "citations": [
+        {
+          "source_url": "https://www.hoyolab.com/",
+          "title": "HoYoLAB source metadata example",
+          "source_kind": "hoyolab",
+          "published_at": "2026-08-20T12:00:00Z",
+          "retrieved_at": "2026-08-21T00:00:00Z",
+          "game_version": "5.0"
+        }
+      ],
+      "version_scope": "5.0",
+      "trace_id": "run:version-answer"
+    },
+    {
+      "answer_status": "uncertain",
+      "answer_text": "目前證據不足，無法可靠回答這個敘述性問題。",
+      "query_category": "narrative",
+      "citations": [],
+      "version_scope": "unknown",
+      "uncertainty_reason": "insufficient_evidence",
+      "trace_id": "run:insufficient-lore-evidence"
+    },
+    {
+      "answer_status": "refused",
+      "answer_text": "這個問題超出目前助手的支援範圍。",
+      "query_category": "out_of_scope",
+      "citations": [],
+      "version_scope": "unknown",
+      "uncertainty_reason": "out_of_scope",
+      "trace_id": "run:out-of-scope-question"
+    },
+    {
+      "answer_status": "error",
+      "answer_text": "系統暫時無法完成查詢，請稍後再試。",
+      "query_category": "structured",
+      "citations": [],
+      "version_scope": "unknown",
+      "trace_id": "run:internal-error"
+    }
+  ]
+}
