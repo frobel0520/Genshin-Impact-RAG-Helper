@@ -1,0 +1,341 @@
+{
+  "schema_version": 1,
+  "dataset_version": "eval-template-v1",
+  "target_counts": {
+    "total": 50,
+    "answerable": 40,
+    "refuse": 10
+  },
+  "metric_definitions": {
+    "answer_correctness": {
+      "target": 0.9,
+      "scope": "answerable"
+    },
+    "retrieval_recall_at_5": {
+      "target": 0.9,
+      "scope": "all"
+    },
+    "groundedness": {
+      "target": 0.95,
+      "scope": "answerable"
+    },
+    "correct_refusal": {
+      "target": 0.9,
+      "scope": "refuse"
+    },
+    "citation_coverage": {
+      "target": 1,
+      "scope": "non_refused"
+    }
+  },
+  "cases": [
+    {
+      "case_id": "case:kamisato-ayaka-element",
+      "question_zh_tw": "神里綾華是什麼元素？",
+      "category": "character",
+      "query_type": "structured",
+      "answerability": "answerable",
+      "expected_answer": {
+        "summary": "神里綾華是冰元素角色。",
+        "facts": [
+          {
+            "key": "element",
+            "value": "Cryo"
+          }
+        ]
+      },
+      "required_facts": [
+        {
+          "key": "element",
+          "expected_value": "Cryo"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "genshin-db",
+          "source_url": "https://github.com/theBowja/genshin-db"
+        }
+      ],
+      "game_version": "5.0",
+      "spoiler_level": "none",
+      "notes": "精確欄位題；名稱可接受已登錄別名。"
+    },
+    {
+      "case_id": "case:the-catch-rarity",
+      "question_zh_tw": "「漁獲」的稀有度是多少？",
+      "category": "weapon",
+      "query_type": "structured",
+      "answerability": "answerable",
+      "expected_answer": "「漁獲」是四星武器。",
+      "required_facts": [
+        {
+          "key": "rarity",
+          "expected_value": 4,
+          "unit": "stars"
+        }
+      ],
+      "expected_sources": ["genshin-db"],
+      "game_version": "unknown",
+      "spoiler_level": "none"
+    },
+    {
+      "case_id": "case:ayaka-story-summary",
+      "question_zh_tw": "請簡述神里綾華的角色故事。",
+      "category": "quest",
+      "query_type": "narrative",
+      "answerability": "answerable",
+      "expected_answer": {
+        "summary": "以來源文件支持的繁中摘要回答，不補寫未被證據支持的情節。"
+      },
+      "required_facts": [
+        {
+          "key": "story_summary",
+          "description": "角色故事摘要應可追溯至來源文件。"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "fandom",
+          "source_url": "https://genshin-impact.fandom.com/wiki/Genshin_Impact"
+        }
+      ],
+      "game_version": "unknown",
+      "spoiler_level": "notice",
+      "notes": "敘述題以必要事實與引用支持為主要評分依據。"
+    },
+    {
+      "case_id": "case:version-5-0-change",
+      "question_zh_tw": "這項調整適用於哪個遊戲版本？",
+      "category": "version",
+      "query_type": "version",
+      "answerability": "answerable",
+      "expected_answer": "5.0。",
+      "required_facts": [
+        {
+          "key": "game_version",
+          "expected_value": "5.0"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "hoyolab"
+        }
+      ],
+      "game_version": "5.0",
+      "spoiler_level": "none"
+    },
+    {
+      "case_id": "case:composite-lore-and-value",
+      "question_zh_tw": "請同時說明角色故事摘要與元素數值。",
+      "category": "composite",
+      "query_type": "composite",
+      "answerability": "answerable",
+      "expected_answer": {
+        "parts": [
+          "故事摘要",
+          "結構化元素欄位"
+        ]
+      },
+      "required_facts": [
+        {
+          "key": "story_summary"
+        },
+        {
+          "key": "element",
+          "expected_value": "Cryo"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "hoyolab"
+        },
+        {
+          "source_kind": "fandom"
+        }
+      ],
+      "game_version": "5.0",
+      "spoiler_level": "notice"
+    },
+    {
+      "case_id": "case:team-building-request",
+      "question_zh_tw": "請直接替我決定最強配隊。",
+      "category": "out_of_scope",
+      "query_type": "out_of_scope",
+      "answerability": "refuse",
+      "required_facts": [],
+      "game_version": "unknown",
+      "refusal_reason": "out_of_scope",
+      "spoiler_level": "none",
+      "notes": "不把主觀配隊建議包裝成資料查詢答案。"
+    },
+    {
+      "case_id": "case:conflicting-story-claim",
+      "question_zh_tw": "兩個來源對這段故事的說法不一致時，哪一個一定正確？",
+      "category": "world_lore",
+      "query_type": "narrative",
+      "answerability": "refuse",
+      "required_facts": [
+        {
+          "key": "conflict_group"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "hoyolab"
+        },
+        {
+          "source_kind": "fandom"
+        }
+      ],
+      "game_version": "unknown",
+      "refusal_reason": "source_conflict",
+      "spoiler_level": "notice"
+    },
+    {
+      "case_id": "case:unknown-version-value",
+      "question_zh_tw": "在沒有版本資料時，這個數值是否一定適用目前版本？",
+      "category": "version",
+      "query_type": "version",
+      "answerability": "refuse",
+      "required_facts": [],
+      "game_version": "unknown",
+      "refusal_reason": "version_unknown",
+      "spoiler_level": "none"
+    }
+  ],
+  "results": [
+    {
+      "case_id": "case:kamisato-ayaka-element",
+      "run_id": "run:eval-template-001",
+      "retrieved_evidence": ["evd:kamisato-ayaka-element-fact"],
+      "answer": {
+        "answer_status": "answered",
+        "answer_text": "神里綾華是冰元素角色。",
+        "query_category": "structured",
+        "citations": [
+          {
+            "source_url": "https://github.com/theBowja/genshin-db",
+            "title": "genshin-db source metadata example",
+            "source_kind": "genshin-db",
+            "retrieved_at": "2026-08-21T00:00:00Z",
+            "game_version": "5.0"
+          }
+        ],
+        "version_scope": "5.0",
+        "trace_id": "run:eval-template-001"
+      },
+      "citations": [
+        {
+          "source_url": "https://github.com/theBowja/genshin-db",
+          "title": "genshin-db source metadata example",
+          "source_kind": "genshin-db",
+          "retrieved_at": "2026-08-21T00:00:00Z",
+          "game_version": "5.0"
+        }
+      ],
+      "metric_labels": {
+        "answer_correctness": "pass",
+        "retrieval_recall_at_5": "pass",
+        "groundedness": "pass",
+        "correct_refusal": "not_applicable",
+        "citation_coverage": "pass"
+      },
+      "human_review": {
+        "status": "reviewed",
+        "decision": "accept",
+        "notes": "必要事實、引用與版本一致。",
+        "reviewed_at": "2026-08-21T01:00:00Z"
+      }
+    },
+    {
+      "case_id": "case:ayaka-story-summary",
+      "run_id": "run:eval-template-002",
+      "retrieved_evidence": [
+        {
+          "evidence_id": "evd:ayaka-story-chunk",
+          "source_kind": "fandom",
+          "source_url": "https://genshin-impact.fandom.com/wiki/Genshin_Impact",
+          "source_title": "Genshin Impact Fandom source metadata example",
+          "source_retrieved_at": "2026-08-21T00:00:00Z",
+          "game_version": "unknown",
+          "chunk_id": "chunk:fandom-unclassified-lore",
+          "rank": 1,
+          "support_type": "contextual"
+        }
+      ],
+      "answer": {
+        "answer_status": "uncertain",
+        "answer_text": "目前證據不足，僅能提供受來源支持的有限摘要。",
+        "query_category": "narrative",
+        "citations": [],
+        "version_scope": "unknown",
+        "uncertainty_reason": "insufficient_evidence",
+        "spoiler_notice": "回答涉及角色故事內容。",
+        "trace_id": "run:eval-template-002"
+      },
+      "citations": [],
+      "metric_labels": {
+        "answer_correctness": "not_scored",
+        "retrieval_recall_at_5": "pass",
+        "groundedness": "not_applicable",
+        "correct_refusal": "not_applicable",
+        "citation_coverage": "not_applicable"
+      },
+      "human_review": {
+        "status": "pending"
+      }
+    },
+    {
+      "case_id": "case:team-building-request",
+      "run_id": "run:eval-template-003",
+      "retrieved_evidence": [],
+      "answer": {
+        "answer_status": "refused",
+        "answer_text": "這個問題超出目前助手的支援範圍。",
+        "query_category": "out_of_scope",
+        "citations": [],
+        "version_scope": "unknown",
+        "uncertainty_reason": "out_of_scope",
+        "trace_id": "run:eval-template-003"
+      },
+      "citations": [],
+      "metric_labels": {
+        "answer_correctness": "not_applicable",
+        "retrieval_recall_at_5": "not_applicable",
+        "groundedness": "not_applicable",
+        "correct_refusal": "pass",
+        "citation_coverage": "not_applicable"
+      },
+      "human_review": {
+        "status": "reviewed",
+        "decision": "accept",
+        "reviewed_at": "2026-08-21T01:05:00Z"
+      }
+    },
+    {
+      "case_id": "case:unknown-version-value",
+      "run_id": "run:eval-template-004",
+      "retrieved_evidence": [],
+      "answer": {
+        "answer_status": "error",
+        "answer_text": "系統暫時無法完成評估查詢。",
+        "query_category": "version",
+        "citations": [],
+        "version_scope": "unknown",
+        "trace_id": "run:eval-template-004"
+      },
+      "citations": [],
+      "metric_labels": {
+        "answer_correctness": "not_scored",
+        "retrieval_recall_at_5": "not_scored",
+        "groundedness": "not_scored",
+        "correct_refusal": "not_scored",
+        "citation_coverage": "not_scored"
+      },
+      "human_review": {
+        "status": "pending",
+        "notes": "系統錯誤需與資料拒答分開追蹤。"
+      }
+    }
+  ]
+}
