@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "canonical_entities": [
+    {
+      "entity_id": "ent:kamisato-ayaka",
+      "entity_type": "character",
+      "canonical_name": "神里綾華",
+      "aliases": ["神里绫华", "Kamisato Ayaka", "Ayaka"],
+      "locale": "zh-TW"
+    },
+    {
+      "entity_id": "ent:the-catch",
+      "entity_type": "weapon",
+      "canonical_name": "漁獲",
+      "aliases": ["The Catch", "漁获"],
+      "locale": "zh-TW"
+    },
+    {
+      "entity_id": "ent:sumeru",
+      "entity_type": "region",
+      "canonical_name": "須彌",
+      "aliases": ["Sumeru", "须弥"],
+      "locale": "zh-TW"
+    }
+  ],
+  "resolution_examples": [
+    {
+      "text": "綾華",
+      "locale": "zh-TW",
+      "aliases_used": ["綾華"],
+      "entity_id": "ent:kamisato-ayaka",
+      "entity_type": "character",
+      "resolution_status": "resolved"
+    },
+    {
+      "text": "不存在的角色",
+      "locale": "zh-TW",
+      "aliases_used": [],
+      "entity_id": null,
+      "entity_type": null,
+      "resolution_status": "unrecognized"
+    }
+  ]
+}
