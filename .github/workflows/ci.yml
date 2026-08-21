@@ -21,6 +21,17 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 24
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint module boundaries
+        run: npm run lint
+
+      - name: Run tests
+        run: npm test
 
       - name: Verify project contracts
         shell: bash
