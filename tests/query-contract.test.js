@@ -114,6 +114,7 @@ test("QueryRequest rejects empty text, malformed locale/version, and unknown spo
 test("normalized entities preserve unresolved text and validate typed identity when present", () => {
   const unresolved = fixture.plans[2].normalized_entities[0];
   assert.deepEqual(validateNormalizedEntity(unresolved), { ok: true, value: unresolved });
+  assert.equal(unresolved.resolution_status, "unrecognized");
   assert.equal(unresolved.entity_id, null);
   assert.equal(unresolved.entity_type, null);
 
@@ -133,6 +134,40 @@ test("normalized entities preserve unresolved text and validate typed identity w
       { code: QUERY_CONTRACT_VALIDATION_CODES.INVALID_ENTITY_ID, path: "entity_id" },
       { code: QUERY_CONTRACT_VALIDATION_CODES.INVALID_ENTITY_TYPE, path: "entity_type" },
       { code: QUERY_CONTRACT_VALIDATION_CODES.DUPLICATE_ALIAS, path: "aliases_used[1]" },
+    ],
+  );
+});
+
+test("normalized entities require explicit resolution status and reject partial identity", () => {
+  const unresolved = fixture.plans[2].normalized_entities[0];
+  const missingStatus = structuredClone(unresolved);
+  delete missingStatus.resolution_status;
+  const missingStatusResult = validateNormalizedEntity(missingStatus);
+  assert.deepEqual(
+    missingStatusResult.errors.map(({ code, path }) => ({ code, path })),
+    [{ code: QUERY_CONTRACT_VALIDATION_CODES.MISSING_REQUIRED_FIELD, path: "resolution_status" }],
+  );
+
+  const resolvedMissingType = structuredClone(fixture.plans[0].normalized_entities[0]);
+  delete resolvedMissingType.entity_type;
+  const resolvedMissingTypeResult = validateNormalizedEntity(resolvedMissingType);
+  assert.deepEqual(
+    resolvedMissingTypeResult.errors.map(({ code, path }) => ({ code, path })),
+    [{ code: QUERY_CONTRACT_VALIDATION_CODES.RESOLVED_ENTITY_TYPE_REQUIRED, path: "entity_type" }],
+  );
+
+  const unrecognizedWithId = {
+    ...unresolved,
+    entity_id: "ent:should-not-be-present",
+  };
+  const unrecognizedWithIdResult = validateNormalizedEntity(unrecognizedWithId);
+  assert.deepEqual(
+    unrecognizedWithIdResult.errors.map(({ code, path }) => ({ code, path })),
+    [
+      {
+        code: QUERY_CONTRACT_VALIDATION_CODES.UNRECOGNIZED_ENTITY_ID_FORBIDDEN,
+        path: "entity_id",
+      },
     ],
   );
 });
