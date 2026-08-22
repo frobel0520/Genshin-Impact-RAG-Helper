@@ -26,5 +26,6 @@ back references.
 - Relative imports stay within the dependency direction enforced by
   `scripts/check-boundaries.js`.
 
-The T01 implementation is intentionally minimal. Later Tasks add contracts and
-implementations inside these boundaries without moving the composition root.
+The T01 server remains intentionally minimal. T02–T09 contracts and their
+shared validation primitives now live inside these boundaries; later Tasks add
+ingestion and RAG implementations without moving the composition root.

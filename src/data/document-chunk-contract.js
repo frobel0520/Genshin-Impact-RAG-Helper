@@ -1,4 +1,12 @@
 import { isDomainId } from "../domain/domain-contract.js";
+import {
+  assertValid,
+  createError,
+  invalidDocumentResult,
+  isNonEmptyString,
+  isRecord,
+  isStableString,
+} from "../domain/contract-validation.js";
 
 export const DOCUMENT_CHUNK_SCHEMA_VERSION = 1;
 
@@ -42,15 +50,22 @@ export const DOCUMENT_CHUNK_SCHEMA = Object.freeze({
 
 const DOCUMENT_CHUNK_FIELD_SET = new Set(DOCUMENT_CHUNK_REQUIRED_FIELDS);
 
+/** @typedef {import("../domain/contract-validation.js").ValidationResult} ValidationResult */
+
 /**
  * Validate a retrievable source text chunk. This contract does not trim or
  * rewrite text; token_hint remains an estimate supplied by the chunk builder.
+ * @param {unknown} chunk
+ * @returns {ValidationResult}
  */
 export function validateDocumentChunk(chunk) {
   const errors = [];
 
   if (!isRecord(chunk)) {
-    return invalidDocumentResult("DocumentChunk must be a plain object.");
+    return invalidDocumentResult(
+      DOCUMENT_CHUNK_VALIDATION_CODES.INVALID_DOCUMENT,
+      "DocumentChunk must be a plain object.",
+    );
   }
 
   collectUnknownFields(chunk, errors);
@@ -125,19 +140,20 @@ export function validateDocumentChunk(chunk) {
 
   return errors.length === 0 ? { ok: true, value: chunk } : { ok: false, errors };
 }
-
+/**
+ * @param {unknown} chunk
+ * @returns {boolean}
+ */
 export function isDocumentChunk(chunk) {
   return validateDocumentChunk(chunk).ok;
 }
-
+/**
+ * @param {unknown} chunk
+ * @returns {unknown}
+ * @throws {TypeError} when validation fails
+ */
 export function assertDocumentChunk(chunk) {
-  const result = validateDocumentChunk(chunk);
-  if (!result.ok) {
-    const message = result.errors.map(({ path, message: detail }) => `${path}: ${detail}`).join(" ");
-    throw new TypeError(`Invalid DocumentChunk. ${message}`);
-  }
-
-  return result.value;
+  return assertValid(validateDocumentChunk(chunk), "DocumentChunk");
 }
 
 function validateEntityIds(entityIds) {
@@ -204,29 +220,4 @@ function collectMissingFields(chunk, errors) {
       );
     }
   }
-}
-
-function invalidDocumentResult(message) {
-  return {
-    ok: false,
-    errors: [
-      createError(DOCUMENT_CHUNK_VALIDATION_CODES.INVALID_DOCUMENT, "$", message),
-    ],
-  };
-}
-
-function createError(code, path, message) {
-  return { code, path, message };
-}
-
-function isRecord(value) {
-  return value !== null && typeof value === "object" && !Array.isArray(value);
-}
-
-function isStableString(value) {
-  return typeof value === "string" && value.trim().length > 0 && value.trim() === value;
-}
-
-function isNonEmptyString(value) {
-  return typeof value === "string" && value.trim().length > 0;
 }
