@@ -123,8 +123,14 @@ const PREFIX_TO_KIND = Object.freeze(
     Object.entries(DOMAIN_ID_PREFIXES).map(([kind, prefix]) => [prefix, kind]),
   ),
 );
-const DOMAIN_ID_PATTERN = /^(src|ent|fact|claim|chunk|qry|evd|ans|case|run|cit):[a-z0-9][a-z0-9._-]*$/;
+const DOMAIN_ID_PATTERN = /^([a-z]+):[a-z0-9][a-z0-9._-]*$/;
 
+/**
+ * @param {keyof typeof DOMAIN_ID_PREFIXES} kind
+ * @param {unknown} key
+ * @returns {string}
+ * @throws {TypeError} when kind or key is invalid
+ */
 export function createDomainId(kind, key) {
   const prefix = DOMAIN_ID_PREFIXES[kind];
   if (!prefix) {
@@ -147,18 +153,31 @@ export function createDomainId(kind, key) {
   return `${prefix}:${normalizedKey}`;
 }
 
+/**
+ * @param {unknown} value
+ * @param {string | undefined} expectedKind
+ * @returns {boolean}
+ */
 export function isDomainId(value, expectedKind) {
-  if (typeof value !== "string" || !DOMAIN_ID_PATTERN.test(value)) {
+  if (typeof value !== "string") {
     return false;
   }
 
-  if (expectedKind === undefined) {
-    return true;
+  const match = DOMAIN_ID_PATTERN.exec(value);
+  if (!match) {
+    return false;
   }
 
-  return PREFIX_TO_KIND[value.split(":", 1)[0]] === expectedKind;
+  const kind = PREFIX_TO_KIND[match[1]];
+  return kind !== undefined && (expectedKind === undefined || kind === expectedKind);
 }
 
+/**
+ * @param {unknown} value
+ * @param {string | undefined} expectedKind
+ * @returns {string}
+ * @throws {TypeError} when value is not a matching domain ID
+ */
 export function assertDomainId(value, expectedKind) {
   if (!isDomainId(value, expectedKind)) {
     const suffix = expectedKind ? ` for ${expectedKind}` : "";

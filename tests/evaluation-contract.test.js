@@ -177,8 +177,14 @@ test("EvalCase validates IDs, categories, query types, versions, spoiler levels,
       { code: EVALUATION_VALIDATION_CODES.INVALID_ANSWERABILITY, path: "answerability" },
       { code: EVALUATION_VALIDATION_CODES.INVALID_REQUIRED_FACT, path: "required_facts[0]" },
       { code: EVALUATION_VALIDATION_CODES.INVALID_EXPECTED_ANSWER, path: "expected_answer" },
-      { code: EVALUATION_VALIDATION_CODES.INVALID_SOURCE_KIND, path: "expected_sources[0].source_kind" },
-      { code: EVALUATION_VALIDATION_CODES.INVALID_SOURCE_URL, path: "expected_sources[0].source_url" },
+      {
+        code: EVALUATION_VALIDATION_CODES.INVALID_SOURCE_KIND,
+        path: "expected_sources[0].source_kind",
+      },
+      {
+        code: EVALUATION_VALIDATION_CODES.INVALID_SOURCE_URL,
+        path: "expected_sources[0].source_url",
+      },
       { code: EVALUATION_VALIDATION_CODES.INVALID_REFUSAL_REASON, path: "refusal_reason" },
       { code: EVALUATION_VALIDATION_CODES.INVALID_GAME_VERSION, path: "game_version" },
       { code: EVALUATION_VALIDATION_CODES.INVALID_SPOILER_LEVEL, path: "spoiler_level" },
@@ -245,9 +251,18 @@ test("metric labels require every fixed release metric and reject unknown labels
   assert.deepEqual(
     errors.map(({ code, path }) => ({ code, path })),
     [
-      { code: EVALUATION_VALIDATION_CODES.UNKNOWN_METRIC_LABEL, path: "metric_labels.extra_metric" },
-      { code: EVALUATION_VALIDATION_CODES.INVALID_METRIC_LABEL, path: "metric_labels.answer_correctness" },
-      { code: EVALUATION_VALIDATION_CODES.MISSING_METRIC_LABEL, path: "metric_labels.groundedness" },
+      {
+        code: EVALUATION_VALIDATION_CODES.UNKNOWN_METRIC_LABEL,
+        path: "metric_labels.extra_metric",
+      },
+      {
+        code: EVALUATION_VALIDATION_CODES.INVALID_METRIC_LABEL,
+        path: "metric_labels.answer_correctness",
+      },
+      {
+        code: EVALUATION_VALIDATION_CODES.MISSING_METRIC_LABEL,
+        path: "metric_labels.groundedness",
+      },
     ],
   );
 });
@@ -307,7 +322,10 @@ test("EvalResult rejects malformed IDs, evidence, metrics, and human review", ()
     [
       { code: EVALUATION_VALIDATION_CODES.INVALID_CASE_ID, path: "case_id" },
       { code: EVALUATION_VALIDATION_CODES.INVALID_RUN_ID, path: "run_id" },
-      { code: EVALUATION_VALIDATION_CODES.INVALID_EVIDENCE_REFERENCE, path: "retrieved_evidence[0]" },
+      {
+        code: EVALUATION_VALIDATION_CODES.INVALID_EVIDENCE_REFERENCE,
+        path: "retrieved_evidence[0]",
+      },
       { code: "invalid_query_category", path: "answer.query_category" },
       { code: EVALUATION_VALIDATION_CODES.INVALID_CITATIONS, path: "citations" },
       ...EVAL_METRIC_KEYS.map((key) => ({

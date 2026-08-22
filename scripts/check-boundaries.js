@@ -33,6 +33,9 @@ const ALLOWED_IMPORTS = new Map([
 const STATIC_IMPORT_RE = /\b(?:import|export)\s+(?:[\s\S]*?\s+from\s+)?["']([^"']+)["']/g;
 const DYNAMIC_IMPORT_RE = /\bimport\s*\(\s*["']([^"']+)["']\s*\)/g;
 
+/**
+ * @returns {string[]}
+ */
 export function checkBoundaries() {
   const violations = [];
 
@@ -97,7 +100,8 @@ function listJavaScriptFiles(directory) {
 }
 
 function collectSpecifiers(source, pattern) {
-  return [...source.matchAll(pattern)].map((match) => match[1]);
+  const matches = [...source.matchAll(pattern)];
+  return matches.map((match) => match[1]);
 }
 
 function resolveImport(sourcePath, specifier) {

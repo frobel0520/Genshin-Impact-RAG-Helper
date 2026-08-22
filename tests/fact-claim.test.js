@@ -119,7 +119,10 @@ test("same claim scope is version-sensitive and conflict groups are deterministi
     ]).length,
     0,
   );
-  assert.equal(createConflictGroupId("Kamisato Ayaka / burst name"), "conflict:kamisato-ayaka-burst-name");
+  assert.equal(
+    createConflictGroupId("Kamisato Ayaka / burst name"),
+    "conflict:kamisato-ayaka-burst-name",
+  );
   assert.throws(() => createConflictGroupId("---"), /alphanumeric character/);
 });
 
@@ -184,7 +187,11 @@ test("fact/claim assertions are non-mutating and preserve valid object identity"
   const fact = structuredClone(fixture.structured_facts[0]);
   const claim = structuredClone(fixture.claims[0]);
   const group = structuredClone(fixture.conflict_groups[0]);
-  const before = { fact: structuredClone(fact), claim: structuredClone(claim), group: structuredClone(group) };
+  const before = {
+    fact: structuredClone(fact),
+    claim: structuredClone(claim),
+    group: structuredClone(group),
+  };
 
   assert.equal(assertStructuredFact(fact), fact);
   assert.equal(assertClaim(claim), claim);
