@@ -6,6 +6,7 @@ import {
   VERSION_CONSTRAINTS,
   isDomainId,
 } from "../domain/domain-contract.js";
+import { ENTITY_RESOLUTION_STATUSES } from "../data/canonical-entity-contract.js";
 import {
   assertValid,
   createError,
@@ -15,7 +16,7 @@ import {
   isStableString,
 } from "../domain/contract-validation.js";
 
-export const QUERY_CONTRACT_SCHEMA_VERSION = 1;
+export const QUERY_CONTRACT_SCHEMA_VERSION = 2;
 export const DEFAULT_QUERY_LOCALE = "zh-TW";
 
 export const QUERY_REQUEST_REQUIRED_FIELDS = Object.freeze(["question"]);
@@ -35,6 +36,7 @@ export const QUERY_REQUEST_FIELDS = Object.freeze([
 export const NORMALIZED_ENTITY_REQUIRED_FIELDS = Object.freeze([
   "text",
   "aliases_used",
+  "resolution_status",
 ]);
 
 export const NORMALIZED_ENTITY_OPTIONAL_FIELDS = Object.freeze([
@@ -69,6 +71,11 @@ export const QUERY_CONTRACT_VALIDATION_CODES = Object.freeze({
   INVALID_QUERY_CATEGORY: "invalid_query_category",
   INVALID_NORMALIZED_ENTITIES: "invalid_normalized_entities",
   INVALID_ENTITY_TEXT: "invalid_entity_text",
+  INVALID_RESOLUTION_STATUS: "invalid_resolution_status",
+  RESOLVED_ENTITY_ID_REQUIRED: "resolved_entity_id_required",
+  RESOLVED_ENTITY_TYPE_REQUIRED: "resolved_entity_type_required",
+  UNRECOGNIZED_ENTITY_ID_FORBIDDEN: "unrecognized_entity_id_forbidden",
+  UNRECOGNIZED_ENTITY_TYPE_FORBIDDEN: "unrecognized_entity_type_forbidden",
   INVALID_ENTITY_ID: "invalid_entity_id",
   INVALID_ENTITY_TYPE: "invalid_entity_type",
   INVALID_ALIASES_USED: "invalid_aliases_used",
@@ -89,7 +96,8 @@ export const QUERY_CONTRACT_SCHEMA = Object.freeze({
   normalizedEntity: Object.freeze({
     required: NORMALIZED_ENTITY_REQUIRED_FIELDS,
     optional: NORMALIZED_ENTITY_OPTIONAL_FIELDS,
-    unresolved: "entity_id and entity_type may be absent or null",
+    resolutionStatuses: Object.freeze(Object.values(ENTITY_RESOLUTION_STATUSES)),
+    unresolved: "unrecognized resolution cannot carry entity_id or entity_type",
   }),
   queryPlan: Object.freeze({
     required: QUERY_PLAN_REQUIRED_FIELDS,
@@ -101,6 +109,7 @@ const NORMALIZED_ENTITY_FIELD_SET = new Set(NORMALIZED_ENTITY_FIELDS);
 const QUERY_PLAN_FIELD_SET = new Set(QUERY_PLAN_FIELDS);
 const QUERY_CATEGORY_VALUES = new Set(Object.values(QUERY_CATEGORIES));
 const ENTITY_TYPE_VALUES = new Set(Object.values(ENTITY_TYPES));
+const ENTITY_RESOLUTION_STATUS_VALUES = new Set(Object.values(ENTITY_RESOLUTION_STATUSES));
 const VERSION_CONSTRAINT_VALUES = new Set(Object.values(VERSION_CONSTRAINTS));
 const RETRIEVAL_MODE_VALUES = new Set(Object.values(RETRIEVAL_MODES));
 const SPOILER_LEVEL_VALUES = new Set(Object.values(SPOILER_LEVELS));
@@ -208,6 +217,62 @@ export function validateNormalizedEntity(entity) {
         "text must contain non-whitespace entity text.",
       ),
     );
+  }
+
+  if (
+    entity.resolution_status !== undefined &&
+    (typeof entity.resolution_status !== "string" ||
+      !ENTITY_RESOLUTION_STATUS_VALUES.has(entity.resolution_status))
+  ) {
+    errors.push(
+      createError(
+        QUERY_CONTRACT_VALIDATION_CODES.INVALID_RESOLUTION_STATUS,
+        "resolution_status",
+        `resolution_status must be one of: ${[...ENTITY_RESOLUTION_STATUS_VALUES].join(", ")}.`,
+      ),
+    );
+  }
+
+  if (entity.resolution_status === ENTITY_RESOLUTION_STATUSES.RESOLVED) {
+    if (entity.entity_id === undefined || entity.entity_id === null) {
+      errors.push(
+        createError(
+          QUERY_CONTRACT_VALIDATION_CODES.RESOLVED_ENTITY_ID_REQUIRED,
+          "entity_id",
+          "resolved normalized entity requires entity_id.",
+        ),
+      );
+    }
+    if (entity.entity_type === undefined || entity.entity_type === null) {
+      errors.push(
+        createError(
+          QUERY_CONTRACT_VALIDATION_CODES.RESOLVED_ENTITY_TYPE_REQUIRED,
+          "entity_type",
+          "resolved normalized entity requires entity_type.",
+        ),
+      );
+    }
+  }
+
+  if (entity.resolution_status === ENTITY_RESOLUTION_STATUSES.UNRECOGNIZED) {
+    if (entity.entity_id !== undefined && entity.entity_id !== null) {
+      errors.push(
+        createError(
+          QUERY_CONTRACT_VALIDATION_CODES.UNRECOGNIZED_ENTITY_ID_FORBIDDEN,
+          "entity_id",
+          "unrecognized normalized entity cannot carry entity_id.",
+        ),
+      );
+    }
+    if (entity.entity_type !== undefined && entity.entity_type !== null) {
+      errors.push(
+        createError(
+          QUERY_CONTRACT_VALIDATION_CODES.UNRECOGNIZED_ENTITY_TYPE_FORBIDDEN,
+          "entity_type",
+          "unrecognized normalized entity cannot carry entity_type.",
+        ),
+      );
+    }
   }
 
   if (entity.entity_id !== undefined && entity.entity_id !== null) {
