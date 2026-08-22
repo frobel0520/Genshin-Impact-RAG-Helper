@@ -270,6 +270,20 @@ trace_id: string
 
 ### 5.5 Maintainer／Evaluator 契約
 
+T10 將 `IngestRequest` 的來源批次驗證固定為以下最小 envelope：
+
+```json
+{
+  "schema_version": 1,
+  "documents": ["SourceDocument"]
+}
+```
+
+- `documents` 必須是非空陣列；單筆欄位沿用 T03 `SourceDocument` validator。
+- 同一批次的 `source_id` 與 `content_hash` 必須唯一；重複值需回傳可分類錯誤。
+- 缺欄位、格式、版本與 `rights_note` 錯誤保留巢狀路徑，供維護者定位批次項目。
+- T10 只做輸入邊界驗證，不執行來源抓取、名稱正規化、法律權利判定或索引建立。
+
 維護與評估命令共用下列最小輸出：
 
 ```text
