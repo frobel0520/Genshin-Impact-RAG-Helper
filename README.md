@@ -19,10 +19,11 @@ For a process without an `.env` file, use `npm run start:local`.
 ## Checks
 
 ```powershell
-npm run lint
-npm test
+npm run check
 ```
 
-The source layout and dependency direction are documented in
-[`src/README.md`](src/README.md). The application currently contains only the
-T01 startup skeleton; domain and RAG contracts arrive in the following Tasks.
+`npm run check` validates JavaScript syntax, module boundaries, and all Node
+tests. The source layout and dependency direction are documented in
+[`src/README.md`](src/README.md). The application currently includes the T01
+startup skeleton and the T02–T09 versioned contracts; ingestion and RAG runtime
+features arrive in later Tasks.

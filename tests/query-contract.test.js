@@ -53,8 +53,14 @@ test("query contract schema documents required, optional, and default fields", (
   assert.deepEqual(QUERY_CONTRACT_SCHEMA.queryRequest.required, QUERY_REQUEST_REQUIRED_FIELDS);
   assert.deepEqual(QUERY_CONTRACT_SCHEMA.queryRequest.optional, QUERY_REQUEST_OPTIONAL_FIELDS);
   assert.deepEqual(QUERY_CONTRACT_SCHEMA.queryRequest.defaults, { locale: DEFAULT_QUERY_LOCALE });
-  assert.deepEqual(QUERY_CONTRACT_SCHEMA.normalizedEntity.required, NORMALIZED_ENTITY_REQUIRED_FIELDS);
-  assert.deepEqual(QUERY_CONTRACT_SCHEMA.normalizedEntity.optional, NORMALIZED_ENTITY_OPTIONAL_FIELDS);
+  assert.deepEqual(
+    QUERY_CONTRACT_SCHEMA.normalizedEntity.required,
+    NORMALIZED_ENTITY_REQUIRED_FIELDS,
+  );
+  assert.deepEqual(
+    QUERY_CONTRACT_SCHEMA.normalizedEntity.optional,
+    NORMALIZED_ENTITY_OPTIONAL_FIELDS,
+  );
   assert.deepEqual(NORMALIZED_ENTITY_FIELDS, [
     ...NORMALIZED_ENTITY_REQUIRED_FIELDS,
     ...NORMALIZED_ENTITY_OPTIONAL_FIELDS,
@@ -150,7 +156,10 @@ test("QueryPlan validates categories, version constraints, retrieval modes, and 
         code: QUERY_CONTRACT_VALIDATION_CODES.INVALID_NORMALIZED_ENTITIES,
         path: "normalized_entities",
       },
-      { code: QUERY_CONTRACT_VALIDATION_CODES.INVALID_VERSION_CONSTRAINT, path: "version_constraint" },
+      {
+        code: QUERY_CONTRACT_VALIDATION_CODES.INVALID_VERSION_CONSTRAINT,
+        path: "version_constraint",
+      },
       { code: QUERY_CONTRACT_VALIDATION_CODES.INVALID_RETRIEVAL_MODE, path: "retrieval_mode" },
       { code: QUERY_CONTRACT_VALIDATION_CODES.INVALID_PLAN_SPOILER_LEVEL, path: "spoiler_level" },
     ],
@@ -177,12 +186,19 @@ test("query assertion helpers preserve identity and do not mutate input", () => 
   const request = structuredClone(fixture.requests[0]);
   const plan = structuredClone(fixture.plans[0]);
   const entity = structuredClone(plan.normalized_entities[0]);
-  const before = { request: structuredClone(request), plan: structuredClone(plan), entity: structuredClone(entity) };
+  const before = {
+    request: structuredClone(request),
+    plan: structuredClone(plan),
+    entity: structuredClone(entity),
+  };
 
   assert.equal(assertQueryRequest(request), request);
   assert.equal(assertQueryPlan(plan), plan);
   assert.equal(assertNormalizedEntity(entity), entity);
   assert.deepEqual({ request, plan, entity }, before);
-  assert.throws(() => applyQueryRequestDefaults({ question: "" }), /question: question must contain/);
+  assert.throws(
+    () => applyQueryRequestDefaults({ question: "" }),
+    /question: question must contain/,
+  );
   assert.throws(() => assertQueryPlan({ ...plan, retrieval_mode: "bad" }), /retrieval_mode/);
 });
