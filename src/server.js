@@ -4,6 +4,29 @@ import { pathToFileURL } from "node:url";
 import { createHttpServer } from "./api/http-server.js";
 import { loadRuntimeConfig } from "./config/runtime-config.js";
 
+const LOOPBACK_HOST = "127.0.0.1";
+
+/**
+ * @typedef {{
+ *   serviceName: string,
+ *   port: number,
+ *   ollamaHost: string,
+ *   generationModel: string,
+ *   embeddingModel: string,
+ * }} RuntimeConfig
+ */
+
+/**
+ * @typedef {{
+ *   config: Readonly<RuntimeConfig>,
+ *   server: import("node:http").Server,
+ * }} Application
+ */
+
+/**
+ * @param {Record<string, string | undefined>} environment
+ * @returns {Application}
+ */
 export function createApplication(environment = process.env) {
   const config = loadRuntimeConfig(environment);
   const server = createHttpServer(config);
@@ -11,16 +34,22 @@ export function createApplication(environment = process.env) {
   return Object.freeze({ config, server });
 }
 
+/**
+ * @param {Record<string, string | undefined>} environment
+ * @returns {Application}
+ */
 export function startServer(environment = process.env) {
   const application = createApplication(environment);
 
   application.server.listen(
     application.config.port,
-    "127.0.0.1",
+    LOOPBACK_HOST,
     () => {
       const address = application.server.address();
-      const port = typeof address === "object" && address ? address.port : application.config.port;
-      console.log(`RAG helper listening at http://127.0.0.1:${port}`);
+      const port = getListeningPort(address, application.config.port);
+      logInfo("server_listening", {
+        url: `http://${LOOPBACK_HOST}:${port}`,
+      });
     },
   );
 
@@ -32,7 +61,10 @@ function registerShutdown(server) {
   const shutdown = (signal) => {
     server.close((error) => {
       if (error) {
-        console.error(`Failed to stop server after ${signal}:`, error);
+        logError("server_shutdown_failed", {
+          error: error.message,
+          signal,
+        });
         process.exitCode = 1;
         return;
       }
@@ -43,6 +75,22 @@ function registerShutdown(server) {
 
   process.once("SIGINT", () => shutdown("SIGINT"));
   process.once("SIGTERM", () => shutdown("SIGTERM"));
+}
+
+function getListeningPort(address, fallbackPort) {
+  if (address && typeof address === "object" && "port" in address) {
+    return address.port;
+  }
+
+  return fallbackPort;
+}
+
+function logInfo(event, details) {
+  console.log(JSON.stringify({ event, level: "info", ...details }));
+}
+
+function logError(event, details) {
+  console.error(JSON.stringify({ event, level: "error", ...details }));
 }
 
 const entryPath = process.argv[1];

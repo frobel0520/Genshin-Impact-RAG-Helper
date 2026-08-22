@@ -10,10 +10,10 @@ test("runtime config uses the fixed local-first defaults", () => {
   const config = loadRuntimeConfig({});
 
   assert.equal(config.serviceName, RUNTIME_DEFAULTS.serviceName);
-  assert.equal(config.port, 3000);
-  assert.equal(config.ollamaHost, "http://127.0.0.1:11434");
-  assert.equal(config.generationModel, "qwen2.5-coder:14b");
-  assert.equal(config.embeddingModel, "bge-m3:latest");
+  assert.equal(config.port, RUNTIME_DEFAULTS.port);
+  assert.equal(config.ollamaHost, RUNTIME_DEFAULTS.ollamaHost);
+  assert.equal(config.generationModel, RUNTIME_DEFAULTS.generationModel);
+  assert.equal(config.embeddingModel, RUNTIME_DEFAULTS.embeddingModel);
 });
 
 test("runtime config accepts an explicit local port and Ollama host", () => {
@@ -27,6 +27,10 @@ test("runtime config accepts an explicit local port and Ollama host", () => {
 });
 
 test("runtime config rejects invalid ports and Ollama hosts", () => {
+  assert.throws(
+    () => loadRuntimeConfig(null),
+    /environment must be a non-array object/,
+  );
   assert.throws(
     () => loadRuntimeConfig({ PORT: "not-a-port" }),
     /PORT must be an integer/,
