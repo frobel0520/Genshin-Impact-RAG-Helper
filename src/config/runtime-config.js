@@ -6,7 +6,22 @@ export const RUNTIME_DEFAULTS = Object.freeze({
   embeddingModel: "bge-m3:latest",
 });
 
+const MIN_PORT = 0;
+const MAX_PORT = 65_535;
+const SUPPORTED_OLLAMA_PROTOCOLS = new Set(["http:", "https:"]);
+const PORT_ERROR_MESSAGE = `PORT must be an integer between ${MIN_PORT} and ${MAX_PORT}.`;
+const OLLAMA_HOST_ERROR_MESSAGE = "OLLAMA_HOST must be a valid http or https URL.";
+const ENVIRONMENT_ERROR_MESSAGE = "environment must be a non-array object.";
+
+/**
+ * @param {Record<string, string | undefined>} environment
+ * @returns {Readonly<typeof RUNTIME_DEFAULTS> & { port: number, ollamaHost: string }}
+ */
 export function loadRuntimeConfig(environment = process.env) {
+  if (environment === null || typeof environment !== "object" || Array.isArray(environment)) {
+    throw new TypeError(ENVIRONMENT_ERROR_MESSAGE);
+  }
+
   const port = parsePort(environment.PORT ?? String(RUNTIME_DEFAULTS.port));
   const ollamaHost = parseOllamaHost(
     environment.OLLAMA_HOST ?? RUNTIME_DEFAULTS.ollamaHost,
@@ -22,12 +37,12 @@ export function loadRuntimeConfig(environment = process.env) {
 function parsePort(rawPort) {
   const value = String(rawPort).trim();
   if (!/^\d+$/.test(value)) {
-    throw new Error("PORT must be an integer between 0 and 65535.");
+    throw new Error(PORT_ERROR_MESSAGE);
   }
 
   const port = Number(value);
-  if (!Number.isSafeInteger(port) || port < 0 || port > 65535) {
-    throw new Error("PORT must be an integer between 0 and 65535.");
+  if (!Number.isSafeInteger(port) || port < MIN_PORT || port > MAX_PORT) {
+    throw new Error(PORT_ERROR_MESSAGE);
   }
 
   return port;
@@ -40,11 +55,11 @@ function parseOllamaHost(rawHost) {
   try {
     parsed = new URL(value);
   } catch {
-    throw new Error("OLLAMA_HOST must be a valid http or https URL.");
+    throw new Error(OLLAMA_HOST_ERROR_MESSAGE);
   }
 
-  if (!parsed.hostname || !["http:", "https:"].includes(parsed.protocol)) {
-    throw new Error("OLLAMA_HOST must be a valid http or https URL.");
+  if (!parsed.hostname || !SUPPORTED_OLLAMA_PROTOCOLS.has(parsed.protocol)) {
+    throw new Error(OLLAMA_HOST_ERROR_MESSAGE);
   }
 
   return parsed.toString().replace(/\/$/, "");

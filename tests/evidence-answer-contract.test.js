@@ -68,8 +68,14 @@ test("EvidenceBundle and AnswerResponse fixtures cover empty evidence and all an
 
 test("evidence/answer schema documents required and optional fields", () => {
   assert.deepEqual(EVIDENCE_ANSWER_SCHEMA.evidenceBundle.required, EVIDENCE_BUNDLE_REQUIRED_FIELDS);
-  assert.deepEqual(EVIDENCE_ANSWER_SCHEMA.evidenceBundle.item.required, EVIDENCE_ITEM_REQUIRED_FIELDS);
-  assert.deepEqual(EVIDENCE_ANSWER_SCHEMA.evidenceBundle.item.optional, EVIDENCE_ITEM_OPTIONAL_FIELDS);
+  assert.deepEqual(
+    EVIDENCE_ANSWER_SCHEMA.evidenceBundle.item.required,
+    EVIDENCE_ITEM_REQUIRED_FIELDS,
+  );
+  assert.deepEqual(
+    EVIDENCE_ANSWER_SCHEMA.evidenceBundle.item.optional,
+    EVIDENCE_ITEM_OPTIONAL_FIELDS,
+  );
   assert.deepEqual(
     EVIDENCE_ANSWER_SCHEMA.evidenceBundle.conflictGroup.required,
     EVIDENCE_CONFLICT_GROUP_REQUIRED_FIELDS,
@@ -273,7 +279,10 @@ test("citations validate traceable source metadata and optional dates/versions",
         code: EVIDENCE_ANSWER_VALIDATION_CODES.INVALID_CITATION_RETRIEVED_AT,
         path: "retrieved_at",
       },
-      { code: EVIDENCE_ANSWER_VALIDATION_CODES.INVALID_CITATION_GAME_VERSION, path: "game_version" },
+      {
+        code: EVIDENCE_ANSWER_VALIDATION_CODES.INVALID_CITATION_GAME_VERSION,
+        path: "game_version",
+      },
     ],
   );
 });

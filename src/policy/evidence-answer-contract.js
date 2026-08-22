@@ -6,6 +6,17 @@ import {
   UNCERTAINTY_REASONS,
   isDomainId,
 } from "../domain/domain-contract.js";
+import {
+  assertValid,
+  createError,
+  invalidDocumentResult,
+  isHttpUrl,
+  isIsoDateTime,
+  isNonEmptyString,
+  isRecord,
+  isStableString,
+  prefixErrors,
+} from "../domain/contract-validation.js";
 
 export const EVIDENCE_ANSWER_SCHEMA_VERSION = 1;
 
@@ -141,8 +152,8 @@ const EVIDENCE_CONFLICT_GROUP_FIELD_SET = new Set(EVIDENCE_CONFLICT_GROUP_FIELDS
 const ANSWER_RESPONSE_FIELD_SET = new Set(ANSWER_RESPONSE_FIELDS);
 const CITATION_FIELD_SET = new Set(CITATION_FIELDS);
 const CONFLICT_GROUP_ID_PATTERN = /^conflict:[a-z0-9][a-z0-9._-]*$/;
-const ISO_DATETIME_PATTERN =
-  /^\d{4}-\d{2}-\d{2}T(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d{1,3})?(?:Z|[+-](?:0\d|1\d):[0-5]\d)$/;
+
+/** @typedef {import("../domain/contract-validation.js").ValidationResult} ValidationResult */
 
 export const EVIDENCE_ANSWER_SCHEMA = Object.freeze({
   version: EVIDENCE_ANSWER_SCHEMA_VERSION,
@@ -182,11 +193,18 @@ export const EVIDENCE_ANSWER_SCHEMA = Object.freeze({
  * Empty items are valid because refusal and insufficient-evidence paths still need
  * a bundle that can be linked to the query.
  */
+/**
+ * @param {unknown} bundle
+ * @returns {ValidationResult}
+ */
 export function validateEvidenceBundle(bundle) {
   const errors = [];
 
   if (!isRecord(bundle)) {
-    return invalidDocumentResult("EvidenceBundle must be a plain object.");
+    return invalidDocumentResult(
+      EVIDENCE_ANSWER_VALIDATION_CODES.INVALID_DOCUMENT,
+      "EvidenceBundle must be a plain object.",
+    );
   }
 
   collectUnknownFields(bundle, EVIDENCE_BUNDLE_FIELD_SET, errors);
@@ -271,11 +289,18 @@ export function validateEvidenceBundle(bundle) {
   return errors.length === 0 ? { ok: true, value: bundle } : { ok: false, errors };
 }
 
+/**
+ * @param {unknown} item
+ * @returns {ValidationResult}
+ */
 export function validateEvidenceItem(item) {
   const errors = [];
 
   if (!isRecord(item)) {
-    return invalidDocumentResult("Evidence item must be a plain object.");
+    return invalidDocumentResult(
+      EVIDENCE_ANSWER_VALIDATION_CODES.INVALID_DOCUMENT,
+      "Evidence item must be a plain object.",
+    );
   }
 
   collectUnknownFields(item, EVIDENCE_ITEM_FIELD_SET, errors);
@@ -330,7 +355,7 @@ export function validateEvidenceItem(item) {
     EVIDENCE_ANSWER_VALIDATION_CODES.INVALID_SOURCE_PUBLISHED_AT,
     errors,
   );
-  validateRequiredTimestamp(
+  validateOptionalTimestamp(
     item,
     "source_retrieved_at",
     EVIDENCE_ANSWER_VALIDATION_CODES.INVALID_SOURCE_RETRIEVED_AT,
@@ -398,11 +423,18 @@ export function validateEvidenceItem(item) {
   return errors.length === 0 ? { ok: true, value: item } : { ok: false, errors };
 }
 
+/**
+ * @param {unknown} group
+ * @returns {ValidationResult}
+ */
 export function validateEvidenceConflictGroup(group) {
   const errors = [];
 
   if (!isRecord(group)) {
-    return invalidDocumentResult("Evidence conflict group must be a plain object.");
+    return invalidDocumentResult(
+      EVIDENCE_ANSWER_VALIDATION_CODES.INVALID_DOCUMENT,
+      "Evidence conflict group must be a plain object.",
+    );
   }
 
   collectUnknownFields(group, EVIDENCE_CONFLICT_GROUP_FIELD_SET, errors);
@@ -456,11 +488,18 @@ export function validateEvidenceConflictGroup(group) {
   return errors.length === 0 ? { ok: true, value: group } : { ok: false, errors };
 }
 
+/**
+ * @param {unknown} response
+ * @returns {ValidationResult}
+ */
 export function validateAnswerResponse(response) {
   const errors = [];
 
   if (!isRecord(response)) {
-    return invalidDocumentResult("AnswerResponse must be a plain object.");
+    return invalidDocumentResult(
+      EVIDENCE_ANSWER_VALIDATION_CODES.INVALID_DOCUMENT,
+      "AnswerResponse must be a plain object.",
+    );
   }
 
   collectUnknownFields(response, ANSWER_RESPONSE_FIELD_SET, errors);
@@ -468,7 +507,8 @@ export function validateAnswerResponse(response) {
 
   if (
     response.answer_status !== undefined &&
-    (typeof response.answer_status !== "string" || !ANSWER_STATUS_VALUES.has(response.answer_status))
+    (typeof response.answer_status !== "string" ||
+      !ANSWER_STATUS_VALUES.has(response.answer_status))
   ) {
     errors.push(
       createError(
@@ -491,7 +531,8 @@ export function validateAnswerResponse(response) {
 
   if (
     response.query_category !== undefined &&
-    (typeof response.query_category !== "string" || !QUERY_CATEGORY_VALUES.has(response.query_category))
+    (typeof response.query_category !== "string" ||
+      !QUERY_CATEGORY_VALUES.has(response.query_category))
   ) {
     errors.push(
       createError(
@@ -592,11 +633,18 @@ export function validateAnswerResponse(response) {
   return errors.length === 0 ? { ok: true, value: response } : { ok: false, errors };
 }
 
+/**
+ * @param {unknown} citation
+ * @returns {ValidationResult}
+ */
 export function validateCitation(citation) {
   const errors = [];
 
   if (!isRecord(citation)) {
-    return invalidDocumentResult("Citation must be a plain object.");
+    return invalidDocumentResult(
+      EVIDENCE_ANSWER_VALIDATION_CODES.INVALID_DOCUMENT,
+      "Citation must be a plain object.",
+    );
   }
 
   collectUnknownFields(citation, CITATION_FIELD_SET, errors);
@@ -661,42 +709,87 @@ export function validateCitation(citation) {
   return errors.length === 0 ? { ok: true, value: citation } : { ok: false, errors };
 }
 
+/**
+ * @param {unknown} bundle
+ * @returns {boolean}
+ */
 export function isEvidenceBundle(bundle) {
   return validateEvidenceBundle(bundle).ok;
 }
 
+/**
+ * @param {unknown} item
+ * @returns {boolean}
+ */
 export function isEvidenceItem(item) {
   return validateEvidenceItem(item).ok;
 }
 
+/**
+ * @param {unknown} group
+ * @returns {boolean}
+ */
 export function isEvidenceConflictGroup(group) {
   return validateEvidenceConflictGroup(group).ok;
 }
 
+/**
+ * @param {unknown} response
+ * @returns {boolean}
+ */
 export function isAnswerResponse(response) {
   return validateAnswerResponse(response).ok;
 }
 
+/**
+ * @param {unknown} citation
+ * @returns {boolean}
+ */
 export function isCitation(citation) {
   return validateCitation(citation).ok;
 }
 
+/**
+ * @param {unknown} bundle
+ * @returns {unknown}
+ * @throws {TypeError} when validation fails
+ */
 export function assertEvidenceBundle(bundle) {
   return assertValid(validateEvidenceBundle(bundle), "EvidenceBundle");
 }
 
+/**
+ * @param {unknown} item
+ * @returns {unknown}
+ * @throws {TypeError} when validation fails
+ */
 export function assertEvidenceItem(item) {
   return assertValid(validateEvidenceItem(item), "Evidence item");
 }
 
+/**
+ * @param {unknown} group
+ * @returns {unknown}
+ * @throws {TypeError} when validation fails
+ */
 export function assertEvidenceConflictGroup(group) {
   return assertValid(validateEvidenceConflictGroup(group), "Evidence conflict group");
 }
 
+/**
+ * @param {unknown} response
+ * @returns {unknown}
+ * @throws {TypeError} when validation fails
+ */
 export function assertAnswerResponse(response) {
   return assertValid(validateAnswerResponse(response), "AnswerResponse");
 }
 
+/**
+ * @param {unknown} citation
+ * @returns {unknown}
+ * @throws {TypeError} when validation fails
+ */
 export function assertCitation(citation) {
   return assertValid(validateCitation(citation), "Citation");
 }
@@ -708,18 +801,6 @@ function validateOptionalDomainId(value, field, kind, code, description, errors)
 }
 
 function validateOptionalTimestamp(value, field, code, errors) {
-  if (value[field] !== undefined && !isIsoDateTime(value[field])) {
-    errors.push(
-      createError(
-        code,
-        field,
-        `${field} must be an ISO 8601 date-time with an explicit timezone.`,
-      ),
-    );
-  }
-}
-
-function validateRequiredTimestamp(value, field, code, errors) {
   if (value[field] !== undefined && !isIsoDateTime(value[field])) {
     errors.push(
       createError(
@@ -757,76 +838,6 @@ function collectMissingFields(value, fields, errors) {
       );
     }
   }
-}
-
-function prefixErrors(errors, prefix) {
-  return errors.map((error) => ({ ...error, path: `${prefix}.${error.path}` }));
-}
-
-function invalidDocumentResult(message) {
-  return {
-    ok: false,
-    errors: [
-      createError(EVIDENCE_ANSWER_VALIDATION_CODES.INVALID_DOCUMENT, "$", message),
-    ],
-  };
-}
-
-function assertValid(result, label) {
-  if (!result.ok) {
-    const message = result.errors.map(({ path, message: detail }) => `${path}: ${detail}`).join(" ");
-    throw new TypeError(`Invalid ${label}. ${message}`);
-  }
-
-  return result.value;
-}
-
-function createError(code, path, message) {
-  return { code, path, message };
-}
-
-function isRecord(value) {
-  return value !== null && typeof value === "object" && !Array.isArray(value);
-}
-
-function isNonEmptyString(value) {
-  return typeof value === "string" && value.trim().length > 0;
-}
-
-function isStableString(value) {
-  return isNonEmptyString(value) && value.trim() === value;
-}
-
-function isHttpUrl(value) {
-  if (typeof value !== "string" || value.trim() !== value || value.length === 0) {
-    return false;
-  }
-
-  try {
-    const url = new URL(value);
-    return url.protocol === "http:" || url.protocol === "https:";
-  } catch {
-    return false;
-  }
-}
-
-function isIsoDateTime(value) {
-  if (typeof value !== "string" || !ISO_DATETIME_PATTERN.test(value)) {
-    return false;
-  }
-
-  const parsed = Date.parse(value);
-  if (Number.isNaN(parsed)) {
-    return false;
-  }
-
-  const [year, month, day] = value.slice(0, 10).split("-").map(Number);
-  const calendarDate = new Date(Date.UTC(year, month - 1, day));
-  return (
-    calendarDate.getUTCFullYear() === year &&
-    calendarDate.getUTCMonth() === month - 1 &&
-    calendarDate.getUTCDate() === day
-  );
 }
 
 function isConflictGroupId(value) {

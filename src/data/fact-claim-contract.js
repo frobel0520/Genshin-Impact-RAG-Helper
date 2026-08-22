@@ -6,6 +6,14 @@ import {
   VERSION_STATUSES,
   isDomainId,
 } from "../domain/domain-contract.js";
+import {
+  assertValid,
+  createError,
+  invalidDocumentResult,
+  isJsonValue,
+  isRecord,
+  isStableString,
+} from "../domain/contract-validation.js";
 
 export const FACT_CLAIM_SCHEMA_VERSION = 1;
 
@@ -85,11 +93,20 @@ const CONFLICT_GROUP_FIELD_SET = new Set(CONFLICT_GROUP_REQUIRED_FIELDS);
 const CONFLICT_GROUP_ID_PATTERN = /^conflict:[a-z0-9][a-z0-9._-]*$/;
 const VERSION_RANGE_PATTERN = /^\S+\s*(?:\.\.|-|–|—|to)\s*\S+$/iu;
 
+/** @typedef {import("../domain/contract-validation.js").ValidationResult} ValidationResult */
+
+/**
+ * @param {unknown} fact
+ * @returns {ValidationResult}
+ */
 export function validateStructuredFact(fact) {
   const errors = [];
 
   if (!isRecord(fact)) {
-    return invalidDocumentResult("StructuredFact must be a plain object.");
+    return invalidDocumentResult(
+      FACT_CLAIM_VALIDATION_CODES.INVALID_DOCUMENT,
+      "StructuredFact must be a plain object.",
+    );
   }
 
   collectUnknownFields(fact, STRUCTURED_FACT_FIELD_SET, errors);
@@ -135,7 +152,7 @@ export function validateStructuredFact(fact) {
     );
   }
 
-  if (fact.unit !== undefined && fact.unit !== null && !isName(fact.unit)) {
+  if (fact.unit !== undefined && fact.unit !== null && !isStableString(fact.unit)) {
     errors.push(
       createError(
         FACT_CLAIM_VALIDATION_CODES.INVALID_UNIT,
@@ -181,11 +198,18 @@ export function validateStructuredFact(fact) {
   return errors.length === 0 ? { ok: true, value: fact } : { ok: false, errors };
 }
 
+/**
+ * @param {unknown} claim
+ * @returns {ValidationResult}
+ */
 export function validateClaim(claim) {
   const errors = [];
 
   if (!isRecord(claim)) {
-    return invalidDocumentResult("Claim must be a plain object.");
+    return invalidDocumentResult(
+      FACT_CLAIM_VALIDATION_CODES.INVALID_DOCUMENT,
+      "Claim must be a plain object.",
+    );
   }
 
   collectUnknownFields(claim, CLAIM_FIELD_SET, errors);
@@ -221,7 +245,7 @@ export function validateClaim(claim) {
     );
   }
 
-  if (claim.claim_text !== undefined && !isName(claim.claim_text)) {
+  if (claim.claim_text !== undefined && !isStableString(claim.claim_text)) {
     errors.push(
       createError(
         FACT_CLAIM_VALIDATION_CODES.INVALID_CLAIM_TEXT,
@@ -281,11 +305,18 @@ export function validateClaim(claim) {
   return errors.length === 0 ? { ok: true, value: claim } : { ok: false, errors };
 }
 
+/**
+ * @param {unknown} group
+ * @returns {ValidationResult}
+ */
 export function validateConflictGroup(group) {
   const errors = [];
 
   if (!isRecord(group)) {
-    return invalidDocumentResult("Conflict group must be a plain object.");
+    return invalidDocumentResult(
+      FACT_CLAIM_VALIDATION_CODES.INVALID_DOCUMENT,
+      "Conflict group must be a plain object.",
+    );
   }
 
   collectUnknownFields(group, CONFLICT_GROUP_FIELD_SET, errors);
@@ -339,30 +370,62 @@ export function validateConflictGroup(group) {
   return errors.length === 0 ? { ok: true, value: group } : { ok: false, errors };
 }
 
+/**
+ * @param {unknown} fact
+ * @returns {boolean}
+ */
 export function isStructuredFact(fact) {
   return validateStructuredFact(fact).ok;
 }
 
+/**
+ * @param {unknown} claim
+ * @returns {boolean}
+ */
 export function isClaim(claim) {
   return validateClaim(claim).ok;
 }
 
+/**
+ * @param {unknown} group
+ * @returns {boolean}
+ */
 export function isConflictGroup(group) {
   return validateConflictGroup(group).ok;
 }
 
+/**
+ * @param {unknown} fact
+ * @returns {unknown}
+ * @throws {TypeError} when validation fails
+ */
 export function assertStructuredFact(fact) {
   return assertValid(validateStructuredFact(fact), "StructuredFact");
 }
 
+/**
+ * @param {unknown} claim
+ * @returns {unknown}
+ * @throws {TypeError} when validation fails
+ */
 export function assertClaim(claim) {
   return assertValid(validateClaim(claim), "Claim");
 }
 
+/**
+ * @param {unknown} group
+ * @returns {unknown}
+ * @throws {TypeError} when validation fails
+ */
 export function assertConflictGroup(group) {
   return assertValid(validateConflictGroup(group), "Conflict group");
 }
 
+/**
+ * @param {unknown} key
+ * @returns {string}
+ * @throws {TypeError} when key is missing or cannot form an ID
+ */
 export function createConflictGroupId(key) {
   if (key === undefined || key === null) {
     throw new TypeError("Conflict group key is required.");
@@ -381,10 +444,18 @@ export function createConflictGroupId(key) {
   return `${CONFLICT_GROUP_ID_PREFIX}:${normalizedKey}`;
 }
 
+/**
+ * @param {unknown} value
+ * @returns {boolean}
+ */
 export function isConflictGroupId(value) {
   return typeof value === "string" && CONFLICT_GROUP_ID_PATTERN.test(value);
 }
 
+/**
+ * @param {unknown} gameVersion
+ * @returns {string | undefined}
+ */
 export function classifyGameVersion(gameVersion) {
   if (!isGameVersion(gameVersion)) {
     return undefined;
@@ -399,6 +470,11 @@ export function classifyGameVersion(gameVersion) {
 
 export const getGameVersionStatus = classifyGameVersion;
 
+/**
+ * @param {unknown} sourceKind
+ * @returns {number}
+ * @throws {TypeError} when source kind is unsupported
+ */
 export function authorityRankForSourceKind(sourceKind) {
   const rank = AUTHORITY_RANKS[sourceKind];
   if (rank === undefined) {
@@ -407,10 +483,20 @@ export function authorityRankForSourceKind(sourceKind) {
   return rank;
 }
 
+/**
+ * @param {unknown} sourceKind
+ * @param {unknown} authorityRank
+ * @returns {boolean}
+ */
 export function hasMatchingAuthorityRank(sourceKind, authorityRank) {
   return AUTHORITY_RANKS[sourceKind] === authorityRank;
 }
 
+/**
+ * @param {unknown} claim
+ * @returns {string}
+ * @throws {TypeError} when claim is not an object
+ */
 export function getClaimScopeKey(claim) {
   if (!isRecord(claim)) {
     throw new TypeError("Claim is required to build a scope key.");
@@ -418,6 +504,11 @@ export function getClaimScopeKey(claim) {
   return JSON.stringify([claim.claim_key, claim.entity_id, claim.game_version]);
 }
 
+/**
+ * @param {unknown} left
+ * @param {unknown} right
+ * @returns {boolean}
+ */
 export function claimsShareScope(left, right) {
   return getClaimScopeKey(left) === getClaimScopeKey(right);
 }
@@ -427,6 +518,12 @@ export function claimsShareScope(left, right) {
  * publication/retrieval timestamps, then stable IDs for deterministic ties.
  * sourceDocuments may be an array, Map, or object keyed by source_id.
  */
+/**
+ * @param {unknown[]} claims
+ * @param {unknown} sourceDocuments
+ * @returns {unknown[]}
+ * @throws {TypeError} when claims is not an array
+ */
 export function sortClaims(claims, sourceDocuments = []) {
   if (!Array.isArray(claims)) {
     throw new TypeError("claims must be an array.");
@@ -435,6 +532,12 @@ export function sortClaims(claims, sourceDocuments = []) {
   return [...claims].sort((left, right) => compareClaims(left, right, sourceDocuments));
 }
 
+/**
+ * @param {Record<string, unknown>} left
+ * @param {Record<string, unknown>} right
+ * @param {unknown} sourceDocuments
+ * @returns {number}
+ */
 export function compareClaims(left, right, sourceDocuments = []) {
   const authorityDifference = left.authority_rank - right.authority_rank;
   if (authorityDifference !== 0) {
@@ -466,6 +569,11 @@ export function compareClaims(left, right, sourceDocuments = []) {
 /**
  * Build conflict groups only for same-scope claims with differing text. The
  * function returns new group records and never mutates the input claims.
+ */
+/**
+ * @param {Record<string, unknown>[]} claims
+ * @returns {Record<string, unknown>[]}
+ * @throws {TypeError} when claims is not an array
  */
 export function buildConflictGroups(claims) {
   if (!Array.isArray(claims)) {
@@ -567,70 +675,10 @@ function collectMissingFields(value, fields, errors) {
   }
 }
 
-function invalidDocumentResult(message) {
-  return {
-    ok: false,
-    errors: [
-      createError(FACT_CLAIM_VALIDATION_CODES.INVALID_DOCUMENT, "$", message),
-    ],
-  };
-}
-
-function assertValid(result, label) {
-  if (!result.ok) {
-    const message = result.errors.map(({ path, message: detail }) => `${path}: ${detail}`).join(" ");
-    throw new TypeError(`Invalid ${label}. ${message}`);
-  }
-  return result.value;
-}
-
-function createError(code, path, message) {
-  return { code, path, message };
-}
-
-function isRecord(value) {
-  return value !== null && typeof value === "object" && !Array.isArray(value);
-}
-
-function isName(value) {
-  return typeof value === "string" && value.trim().length > 0 && value.trim() === value;
-}
-
 function isKey(value) {
-  return isName(value) && !/\s/u.test(value);
+  return isStableString(value) && !/\s/u.test(value);
 }
 
 function isGameVersion(value) {
-  return isName(value);
-}
-
-function isJsonValue(value, ancestors = new Set()) {
-  if (value === null) {
-    return true;
-  }
-
-  if (typeof value === "string" || typeof value === "boolean") {
-    return true;
-  }
-
-  if (typeof value === "number") {
-    return Number.isFinite(value);
-  }
-
-  if (typeof value !== "object" || ancestors.has(value)) {
-    return false;
-  }
-
-  ancestors.add(value);
-  let valid;
-  if (Array.isArray(value)) {
-    valid = value.every((item) => isJsonValue(item, ancestors));
-  } else {
-    const prototype = Object.getPrototypeOf(value);
-    valid =
-      (prototype === Object.prototype || prototype === null) &&
-      Object.values(value).every((item) => isJsonValue(item, ancestors));
-  }
-  ancestors.delete(value);
-  return valid;
+  return isStableString(value);
 }

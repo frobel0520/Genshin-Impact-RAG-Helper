@@ -1,4 +1,13 @@
 import { isDomainId, SOURCE_KINDS } from "../domain/domain-contract.js";
+import {
+  assertValid,
+  createError,
+  invalidDocumentResult,
+  isHttpUrl,
+  isIsoDateTime,
+  isNonEmptyString,
+  isRecord,
+} from "../domain/contract-validation.js";
 
 export const SOURCE_DOCUMENT_SCHEMA_VERSION = 1;
 
@@ -51,28 +60,24 @@ export const SOURCE_DOCUMENT_SCHEMA = Object.freeze({
 
 const SOURCE_KIND_VALUES = new Set(Object.values(SOURCE_KINDS));
 const SOURCE_DOCUMENT_FIELD_SET = new Set(SOURCE_DOCUMENT_FIELDS);
-const ISO_DATETIME_PATTERN =
-  /^\d{4}-\d{2}-\d{2}T(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d{1,3})?(?:Z|[+-](?:0\d|1\d):[0-5]\d)$/;
 const SHA256_HEX_PATTERN = /^[a-f0-9]{64}$/;
+
+/** @typedef {import("../domain/contract-validation.js").ValidationResult} ValidationResult */
 
 /**
  * Validate the metadata needed to trace a source document or snapshot.
  * Validation is deliberately non-mutating; ingest normalization belongs to T10/T11.
+ * @param {unknown} document
+ * @returns {ValidationResult}
  */
 export function validateSourceDocument(document) {
   const errors = [];
 
   if (!isRecord(document)) {
-    return {
-      ok: false,
-      errors: [
-        createError(
-          SOURCE_DOCUMENT_VALIDATION_CODES.INVALID_DOCUMENT,
-          "$",
-          "SourceDocument must be a plain object.",
-        ),
-      ],
-    };
+    return invalidDocumentResult(
+      SOURCE_DOCUMENT_VALIDATION_CODES.INVALID_DOCUMENT,
+      "SourceDocument must be a plain object.",
+    );
   }
 
   for (const field of Object.keys(document)) {
@@ -199,60 +204,20 @@ export function validateSourceDocument(document) {
     : { ok: false, errors };
 }
 
+/**
+ * @param {unknown} document
+ * @returns {boolean}
+ */
 export function isSourceDocument(document) {
   return validateSourceDocument(document).ok;
 }
 
+/**
+ * @param {unknown} document
+ * @returns {unknown}
+ * @throws {TypeError} when validation fails
+ */
 export function assertSourceDocument(document) {
   const result = validateSourceDocument(document);
-  if (!result.ok) {
-    const message = result.errors.map(({ path, message: detail }) => `${path}: ${detail}`).join(" ");
-    throw new TypeError(`Invalid SourceDocument. ${message}`);
-  }
-
-  return result.value;
-}
-
-function createError(code, path, message) {
-  return { code, path, message };
-}
-
-function isRecord(value) {
-  return value !== null && typeof value === "object" && !Array.isArray(value);
-}
-
-function isNonEmptyString(value) {
-  return typeof value === "string" && value.trim().length > 0;
-}
-
-function isHttpUrl(value) {
-  if (typeof value !== "string" || value.trim() !== value || value.length === 0) {
-    return false;
-  }
-
-  try {
-    const url = new URL(value);
-    return url.protocol === "http:" || url.protocol === "https:";
-  } catch {
-    return false;
-  }
-}
-
-function isIsoDateTime(value) {
-  if (typeof value !== "string" || !ISO_DATETIME_PATTERN.test(value)) {
-    return false;
-  }
-
-  const parsed = Date.parse(value);
-  if (Number.isNaN(parsed)) {
-    return false;
-  }
-
-  const [year, month, day] = value.slice(0, 10).split("-").map(Number);
-  const calendarDate = new Date(Date.UTC(year, month - 1, day));
-  return (
-    calendarDate.getUTCFullYear() === year &&
-    calendarDate.getUTCMonth() === month - 1 &&
-    calendarDate.getUTCDate() === day
-  );
+  return assertValid(result, "SourceDocument");
 }
