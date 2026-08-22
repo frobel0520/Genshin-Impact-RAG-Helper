@@ -13,6 +13,18 @@ import {
   validateCitation,
   validateEvidenceItem,
 } from "../policy/evidence-answer-contract.js";
+import {
+  assertValid,
+  createError,
+  invalidDocumentResult,
+  isHttpUrl,
+  isIsoDateTime,
+  isNonEmptyString,
+  isRecord,
+  isStableString,
+  isJsonValue,
+  prefixErrors,
+} from "../domain/contract-validation.js";
 
 export const EVALUATION_CONTRACT_SCHEMA_VERSION = 1;
 
@@ -174,8 +186,8 @@ const EVAL_CASE_FIELD_SET = new Set(EVAL_CASE_FIELDS);
 const EVAL_RESULT_FIELD_SET = new Set(EVAL_RESULT_FIELDS);
 const EXPECTED_SOURCE_FIELD_SET = new Set(EXPECTED_SOURCE_FIELDS);
 const HUMAN_REVIEW_FIELD_SET = new Set(HUMAN_REVIEW_FIELDS);
-const ISO_DATETIME_PATTERN =
-  /^\d{4}-\d{2}-\d{2}T(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d{1,3})?(?:Z|[+-](?:0\d|1\d):[0-5]\d)$/;
+
+/** @typedef {import("../domain/contract-validation.js").ValidationResult} ValidationResult */
 
 export const EVALUATION_CONTRACT_SCHEMA = Object.freeze({
   version: EVALUATION_CONTRACT_SCHEMA_VERSION,
@@ -185,7 +197,9 @@ export const EVALUATION_CONTRACT_SCHEMA = Object.freeze({
     categoryValues: Object.freeze([...EVAL_CATEGORY_VALUES]),
     queryTypeValues: Object.freeze([...QUERY_TYPE_VALUES]),
     answerabilityValues: Object.freeze([...ANSWERABILITY_VALUES]),
-    requiredFacts: "non-empty JSON-compatible entries for answerable cases; [] allowed for refusal cases",
+    requiredFacts:
+      "non-empty JSON-compatible entries for answerable cases; " +
+      "[] allowed for refusal cases",
     expectedAnswer: "JSON-compatible answer text or answer skeleton",
     expectedSources: "non-empty string or { source_kind?, source_url? }[] for answerable cases",
   }),
@@ -203,11 +217,18 @@ export const EVALUATION_CONTRACT_SCHEMA = Object.freeze({
   metricLabels: EVAL_METRIC_LABEL_VALUES,
 });
 
+/**
+ * @param {unknown} evalCase
+ * @returns {ValidationResult}
+ */
 export function validateEvalCase(evalCase) {
   const errors = [];
 
   if (!isRecord(evalCase)) {
-    return invalidDocumentResult("EvalCase must be a plain object.");
+    return invalidDocumentResult(
+      EVALUATION_VALIDATION_CODES.INVALID_DOCUMENT,
+      "EvalCase must be a plain object.",
+    );
   }
 
   collectUnknownFields(evalCase, EVAL_CASE_FIELD_SET, errors);
@@ -261,7 +282,8 @@ export function validateEvalCase(evalCase) {
 
   if (
     evalCase.answerability !== undefined &&
-    (typeof evalCase.answerability !== "string" || !ANSWERABILITY_VALUES.has(evalCase.answerability))
+    (typeof evalCase.answerability !== "string" ||
+      !ANSWERABILITY_VALUES.has(evalCase.answerability))
   ) {
     errors.push(
       createError(
@@ -321,7 +343,8 @@ export function validateEvalCase(evalCase) {
 
   if (
     evalCase.refusal_reason !== undefined &&
-    (typeof evalCase.refusal_reason !== "string" || !REFUSAL_REASON_VALUES.has(evalCase.refusal_reason))
+    (typeof evalCase.refusal_reason !== "string" ||
+      !REFUSAL_REASON_VALUES.has(evalCase.refusal_reason))
   ) {
     errors.push(
       createError(
@@ -344,7 +367,8 @@ export function validateEvalCase(evalCase) {
 
   if (
     evalCase.spoiler_level !== undefined &&
-    (typeof evalCase.spoiler_level !== "string" || !SPOILER_LEVEL_VALUES.has(evalCase.spoiler_level))
+    (typeof evalCase.spoiler_level !== "string" ||
+      !SPOILER_LEVEL_VALUES.has(evalCase.spoiler_level))
   ) {
     errors.push(
       createError(
@@ -368,11 +392,18 @@ export function validateEvalCase(evalCase) {
   return errors.length === 0 ? { ok: true, value: evalCase } : { ok: false, errors };
 }
 
+/**
+ * @param {unknown} result
+ * @returns {ValidationResult}
+ */
 export function validateEvalResult(result) {
   const errors = [];
 
   if (!isRecord(result)) {
-    return invalidDocumentResult("EvalResult must be a plain object.");
+    return invalidDocumentResult(
+      EVALUATION_VALIDATION_CODES.INVALID_DOCUMENT,
+      "EvalResult must be a plain object.",
+    );
   }
 
   collectUnknownFields(result, EVAL_RESULT_FIELD_SET, errors);
@@ -445,6 +476,11 @@ export function validateEvalResult(result) {
   return errors.length === 0 ? { ok: true, value: result } : { ok: false, errors };
 }
 
+/**
+ * @param {unknown} sources
+ * @param {import("../domain/contract-validation.js").ValidationError[]} errors
+ * @returns {import("../domain/contract-validation.js").ValidationError[]}
+ */
 export function validateExpectedSources(sources, errors = []) {
   if (!Array.isArray(sources) || sources.length === 0) {
     errors.push(
@@ -464,6 +500,10 @@ export function validateExpectedSources(sources, errors = []) {
   return errors;
 }
 
+/**
+ * @param {unknown} source
+ * @returns {import("../domain/contract-validation.js").ValidationError[]}
+ */
 export function validateExpectedSource(source) {
   const errors = [];
 
@@ -519,6 +559,10 @@ export function validateExpectedSource(source) {
   return errors;
 }
 
+/**
+ * @param {unknown} labels
+ * @returns {import("../domain/contract-validation.js").ValidationError[]}
+ */
 export function validateMetricLabels(labels) {
   const errors = [];
 
@@ -567,6 +611,10 @@ export function validateMetricLabels(labels) {
   return errors;
 }
 
+/**
+ * @param {unknown} review
+ * @returns {import("../domain/contract-validation.js").ValidationError[]}
+ */
 export function validateHumanReview(review) {
   const errors = [];
 
@@ -645,18 +693,36 @@ export function validateHumanReview(review) {
   return errors;
 }
 
+/**
+ * @param {unknown} evalCase
+ * @returns {boolean}
+ */
 export function isEvalCase(evalCase) {
   return validateEvalCase(evalCase).ok;
 }
 
+/**
+ * @param {unknown} result
+ * @returns {boolean}
+ */
 export function isEvalResult(result) {
   return validateEvalResult(result).ok;
 }
 
+/**
+ * @param {unknown} evalCase
+ * @returns {unknown}
+ * @throws {TypeError} when validation fails
+ */
 export function assertEvalCase(evalCase) {
   return assertValid(validateEvalCase(evalCase), "EvalCase");
 }
 
+/**
+ * @param {unknown} result
+ * @returns {unknown}
+ * @throws {TypeError} when validation fails
+ */
 export function assertEvalResult(result) {
   return assertValid(validateEvalResult(result), "EvalResult");
 }
@@ -772,92 +838,6 @@ function collectMissingFields(value, fields, errors) {
   }
 }
 
-function prefixErrors(errors, prefix) {
-  return errors.map((error) => ({ ...error, path: `${prefix}.${error.path}` }));
-}
-
-function invalidDocumentResult(message) {
-  return {
-    ok: false,
-    errors: [
-      createError(EVALUATION_VALIDATION_CODES.INVALID_DOCUMENT, "$", message),
-    ],
-  };
-}
-
-function assertValid(result, label) {
-  if (!result.ok) {
-    const message = result.errors.map(({ path, message: detail }) => `${path}: ${detail}`).join(" ");
-    throw new TypeError(`Invalid ${label}. ${message}`);
-  }
-
-  return result.value;
-}
-
-function createError(code, path, message) {
-  return { code, path, message };
-}
-
-function isRecord(value) {
-  return value !== null && typeof value === "object" && !Array.isArray(value);
-}
-
-function isNonEmptyString(value) {
-  return typeof value === "string" && value.trim().length > 0;
-}
-
-function isStableString(value) {
-  return isNonEmptyString(value) && value.trim() === value;
-}
-
 function isMeaningfulJsonValue(value) {
   return value !== null && isJsonValue(value);
-}
-
-function isJsonValue(value) {
-  if (value === null || typeof value === "string" || typeof value === "boolean") {
-    return true;
-  }
-  if (typeof value === "number") {
-    return Number.isFinite(value);
-  }
-  if (Array.isArray(value)) {
-    return value.every((entry) => isJsonValue(entry));
-  }
-  if (isRecord(value)) {
-    return Object.values(value).every((entry) => isJsonValue(entry));
-  }
-  return false;
-}
-
-function isHttpUrl(value) {
-  if (typeof value !== "string" || value.trim() !== value || value.length === 0) {
-    return false;
-  }
-
-  try {
-    const url = new URL(value);
-    return url.protocol === "http:" || url.protocol === "https:";
-  } catch {
-    return false;
-  }
-}
-
-function isIsoDateTime(value) {
-  if (typeof value !== "string" || !ISO_DATETIME_PATTERN.test(value)) {
-    return false;
-  }
-
-  const parsed = Date.parse(value);
-  if (Number.isNaN(parsed)) {
-    return false;
-  }
-
-  const [year, month, day] = value.slice(0, 10).split("-").map(Number);
-  const calendarDate = new Date(Date.UTC(year, month - 1, day));
-  return (
-    calendarDate.getUTCFullYear() === year &&
-    calendarDate.getUTCMonth() === month - 1 &&
-    calendarDate.getUTCDate() === day
-  );
 }
