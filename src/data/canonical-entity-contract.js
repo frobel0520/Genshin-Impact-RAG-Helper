@@ -1,4 +1,11 @@
 import { ENTITY_TYPES, isDomainId } from "../domain/domain-contract.js";
+import {
+  assertValid,
+  createError,
+  invalidDocumentResult,
+  isRecord,
+  isStableString,
+} from "../domain/contract-validation.js";
 
 export const CANONICAL_ENTITY_SCHEMA_VERSION = 1;
 
@@ -73,15 +80,23 @@ const ENTITY_RESOLUTION_STATUS_VALUES = new Set(Object.values(ENTITY_RESOLUTION_
 const CANONICAL_ENTITY_FIELD_SET = new Set(CANONICAL_ENTITY_FIELDS);
 const ENTITY_RESOLUTION_FIELD_SET = new Set(ENTITY_RESOLUTION_FIELDS);
 
+/** @typedef {import("../domain/contract-validation.js").ValidationResult} ValidationResult */
+
 /**
  * Validate a resolved CanonicalEntity. Name normalization is intentionally
  * not performed here; the normalizer in T11 must preserve source text.
+ *
+ * @param {unknown} entity
+ * @returns {ValidationResult}
  */
 export function validateCanonicalEntity(entity) {
   const errors = [];
 
   if (!isRecord(entity)) {
-    return invalidDocumentResult("CanonicalEntity must be a plain object.");
+    return invalidDocumentResult(
+      ENTITY_CONTRACT_VALIDATION_CODES.INVALID_DOCUMENT,
+      "CanonicalEntity must be a plain object.",
+    );
   }
 
   collectUnknownFields(entity, CANONICAL_ENTITY_FIELD_SET, errors);
@@ -110,7 +125,7 @@ export function validateCanonicalEntity(entity) {
     );
   }
 
-  if (entity.canonical_name !== undefined && !isName(entity.canonical_name)) {
+  if (entity.canonical_name !== undefined && !isStableString(entity.canonical_name)) {
     errors.push(
       createError(
         ENTITY_CONTRACT_VALIDATION_CODES.INVALID_CANONICAL_NAME,
@@ -124,7 +139,7 @@ export function validateCanonicalEntity(entity) {
     errors.push(...validateAliases(entity.aliases, "aliases"));
   }
 
-  if (entity.locale !== undefined && !isName(entity.locale)) {
+  if (entity.locale !== undefined && !isStableString(entity.locale)) {
     errors.push(
       createError(
         ENTITY_CONTRACT_VALIDATION_CODES.INVALID_LOCALE,
@@ -136,23 +151,28 @@ export function validateCanonicalEntity(entity) {
 
   return errors.length === 0 ? { ok: true, value: entity } : { ok: false, errors };
 }
-
 /**
  * Validate the query-side entity resolution record described by QueryPlan.
  * An unrecognized record keeps the original text and locale but carries no
  * typed entity ID or entity type, so it cannot be used as a structured fact.
+ *
+ * @param {unknown} resolution
+ * @returns {ValidationResult}
  */
 export function validateEntityResolution(resolution) {
   const errors = [];
 
   if (!isRecord(resolution)) {
-    return invalidDocumentResult("Entity resolution must be a plain object.");
+    return invalidDocumentResult(
+      ENTITY_CONTRACT_VALIDATION_CODES.INVALID_DOCUMENT,
+      "Entity resolution must be a plain object.",
+    );
   }
 
   collectUnknownFields(resolution, ENTITY_RESOLUTION_FIELD_SET, errors);
   collectMissingFields(resolution, ENTITY_RESOLUTION_REQUIRED_FIELDS, errors);
 
-  if (resolution.text !== undefined && !isName(resolution.text)) {
+  if (resolution.text !== undefined && !isStableString(resolution.text)) {
     errors.push(
       createError(
         ENTITY_CONTRACT_VALIDATION_CODES.INVALID_CANONICAL_NAME,
@@ -162,7 +182,7 @@ export function validateEntityResolution(resolution) {
     );
   }
 
-  if (resolution.locale !== undefined && !isName(resolution.locale)) {
+  if (resolution.locale !== undefined && !isStableString(resolution.locale)) {
     errors.push(
       createError(
         ENTITY_CONTRACT_VALIDATION_CODES.INVALID_LOCALE,
@@ -260,19 +280,36 @@ export function validateEntityResolution(resolution) {
 
   return errors.length === 0 ? { ok: true, value: resolution } : { ok: false, errors };
 }
-
+/**
+ * @param {unknown} entity
+ * @returns {boolean}
+ */
 export function isCanonicalEntity(entity) {
   return validateCanonicalEntity(entity).ok;
 }
 
+/**
+ * @param {unknown} resolution
+ * @returns {boolean}
+ */
 export function isEntityResolution(resolution) {
   return validateEntityResolution(resolution).ok;
 }
 
+/**
+ * @param {unknown} entity
+ * @returns {unknown}
+ * @throws {TypeError} when validation fails
+ */
 export function assertCanonicalEntity(entity) {
   return assertValid(validateCanonicalEntity(entity), "CanonicalEntity");
 }
 
+/**
+ * @param {unknown} resolution
+ * @returns {unknown}
+ * @throws {TypeError} when validation fails
+ */
 export function assertEntityResolution(resolution) {
   return assertValid(validateEntityResolution(resolution), "Entity resolution");
 }
@@ -292,7 +329,7 @@ function validateAliases(aliases, path) {
   const seen = new Set();
   aliases.forEach((alias, index) => {
     const aliasPath = `${path}[${index}]`;
-    if (!isName(alias)) {
+    if (!isStableString(alias)) {
       errors.push(
         createError(
           ENTITY_CONTRACT_VALIDATION_CODES.INVALID_ALIAS,
@@ -346,38 +383,4 @@ function collectMissingFields(value, fields, errors) {
       );
     }
   }
-}
-
-function invalidDocumentResult(message) {
-  return {
-    ok: false,
-    errors: [
-      createError(
-        ENTITY_CONTRACT_VALIDATION_CODES.INVALID_DOCUMENT,
-        "$",
-        message,
-      ),
-    ],
-  };
-}
-
-function assertValid(result, label) {
-  if (!result.ok) {
-    const message = result.errors.map(({ path, message: detail }) => `${path}: ${detail}`).join(" ");
-    throw new TypeError(`Invalid ${label}. ${message}`);
-  }
-
-  return result.value;
-}
-
-function createError(code, path, message) {
-  return { code, path, message };
-}
-
-function isRecord(value) {
-  return value !== null && typeof value === "object" && !Array.isArray(value);
-}
-
-function isName(value) {
-  return typeof value === "string" && value.trim().length > 0 && value.trim() === value;
 }

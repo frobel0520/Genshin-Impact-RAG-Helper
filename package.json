@@ -10,8 +10,9 @@
   "scripts": {
     "start": "node --env-file=.env src/server.js",
     "start:local": "node src/server.js",
+    "check:syntax": "node scripts/check-syntax.js",
     "test": "node --test",
     "lint": "node scripts/check-boundaries.js",
-    "check": "npm run lint && npm test"
+    "check": "npm run check:syntax && npm run lint && npm test"
   }
 }

@@ -27,6 +27,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Check JavaScript syntax
+        run: npm run check:syntax
+
       - name: Lint module boundaries
         run: npm run lint
 
