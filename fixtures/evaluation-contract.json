@@ -253,6 +253,7 @@
       "retrieved_evidence": [
         {
           "evidence_id": "evd:ayaka-story-chunk",
+          "source_id": "src:fandom-genshin-impact",
           "source_kind": "fandom",
           "source_url": "https://genshin-impact.fandom.com/wiki/Genshin_Impact",
           "source_title": "Genshin Impact Fandom source metadata example",

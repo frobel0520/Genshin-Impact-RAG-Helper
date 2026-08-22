@@ -107,6 +107,7 @@ test("evidence items validate source traceability, typed references, ranking, an
   const invalid = {
     ...fixture.evidence_bundles[0].items[0],
     evidence_id: "src:not-evidence",
+    source_id: "ent:not-a-source",
     source_kind: "unknown",
     source_url: "file:///tmp/source",
     source_retrieved_at: "not-a-date",
@@ -120,6 +121,7 @@ test("evidence items validate source traceability, typed references, ranking, an
     result.errors.map(({ code, path }) => ({ code, path })),
     [
       { code: EVIDENCE_ANSWER_VALIDATION_CODES.INVALID_EVIDENCE_ID, path: "evidence_id" },
+      { code: EVIDENCE_ANSWER_VALIDATION_CODES.INVALID_SOURCE_ID, path: "source_id" },
       { code: EVIDENCE_ANSWER_VALIDATION_CODES.INVALID_SOURCE_KIND, path: "source_kind" },
       { code: EVIDENCE_ANSWER_VALIDATION_CODES.INVALID_SOURCE_URL, path: "source_url" },
       {
@@ -130,6 +132,17 @@ test("evidence items validate source traceability, typed references, ranking, an
       { code: EVIDENCE_ANSWER_VALIDATION_CODES.INVALID_RANK, path: "rank" },
       { code: EVIDENCE_ANSWER_VALIDATION_CODES.INVALID_SUPPORT_TYPE, path: "support_type" },
     ],
+  );
+});
+
+test("evidence items require source IDs for internal traceability", () => {
+  const missingSourceId = structuredClone(fixture.evidence_bundles[0].items[0]);
+  delete missingSourceId.source_id;
+  const result = validateEvidenceItem(missingSourceId);
+
+  assert.deepEqual(
+    result.errors.map(({ code, path }) => ({ code, path })),
+    [{ code: EVIDENCE_ANSWER_VALIDATION_CODES.MISSING_REQUIRED_FIELD, path: "source_id" }],
   );
 });
 
@@ -283,6 +296,24 @@ test("citations validate traceable source metadata and optional dates/versions",
         code: EVIDENCE_ANSWER_VALIDATION_CODES.INVALID_CITATION_GAME_VERSION,
         path: "game_version",
       },
+    ],
+  );
+});
+
+test("public citations redact internal evidence and answer IDs", () => {
+  const citation = fixture.responses[0].citations[0];
+  const result = validateCitation({
+    ...citation,
+    evidence_id: "evd:kamisato-ayaka-element-fact",
+    answer_id: "ans:kamisato-ayaka-element",
+  });
+
+  assert.equal(result.ok, false);
+  assert.deepEqual(
+    result.errors.map(({ code, path }) => ({ code, path })),
+    [
+      { code: EVIDENCE_ANSWER_VALIDATION_CODES.UNKNOWN_FIELD, path: "evidence_id" },
+      { code: EVIDENCE_ANSWER_VALIDATION_CODES.UNKNOWN_FIELD, path: "answer_id" },
     ],
   );
 });

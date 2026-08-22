@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "requests": [
     {
       "question": "雷電將軍的元素爆發是什麼？",
@@ -29,6 +29,7 @@
           "entity_id": "ent:raiden-shogun",
           "text": "雷電將軍",
           "entity_type": "character",
+          "resolution_status": "resolved",
           "aliases_used": ["雷神"]
         }
       ],
@@ -43,6 +44,7 @@
           "entity_id": "ent:kamisato-ayaka",
           "text": "神里綾華",
           "entity_type": "character",
+          "resolution_status": "resolved",
           "aliases_used": []
         }
       ],
@@ -57,7 +59,8 @@
           "text": "不存在的角色",
           "aliases_used": [],
           "entity_id": null,
-          "entity_type": null
+          "entity_type": null,
+          "resolution_status": "unrecognized"
         }
       ],
       "version_constraint": "unknown",
