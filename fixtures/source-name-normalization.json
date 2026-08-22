@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "ruleset_version": 1,
+  "examples": [
+    {
+      "source_text": "綾華",
+      "locale": "zh-TW",
+      "expected": {
+        "normalized_text": "神里綾華",
+        "normalized_key": "神里綾華",
+        "resolution": {
+          "text": "綾華",
+          "locale": "zh-TW",
+          "aliases_used": ["綾華"],
+          "resolution_status": "resolved",
+          "entity_id": "ent:kamisato-ayaka",
+          "entity_type": "character"
+        }
+      }
+    },
+    {
+      "source_text": "神里绫华",
+      "locale": "zh-TW",
+      "expected": {
+        "normalized_text": "神里綾華",
+        "normalized_key": "神里綾華",
+        "resolution": {
+          "text": "神里绫华",
+          "locale": "zh-TW",
+          "aliases_used": ["神里绫华"],
+          "resolution_status": "resolved",
+          "entity_id": "ent:kamisato-ayaka",
+          "entity_type": "character"
+        }
+      }
+    },
+    {
+      "source_text": "  Kamisato   Ayaka  ",
+      "locale": "en-US",
+      "expected": {
+        "normalized_text": "神里綾華",
+        "normalized_key": "神里綾華",
+        "resolution": {
+          "text": "Kamisato Ayaka",
+          "locale": "en-US",
+          "aliases_used": ["Kamisato Ayaka"],
+          "resolution_status": "resolved",
+          "entity_id": "ent:kamisato-ayaka",
+          "entity_type": "character"
+        }
+      }
+    },
+    {
+      "source_text": "不存在的角色",
+      "locale": "zh-TW",
+      "expected": {
+        "normalized_text": "不存在的角色",
+        "normalized_key": "不存在的角色",
+        "resolution": {
+          "text": "不存在的角色",
+          "locale": "zh-TW",
+          "aliases_used": [],
+          "resolution_status": "unrecognized",
+          "entity_id": null,
+          "entity_type": null
+        }
+      }
+    }
+  ]
+}

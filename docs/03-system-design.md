@@ -284,6 +284,26 @@ T10 將 `IngestRequest` 的來源批次驗證固定為以下最小 envelope：
 - 缺欄位、格式、版本與 `rights_note` 錯誤保留巢狀路徑，供維護者定位批次項目。
 - T10 只做輸入邊界驗證，不執行來源抓取、名稱正規化、法律權利判定或索引建立。
 
+T11 名稱／別名 normalizer 固定以下輸出邊界：
+
+```json
+{
+  "schema_version": 1,
+  "ruleset_version": 1,
+  "source_text": "來源原文",
+  "normalized_text": "CanonicalEntity.canonical_name 或整理後未知名稱",
+  "normalized_key": "穩定比較鍵",
+  "locale": "zh-TW",
+  "resolution": "EntityResolution"
+}
+```
+
+- `source_text` 必須原樣保留；`normalized_text` 使用 NFKC、去除首尾空白並將連續空白折疊為一格。
+- `normalized_key` 在上述整理後再以小寫建立；已辨識名稱統一使用 canonical name 的 key。
+- 繁簡差異、常見拼寫與其他語言名稱只透過 `CanonicalEntity.aliases` 的明確字典匹配；T11 不做模糊、音近或外部翻譯猜測。
+- 未知名稱保留其原文與整理結果，`resolution.resolution_status` 為 `unrecognized`，不得產生 entity identity。
+- 不同實體產生相同 normalized key 時，字典建立失敗；不可用陣列順序猜測唯一實體。
+
 維護與評估命令共用下列最小輸出：
 
 ```text
