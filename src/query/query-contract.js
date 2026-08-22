@@ -6,6 +6,14 @@ import {
   VERSION_CONSTRAINTS,
   isDomainId,
 } from "../domain/domain-contract.js";
+import {
+  assertValid,
+  createError,
+  invalidDocumentResult,
+  isNonEmptyString,
+  isRecord,
+  isStableString,
+} from "../domain/contract-validation.js";
 
 export const QUERY_CONTRACT_SCHEMA_VERSION = 1;
 export const DEFAULT_QUERY_LOCALE = "zh-TW";
@@ -97,11 +105,20 @@ const VERSION_CONSTRAINT_VALUES = new Set(Object.values(VERSION_CONSTRAINTS));
 const RETRIEVAL_MODE_VALUES = new Set(Object.values(RETRIEVAL_MODES));
 const SPOILER_LEVEL_VALUES = new Set(Object.values(SPOILER_LEVELS));
 
+/** @typedef {import("../domain/contract-validation.js").ValidationResult} ValidationResult */
+
+/**
+ * @param {unknown} request
+ * @returns {ValidationResult}
+ */
 export function validateQueryRequest(request) {
   const errors = [];
 
   if (!isRecord(request)) {
-    return invalidDocumentResult("QueryRequest must be a plain object.");
+    return invalidDocumentResult(
+      QUERY_CONTRACT_VALIDATION_CODES.INVALID_DOCUMENT,
+      "QueryRequest must be a plain object.",
+    );
   }
 
   collectUnknownFields(request, QUERY_REQUEST_FIELD_SET, errors);
@@ -166,12 +183,18 @@ export function validateQueryRequest(request) {
 
   return errors.length === 0 ? { ok: true, value: request } : { ok: false, errors };
 }
-
+/**
+ * @param {unknown} entity
+ * @returns {ValidationResult}
+ */
 export function validateNormalizedEntity(entity) {
   const errors = [];
 
   if (!isRecord(entity)) {
-    return invalidDocumentResult("Normalized entity must be a plain object.");
+    return invalidDocumentResult(
+      QUERY_CONTRACT_VALIDATION_CODES.INVALID_DOCUMENT,
+      "Normalized entity must be a plain object.",
+    );
   }
 
   collectUnknownFields(entity, NORMALIZED_ENTITY_FIELD_SET, errors);
@@ -219,12 +242,18 @@ export function validateNormalizedEntity(entity) {
 
   return errors.length === 0 ? { ok: true, value: entity } : { ok: false, errors };
 }
-
+/**
+ * @param {unknown} plan
+ * @returns {ValidationResult}
+ */
 export function validateQueryPlan(plan) {
   const errors = [];
 
   if (!isRecord(plan)) {
-    return invalidDocumentResult("QueryPlan must be a plain object.");
+    return invalidDocumentResult(
+      QUERY_CONTRACT_VALIDATION_CODES.INVALID_DOCUMENT,
+      "QueryPlan must be a plain object.",
+    );
   }
 
   collectUnknownFields(plan, QUERY_PLAN_FIELD_SET, errors);
@@ -310,39 +339,67 @@ export function validateQueryPlan(plan) {
   return errors.length === 0 ? { ok: true, value: plan } : { ok: false, errors };
 }
 
+/**
+ * @param {unknown} request
+ * @returns {Record<string, unknown>}
+ * @throws {TypeError} when validation fails
+ */
 export function applyQueryRequestDefaults(request) {
-  const result = validateQueryRequest(request);
-  if (!result.ok) {
-    const message = result.errors.map(({ path, message: detail }) => `${path}: ${detail}`).join(" ");
-    throw new TypeError(`Invalid QueryRequest. ${message}`);
-  }
+  const validatedRequest = assertValid(validateQueryRequest(request), "QueryRequest");
 
   return {
-    ...result.value,
-    locale: result.value.locale ?? DEFAULT_QUERY_LOCALE,
+    ...validatedRequest,
+    locale: validatedRequest.locale ?? DEFAULT_QUERY_LOCALE,
   };
 }
 
+/**
+ * @param {unknown} request
+ * @returns {boolean}
+ */
 export function isQueryRequest(request) {
   return validateQueryRequest(request).ok;
 }
 
+/**
+ * @param {unknown} entity
+ * @returns {boolean}
+ */
 export function isNormalizedEntity(entity) {
   return validateNormalizedEntity(entity).ok;
 }
 
+/**
+ * @param {unknown} plan
+ * @returns {boolean}
+ */
 export function isQueryPlan(plan) {
   return validateQueryPlan(plan).ok;
 }
 
+/**
+ * @param {unknown} request
+ * @returns {unknown}
+ * @throws {TypeError} when validation fails
+ */
 export function assertQueryRequest(request) {
   return assertValid(validateQueryRequest(request), "QueryRequest");
 }
 
+/**
+ * @param {unknown} entity
+ * @returns {unknown}
+ * @throws {TypeError} when validation fails
+ */
 export function assertNormalizedEntity(entity) {
   return assertValid(validateNormalizedEntity(entity), "Normalized entity");
 }
 
+/**
+ * @param {unknown} plan
+ * @returns {unknown}
+ * @throws {TypeError} when validation fails
+ */
 export function assertQueryPlan(plan) {
   return assertValid(validateQueryPlan(plan), "QueryPlan");
 }
@@ -413,37 +470,4 @@ function collectMissingFields(value, fields, errors) {
       );
     }
   }
-}
-
-function invalidDocumentResult(message) {
-  return {
-    ok: false,
-    errors: [
-      createError(QUERY_CONTRACT_VALIDATION_CODES.INVALID_DOCUMENT, "$", message),
-    ],
-  };
-}
-
-function assertValid(result, label) {
-  if (!result.ok) {
-    const message = result.errors.map(({ path, message: detail }) => `${path}: ${detail}`).join(" ");
-    throw new TypeError(`Invalid ${label}. ${message}`);
-  }
-  return result.value;
-}
-
-function createError(code, path, message) {
-  return { code, path, message };
-}
-
-function isRecord(value) {
-  return value !== null && typeof value === "object" && !Array.isArray(value);
-}
-
-function isNonEmptyString(value) {
-  return typeof value === "string" && value.trim().length > 0;
-}
-
-function isStableString(value) {
-  return isNonEmptyString(value) && value.trim() === value;
 }

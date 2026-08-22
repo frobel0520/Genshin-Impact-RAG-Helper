@@ -49,9 +49,18 @@ test("CanonicalEntity and resolution fixtures are valid", () => {
 });
 
 test("entity schema fields and alias rules are explicit", () => {
-  assert.deepEqual(ENTITY_CONTRACT_SCHEMA.canonicalEntity.required, CANONICAL_ENTITY_REQUIRED_FIELDS);
-  assert.deepEqual(ENTITY_CONTRACT_SCHEMA.entityResolution.required, ENTITY_RESOLUTION_REQUIRED_FIELDS);
-  assert.deepEqual(ENTITY_CONTRACT_SCHEMA.entityResolution.optional, ENTITY_RESOLUTION_OPTIONAL_FIELDS);
+  assert.deepEqual(
+    ENTITY_CONTRACT_SCHEMA.canonicalEntity.required,
+    CANONICAL_ENTITY_REQUIRED_FIELDS,
+  );
+  assert.deepEqual(
+    ENTITY_CONTRACT_SCHEMA.entityResolution.required,
+    ENTITY_RESOLUTION_REQUIRED_FIELDS,
+  );
+  assert.deepEqual(
+    ENTITY_CONTRACT_SCHEMA.entityResolution.optional,
+    ENTITY_RESOLUTION_OPTIONAL_FIELDS,
+  );
   assert.deepEqual(ENTITY_CONTRACT_SCHEMA.canonicalEntity.aliases, {
     type: "string[]",
     unique: true,
@@ -132,8 +141,14 @@ test("resolved and unrecognized entity resolution states are mutually explicit",
 });
 
 test("entity contract validation is non-mutating and assertion helpers preserve identity", () => {
-  const entity = { ...fixture.canonical_entities[0], aliases: [...fixture.canonical_entities[0].aliases] };
-  const resolution = { ...fixture.resolution_examples[0], aliases_used: [...fixture.resolution_examples[0].aliases_used] };
+  const entity = {
+    ...fixture.canonical_entities[0],
+    aliases: [...fixture.canonical_entities[0].aliases],
+  };
+  const resolution = {
+    ...fixture.resolution_examples[0],
+    aliases_used: [...fixture.resolution_examples[0].aliases_used],
+  };
   const entityBefore = structuredClone(entity);
   const resolutionBefore = structuredClone(resolution);
 

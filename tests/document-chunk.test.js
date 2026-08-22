@@ -31,27 +31,33 @@ test("DocumentChunk fixture covers versioned, unknown, and entity-linked chunks"
   }
 });
 
-test("DocumentChunk schema keeps locator, text, token hint, version, and entity links explicit", () => {
-  assert.deepEqual(DOCUMENT_CHUNK_SCHEMA.required, DOCUMENT_CHUNK_REQUIRED_FIELDS);
-  assert.equal(DOCUMENT_CHUNK_SCHEMA.documentLocator, "non-empty stable string");
-  assert.equal(DOCUMENT_CHUNK_SCHEMA.text, "non-empty source text; preserved verbatim");
-  assert.equal(DOCUMENT_CHUNK_SCHEMA.tokenHint, "non-negative integer estimate");
-  assert.equal(DOCUMENT_CHUNK_SCHEMA.gameVersion, "non-empty string; unknown is explicit");
-  assert.deepEqual(DOCUMENT_CHUNK_SCHEMA.entityIds, {
-    type: "unique entity:<id>[]",
-    allowEmpty: true,
-  });
-});
+test(
+  "DocumentChunk schema keeps locator, text, token hint, version, and entity links explicit",
+  () => {
+    assert.deepEqual(DOCUMENT_CHUNK_SCHEMA.required, DOCUMENT_CHUNK_REQUIRED_FIELDS);
+    assert.equal(DOCUMENT_CHUNK_SCHEMA.documentLocator, "non-empty stable string");
+    assert.equal(DOCUMENT_CHUNK_SCHEMA.text, "non-empty source text; preserved verbatim");
+    assert.equal(DOCUMENT_CHUNK_SCHEMA.tokenHint, "non-negative integer estimate");
+    assert.equal(DOCUMENT_CHUNK_SCHEMA.gameVersion, "non-empty string; unknown is explicit");
+    assert.deepEqual(DOCUMENT_CHUNK_SCHEMA.entityIds, {
+      type: "unique entity:<id>[]",
+      allowEmpty: true,
+    });
+  },
+);
 
-test("DocumentChunk preserves text boundaries and accepts unknown version with no entity IDs", () => {
-  const chunk = { ...fixture.chunks[1], text: "  保留來源文字的前後空白  " };
-  const result = validateDocumentChunk(chunk);
+test(
+  "DocumentChunk preserves text boundaries and accepts unknown version with no entity IDs",
+  () => {
+    const chunk = { ...fixture.chunks[1], text: "  保留來源文字的前後空白  " };
+    const result = validateDocumentChunk(chunk);
 
-  assert.deepEqual(result, { ok: true, value: chunk });
-  assert.equal(result.value.text, "  保留來源文字的前後空白  ");
-  assert.equal(result.value.game_version, "unknown");
-  assert.deepEqual(result.value.entity_ids, []);
-});
+    assert.deepEqual(result, { ok: true, value: chunk });
+    assert.equal(result.value.text, "  保留來源文字的前後空白  ");
+    assert.equal(result.value.game_version, "unknown");
+    assert.deepEqual(result.value.entity_ids, []);
+  },
+);
 
 test("DocumentChunk rejects invalid typed IDs, locator, token hint, and version", () => {
   const invalid = {
