@@ -1,0 +1,429 @@
+{
+  "schema_version": 1,
+  "source_documents": [
+    {
+      "source_id": "src:hoyolab-version-5-0",
+      "source_kind": "hoyolab",
+      "source_url": "https://www.hoyolab.com/article/32456789",
+      "title": "《原神》5.0版本「榮花與炎日之途」更新說明",
+      "published_at": "2024-08-28T07:00:00+08:00",
+      "retrieved_at": "2026-08-21T00:00:00Z",
+      "game_version": "5.0",
+      "locale": "zh-TW",
+      "rights_note": "Personal non-commercial use; retain official attribution and URL; terms review pending.",
+      "content_hash": "d9c5e3f4a1b2c3d4e5f60718293a4b5c6d7e8f901a2b3c4d5e6f708192a3b4c5"
+    },
+    {
+      "source_id": "src:hoyolab-version-2-1",
+      "source_kind": "hoyolab",
+      "source_url": "https://www.hoyolab.com/article/7890123",
+      "title": "《原神》2.1版本「韶光撫月，天下人間」更新說明",
+      "published_at": "2021-09-01T07:00:00+08:00",
+      "retrieved_at": "2026-08-21T00:00:00Z",
+      "game_version": "2.1",
+      "locale": "zh-TW",
+      "rights_note": "Personal non-commercial use; retain official attribution and URL; terms review pending.",
+      "content_hash": "e8f1c2d3a4b5c6d7e8f901a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6"
+    },
+    {
+      "source_id": "src:genshin-db-characters",
+      "source_kind": "genshin-db",
+      "source_url": "https://github.com/theBowja/genshin-db/tree/main/src/data/characters",
+      "title": "genshin-db structured characters dataset",
+      "retrieved_at": "2026-08-21T00:00:00Z",
+      "game_version": "5.0",
+      "locale": "zh-TW",
+      "rights_note": "Preserve repository attribution and MIT license reference; game-data rights review pending.",
+      "content_hash": "a1b2c3d4e5f60718293a4b5c6d7e8f901a2b3c4d5e6f708192a3b4c5d6e7f809"
+    },
+    {
+      "source_id": "src:genshin-db-weapons",
+      "source_kind": "genshin-db",
+      "source_url": "https://github.com/theBowja/genshin-db/tree/main/src/data/weapons",
+      "title": "genshin-db structured weapons dataset",
+      "retrieved_at": "2026-08-21T00:00:00Z",
+      "game_version": "unknown",
+      "locale": "zh-TW",
+      "rights_note": "Preserve repository attribution and MIT license reference; game-data rights review pending.",
+      "content_hash": "b2c3d4e5f60718293a4b5c6d7e8f901a2b3c4d5e6f708192a3b4c5d6e7f8091a"
+    },
+    {
+      "source_id": "src:genshin-db-materials",
+      "source_kind": "genshin-db",
+      "source_url": "https://github.com/theBowja/genshin-db/tree/main/src/data/materials",
+      "title": "genshin-db structured materials dataset",
+      "retrieved_at": "2026-08-21T00:00:00Z",
+      "game_version": "5.0",
+      "locale": "zh-TW",
+      "rights_note": "Preserve repository attribution and MIT license reference; game-data rights review pending.",
+      "content_hash": "c3d4e5f60718293a4b5c6d7e8f901a2b3c4d5e6f708192a3b4c5d6e7f8091a2b"
+    },
+    {
+      "source_id": "src:fandom-raiden-shogun",
+      "source_kind": "fandom",
+      "source_url": "https://genshin-impact.fandom.com/wiki/Raiden_Shogun/Lore",
+      "title": "Genshin Impact Fandom Wiki: Raiden Shogun Lore",
+      "published_at": "2024-07-15T10:00:00Z",
+      "retrieved_at": "2026-08-21T00:00:00Z",
+      "game_version": "4.8",
+      "locale": "en-US",
+      "rights_note": "Preserve CC BY-SA attribution, original URL, and share-alike terms; verify before redistribution.",
+      "content_hash": "d4e5f60718293a4b5c6d7e8f901a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c"
+    },
+    {
+      "source_id": "src:fandom-kamisato-ayaka",
+      "source_kind": "fandom",
+      "source_url": "https://genshin-impact.fandom.com/wiki/Kamisato_Ayaka/Story",
+      "title": "Genshin Impact Fandom Wiki: Kamisato Ayaka Story",
+      "published_at": "2023-01-10T12:00:00Z",
+      "retrieved_at": "2026-08-21T00:00:00Z",
+      "game_version": "3.4",
+      "locale": "en-US",
+      "rights_note": "Preserve CC BY-SA attribution, original URL, and share-alike terms; verify before redistribution.",
+      "content_hash": "e5f60718293a4b5c6d7e8f901a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d"
+    },
+    {
+      "source_id": "src:fandom-world-lore",
+      "source_kind": "fandom",
+      "source_url": "https://genshin-impact.fandom.com/wiki/Teyvat",
+      "title": "Genshin Impact Fandom Wiki: Teyvat Overview",
+      "published_at": "2024-05-20T08:00:00Z",
+      "retrieved_at": "2026-08-21T00:00:00Z",
+      "game_version": "unknown",
+      "locale": "en-US",
+      "rights_note": "Preserve CC BY-SA attribution, original URL, and share-alike terms; verify before redistribution.",
+      "content_hash": "f60718293a4b5c6d7e8f901a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e"
+    }
+  ],
+  "canonical_entities": [
+    {
+      "entity_id": "ent:raiden-shogun",
+      "entity_type": "character",
+      "canonical_name": "雷電將軍",
+      "aliases": ["巴爾澤布", "影", "Raiden Shogun", "雷神"],
+      "locale": "zh-TW"
+    },
+    {
+      "entity_id": "ent:kamisato-ayaka",
+      "entity_type": "character",
+      "canonical_name": "神里綾華",
+      "aliases": ["白鷺霜華", "Ayaka", "Kamisato Ayaka"],
+      "locale": "zh-TW"
+    },
+    {
+      "entity_id": "ent:nahida",
+      "entity_type": "character",
+      "canonical_name": "納西妲",
+      "aliases": ["布耶爾", "草神", "小吉祥草王", "Nahida", "Kusanali"],
+      "locale": "zh-TW"
+    },
+    {
+      "entity_id": "ent:engulfing-lightning",
+      "entity_type": "weapon",
+      "canonical_name": "薙草之稻光",
+      "aliases": ["薙刀", "Engulfing Lightning", "稻光"],
+      "locale": "zh-TW"
+    },
+    {
+      "entity_id": "ent:the-catch",
+      "entity_type": "weapon",
+      "canonical_name": "「漁獲」",
+      "aliases": ["漁獲", "The Catch", "魚叉"],
+      "locale": "zh-TW"
+    },
+    {
+      "entity_id": "ent:amakumo-fruit",
+      "entity_type": "material",
+      "canonical_name": "天雲草實",
+      "aliases": ["Amakumo Fruit"],
+      "locale": "zh-TW"
+    },
+    {
+      "entity_id": "ent:inazuma",
+      "entity_type": "region",
+      "canonical_name": "稻妻",
+      "aliases": ["Inazuma", "雷之國度"],
+      "locale": "zh-TW"
+    },
+    {
+      "entity_id": "ent:sumeru",
+      "entity_type": "region",
+      "canonical_name": "須彌",
+      "aliases": ["Sumeru", "草之國度", "智慧之國"],
+      "locale": "zh-TW"
+    }
+  ],
+  "structured_facts": [
+    {
+      "fact_id": "fact:raiden-shogun-element",
+      "entity_id": "ent:raiden-shogun",
+      "field_key": "element",
+      "value": "Electro",
+      "unit": null,
+      "game_version": "5.0",
+      "source_id": "src:genshin-db-characters",
+      "validity": "active"
+    },
+    {
+      "fact_id": "fact:raiden-shogun-weapon-type",
+      "entity_id": "ent:raiden-shogun",
+      "field_key": "weapon_type",
+      "value": "Polearm",
+      "unit": null,
+      "game_version": "5.0",
+      "source_id": "src:genshin-db-characters",
+      "validity": "active"
+    },
+    {
+      "fact_id": "fact:raiden-shogun-rarity",
+      "entity_id": "ent:raiden-shogun",
+      "field_key": "rarity",
+      "value": 5,
+      "unit": "stars",
+      "game_version": "5.0",
+      "source_id": "src:genshin-db-characters",
+      "validity": "active"
+    },
+    {
+      "fact_id": "fact:kamisato-ayaka-element",
+      "entity_id": "ent:kamisato-ayaka",
+      "field_key": "element",
+      "value": "Cryo",
+      "unit": null,
+      "game_version": "5.0",
+      "source_id": "src:genshin-db-characters",
+      "validity": "active"
+    },
+    {
+      "fact_id": "fact:kamisato-ayaka-rarity",
+      "entity_id": "ent:kamisato-ayaka",
+      "field_key": "rarity",
+      "value": 5,
+      "unit": "stars",
+      "game_version": "5.0",
+      "source_id": "src:genshin-db-characters",
+      "validity": "active"
+    },
+    {
+      "fact_id": "fact:engulfing-lightning-rarity",
+      "entity_id": "ent:engulfing-lightning",
+      "field_key": "rarity",
+      "value": 5,
+      "unit": "stars",
+      "game_version": "unknown",
+      "source_id": "src:genshin-db-weapons",
+      "validity": "unknown"
+    },
+    {
+      "fact_id": "fact:engulfing-lightning-base-atk",
+      "entity_id": "ent:engulfing-lightning",
+      "field_key": "base_atk_lvl90",
+      "value": 608,
+      "unit": "atk",
+      "game_version": "unknown",
+      "source_id": "src:genshin-db-weapons",
+      "validity": "active"
+    },
+    {
+      "fact_id": "fact:the-catch-rarity",
+      "entity_id": "ent:the-catch",
+      "field_key": "rarity",
+      "value": 4,
+      "unit": "stars",
+      "game_version": "unknown",
+      "source_id": "src:genshin-db-weapons",
+      "validity": "unknown"
+    },
+    {
+      "fact_id": "fact:the-catch-base-atk",
+      "entity_id": "ent:the-catch",
+      "field_key": "base_atk_lvl90",
+      "value": 510,
+      "unit": "atk",
+      "game_version": "unknown",
+      "source_id": "src:genshin-db-weapons",
+      "validity": "active"
+    },
+    {
+      "fact_id": "fact:amakumo-fruit-material-type",
+      "entity_id": "ent:amakumo-fruit",
+      "field_key": "material_type",
+      "value": "Inazuma Local Specialty",
+      "unit": null,
+      "game_version": "5.0",
+      "source_id": "src:genshin-db-materials",
+      "validity": "active"
+    },
+    {
+      "fact_id": "fact:sumeru-release-window",
+      "entity_id": "ent:sumeru",
+      "field_key": "release_window",
+      "value": {
+        "start": "3.0",
+        "end": "3.8"
+      },
+      "unit": null,
+      "game_version": "3.0-3.8",
+      "source_id": "src:hoyolab-version-5-0",
+      "validity": "superseded"
+    }
+  ],
+  "claims": [
+    {
+      "claim_id": "claim:raiden-shogun-burst-official",
+      "claim_key": "elemental_burst_name",
+      "entity_id": "ent:raiden-shogun",
+      "claim_text": "官方公告記載雷電將軍的元素爆發名稱為「奧義·夢想真說」。",
+      "game_version": "5.0",
+      "source_id": "src:hoyolab-version-2-1",
+      "authority_rank": 1,
+      "conflict_group_id": null
+    },
+    {
+      "claim_id": "claim:raiden-shogun-skill-official",
+      "claim_key": "elemental_skill_name",
+      "entity_id": "ent:raiden-shogun",
+      "claim_text": "官方公告記載雷電將軍的元素戰技名稱為「神變·惡曜開眼」。",
+      "game_version": "5.0",
+      "source_id": "src:hoyolab-version-2-1",
+      "authority_rank": 1,
+      "conflict_group_id": null
+    },
+    {
+      "claim_id": "claim:kamisato-ayaka-burst-official",
+      "claim_key": "elemental_burst_name",
+      "entity_id": "ent:kamisato-ayaka",
+      "claim_text": "官方版本公告使用「神里流·霜滅」作為元素爆發名稱。",
+      "game_version": "5.0",
+      "source_id": "src:hoyolab-version-5-0",
+      "authority_rank": 1,
+      "conflict_group_id": "conflict:kamisato-ayaka-burst-name"
+    },
+    {
+      "claim_id": "claim:kamisato-ayaka-burst-wiki-differing",
+      "claim_key": "elemental_burst_name",
+      "entity_id": "ent:kamisato-ayaka",
+      "claim_text": "早期社群翻譯草案曾記載元素爆發為「霜見雪關扉」。",
+      "game_version": "5.0",
+      "source_id": "src:fandom-kamisato-ayaka",
+      "authority_rank": 3,
+      "conflict_group_id": "conflict:kamisato-ayaka-burst-name"
+    },
+    {
+      "claim_id": "claim:inazuma-ruler-lore",
+      "claim_key": "ruler_title",
+      "entity_id": "ent:inazuma",
+      "claim_text": "稻妻的最高統治者為雷電將軍，掌管鳴神群島與永恆之意志。",
+      "game_version": "5.0",
+      "source_id": "src:fandom-raiden-shogun",
+      "authority_rank": 3,
+      "conflict_group_id": null
+    }
+  ],
+  "conflict_groups": [
+    {
+      "conflict_group_id": "conflict:kamisato-ayaka-burst-name",
+      "claim_ids": [
+        "claim:kamisato-ayaka-burst-official",
+        "claim:kamisato-ayaka-burst-wiki-differing"
+      ]
+    }
+  ],
+  "document_chunks": [
+    {
+      "chunk_id": "chunk:hoyolab-5-0-character-updates",
+      "source_id": "src:hoyolab-version-5-0",
+      "document_locator": "https://www.hoyolab.com/article/32456789#character-updates",
+      "text": "5.0版本更新說明：修正了部分角色在特定狀態下的天賦描述文本，神里綾華的元素爆發「神里流·霜滅」冷卻時間與能量消耗維持原設定。",
+      "token_hint": 48,
+      "game_version": "5.0",
+      "entity_ids": ["ent:kamisato-ayaka"]
+    },
+    {
+      "chunk_id": "chunk:hoyolab-2-1-raiden-overview",
+      "source_id": "src:hoyolab-version-2-1",
+      "document_locator": "https://www.hoyolab.com/article/7890123#raiden-shogun",
+      "text": "2.1版本新角色「一心淨土·雷電將軍（雷）」，使用長柄武器，元素戰技為「神變·惡曜開眼」，元素爆發為「奧義·夢想真說」。",
+      "token_hint": 52,
+      "game_version": "2.1",
+      "entity_ids": ["ent:raiden-shogun", "ent:inazuma"]
+    },
+    {
+      "chunk_id": "chunk:genshin-db-engulfing-description",
+      "source_id": "src:genshin-db-weapons",
+      "document_locator": "repo:weapons/engulfing-lightning#description",
+      "text": "薙草之稻光：用於「斬草」的薙刀。對向這柄武器露出鋒芒的軍勢，大概也如同草芥一般吧…攻擊力獲得提升，提升程度相當於元素充能效率超出100%部分的28%。",
+      "token_hint": 65,
+      "game_version": "unknown",
+      "entity_ids": ["ent:engulfing-lightning", "ent:raiden-shogun"]
+    },
+    {
+      "chunk_id": "chunk:genshin-db-amakumo-fruit-details",
+      "source_id": "src:genshin-db-materials",
+      "document_locator": "repo:materials/amakumo-fruit#details",
+      "text": "天雲草實：生長在清籟島的天雲草結出的果實，貼在耳畔能聽見微弱的雷鳴聲。為雷電將軍等稻妻角色的突破素材。",
+      "token_hint": 44,
+      "game_version": "5.0",
+      "entity_ids": ["ent:amakumo-fruit", "ent:raiden-shogun", "ent:inazuma"]
+    },
+    {
+      "chunk_id": "chunk:fandom-raiden-story-euthymia",
+      "source_id": "src:fandom-raiden-shogun",
+      "document_locator": "https://genshin-impact.fandom.com/wiki/Raiden_Shogun/Lore#Plane_of_Euthymia",
+      "text": "雷電將軍在「一心淨土」中冥想追求永恆，對外界頒布了眼狩令與鎖國令，後在旅行者與八重神子的引導下重新審視稻妻人民的願望。",
+      "token_hint": 56,
+      "game_version": "4.8",
+      "entity_ids": ["ent:raiden-shogun", "ent:inazuma"]
+    },
+    {
+      "chunk_id": "chunk:fandom-kamisato-ayaka-lore",
+      "source_id": "src:fandom-kamisato-ayaka",
+      "document_locator": "https://genshin-impact.fandom.com/wiki/Kamisato_Ayaka/Story#Vision",
+      "text": "神里綾華為社奉行神里家的大小姐，端莊嫻雅，深得稻妻民眾愛戴，被尊稱為「白鷺公主」。",
+      "token_hint": 42,
+      "game_version": "3.4",
+      "entity_ids": ["ent:kamisato-ayaka", "ent:inazuma"]
+    },
+    {
+      "chunk_id": "chunk:fandom-unclassified-world-lore",
+      "source_id": "src:fandom-world-lore",
+      "document_locator": "https://genshin-impact.fandom.com/wiki/Teyvat#Cosmology",
+      "text": "提瓦特大陸的天空由虛假的星空所籠罩，世界底層流淌著地脈能量與古老的深淵侵蝕力量，此段為未關聯特定角色的宏觀世界觀敘述。",
+      "token_hint": 50,
+      "game_version": "unknown",
+      "entity_ids": []
+    }
+  ],
+  "test_scenarios": {
+    "answerable_character_query": {
+      "question": "雷電將軍的元素屬性是什麼？",
+      "target_entity_id": "ent:raiden-shogun",
+      "expected_fact_id": "fact:raiden-shogun-element"
+    },
+    "answerable_weapon_query": {
+      "question": "薙草之稻光的滿級基礎攻擊力是多少？",
+      "target_entity_id": "ent:engulfing-lightning",
+      "expected_fact_id": "fact:engulfing-lightning-base-atk"
+    },
+    "conflict_query": {
+      "question": "神里綾華的元素爆發名稱是什麼？",
+      "target_entity_id": "ent:kamisato-ayaka",
+      "conflict_group_id": "conflict:kamisato-ayaka-burst-name",
+      "official_claim_id": "claim:kamisato-ayaka-burst-official",
+      "differing_claim_id": "claim:kamisato-ayaka-burst-wiki-differing"
+    },
+    "version_range_query": {
+      "question": "須彌是在哪一個版本區間發布的？",
+      "target_entity_id": "ent:sumeru",
+      "expected_fact_id": "fact:sumeru-release-window"
+    },
+    "unclassified_lore_query": {
+      "question": "提瓦特的天空有什麼特點？",
+      "target_chunk_id": "chunk:fandom-unclassified-world-lore"
+    },
+    "out_of_scope_query": {
+      "question": "雷電將軍下一期卡池什麼時候復刻，建議抽二命還是專武？",
+      "refusal_reason": "out_of_scope"
+    }
+  }
+}
