@@ -71,6 +71,10 @@ export function checkBoundaries() {
         continue;
       }
 
+      if (sourceLayer === targetLayer && RUNTIME_LAYERS.has(sourceLayer)) {
+        continue;
+      }
+
       const allowed = ALLOWED_IMPORTS.get(sourceLayer);
       if (!allowed || !allowed.has(targetLayer)) {
         violations.push(
