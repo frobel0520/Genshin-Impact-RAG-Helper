@@ -177,11 +177,7 @@ test("out_of_scope_query is refused and retrieves no evidence", async (context) 
   assert.deepEqual(document.items, []);
 });
 
-test("version_range_query returns the expected release-window fact", {
-  skip: "T15 routes it to narrative/document, so fact:sumeru-release-window is never retrieved. " +
-    "The question states a range in words only, which no structured or version intent pattern " +
-    "matches. Un-skip when T18/T19 fix version routing.",
-}, async (context) => {
+test("version_range_query returns the expected release-window fact", async (context) => {
   const run = await createPipeline(context);
   const { queryPlan, structured } = await run("version_range_query");
   const scenario = scenarios.version_range_query;
@@ -190,11 +186,7 @@ test("version_range_query returns the expected release-window fact", {
   assert.ok(structured.items.some((item) => item.fact_id === scenario.expected_fact_id));
 });
 
-test("unclassified_lore_query returns the unclassified world-lore chunk", {
-  skip: "T15 classifies it as out_of_scope because 提瓦特 is not a canonical entity, and the " +
-    "chunk carries no entity_ids, so T17 cannot reach it either. Un-skip when T18/T19 decide " +
-    "how entity-less chunks are retrieved.",
-}, async (context) => {
+test("unclassified_lore_query returns the unclassified world-lore chunk", async (context) => {
   const run = await createPipeline(context);
   const { document } = await run("unclassified_lore_query");
   const scenario = scenarios.unclassified_lore_query;
