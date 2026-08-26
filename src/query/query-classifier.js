@@ -11,7 +11,7 @@ import {
   assertQueryPlan,
 } from "./query-contract.js";
 
-export const QUERY_CLASSIFIER_RULESET_VERSION = 1;
+export const QUERY_CLASSIFIER_RULESET_VERSION = 2;
 export const DEFAULT_CLASSIFIER_SPOILER_LEVEL = SPOILER_LEVELS.NONE;
 
 const CLASSIFIER_OPTION_FIELDS = new Set(["canonicalEntities"]);
@@ -19,8 +19,12 @@ const EXPLICIT_RANGE_PATTERN = /\d+\.\d+\s*(?:-|–|—|~|～|至|到)\s*\d+\.\d
 const EXPLICIT_VERSION_PATTERN = /(?:版本\s*)?\d+\.\d+/u;
 
 const OUT_OF_SCOPE_PATTERNS = Object.freeze([
-  /配隊|組隊|隊伍搭配/u,
+  /配隊|組隊|隊伍搭配|配裝/u,
   /值得抽|抽不抽|抽卡建議|抽取建議/u,
+  /(?:建議|推薦|該|要不要|值不值得).{0,6}(?:抽|練|養|升)/u,
+  /抽.{0,6}(?:還是|或是|或)/u,
+  /卡池|復刻|池子|保底/u,
+  /聖遺物.{0,6}(?:推薦|建議|搭配|詞條)/u,
   /測試服|內鬼|洩漏|爆料/u,
   /(?:採集|取得|獲取|收集).{0,8}(?:路線|路徑)/u,
   /帳號交易|代儲|儲值優惠/u,
