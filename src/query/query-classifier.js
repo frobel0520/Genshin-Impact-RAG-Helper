@@ -11,12 +11,13 @@ import {
   assertQueryPlan,
 } from "./query-contract.js";
 
-export const QUERY_CLASSIFIER_RULESET_VERSION = 2;
+export const QUERY_CLASSIFIER_RULESET_VERSION = 3;
 export const DEFAULT_CLASSIFIER_SPOILER_LEVEL = SPOILER_LEVELS.NONE;
 
 const CLASSIFIER_OPTION_FIELDS = new Set(["canonicalEntities"]);
 const EXPLICIT_RANGE_PATTERN = /\d+\.\d+\s*(?:-|–|—|~|～|至|到)\s*\d+\.\d+/u;
 const EXPLICIT_VERSION_PATTERN = /(?:版本\s*)?\d+\.\d+/u;
+const TEXTUAL_RANGE_PATTERN = /版本區間|版本範圍|哪些版本/u;
 
 const OUT_OF_SCOPE_PATTERNS = Object.freeze([
   /配隊|組隊|隊伍搭配|配裝/u,
@@ -35,11 +36,14 @@ const STRUCTURED_INTENT_PATTERNS = Object.freeze([
   /數值|面板|基礎攻擊|攻擊力|生命值|防禦力/u,
   /技能|天賦|元素戰技|元素爆發|冷卻時間|能量消耗/u,
   /突破素材|屬性|能力/u,
+  /版本區間|版本範圍/u,
+  /(?:發布|推出|上線|實裝|登場).{0,6}版本|版本.{0,6}(?:發布|推出|上線|實裝|登場)/u,
 ]);
 
 const NARRATIVE_INTENT_PATTERNS = Object.freeze([
   /故事|背景|劇情|世界觀|傳說|經歷|身世|設定/u,
   /任務摘要|任務內容|角色介紹|地區介紹|\blore\b/iu,
+  /特點|特色|由來|起源/u,
 ]);
 
 const VERSION_INTENT_PATTERNS = Object.freeze([
@@ -251,7 +255,7 @@ function classifyVersionConstraint(requestVersion, question) {
       ? VERSION_CONSTRAINTS.RANGE
       : VERSION_CONSTRAINTS.EXACT;
   }
-  if (EXPLICIT_RANGE_PATTERN.test(question)) {
+  if (EXPLICIT_RANGE_PATTERN.test(question) || TEXTUAL_RANGE_PATTERN.test(question)) {
     return VERSION_CONSTRAINTS.RANGE;
   }
   if (EXPLICIT_VERSION_PATTERN.test(question)) {
@@ -278,7 +282,7 @@ function classifyRouting(question, hasResolvedEntity) {
   if (hasStructuredIntent && hasResolvedEntity) {
     return routing(QUERY_CATEGORIES.STRUCTURED, RETRIEVAL_MODES.STRUCTURED);
   }
-  if ((hasNarrativeIntent || hasResolvedEntity) && hasResolvedEntity) {
+  if (hasResolvedEntity || hasNarrativeIntent) {
     return routing(QUERY_CATEGORIES.NARRATIVE, RETRIEVAL_MODES.DOCUMENT);
   }
   return routing(QUERY_CATEGORIES.OUT_OF_SCOPE, RETRIEVAL_MODES.NONE);

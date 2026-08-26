@@ -223,22 +223,9 @@ test("topK bounds the bundle and leaves the request untouched", async (context) 
   assert.deepEqual(structuredClone(request), before);
 });
 
-test("unresolved entities and malformed query vectors fail closed", async (context) => {
+test("malformed query vectors and options fail closed", async (context) => {
   const store = await createFixtureStore(context);
   const classifier = createFixtureClassifier();
-  const unknownQuestion = "不存在的角色的故事背景是什麼？";
-  const unknownPlan = classifier.classify({ question: unknownQuestion });
-
-  const emptyBundle = await retrieveDocumentEvidence({
-    store,
-    embedQuery: embedText,
-    queryId: "qry:unknown-entity",
-    queryPlan: unknownPlan,
-    question: unknownQuestion,
-  });
-  assert.equal(assertEvidenceBundle(emptyBundle), emptyBundle);
-  assert.deepEqual(emptyBundle.items, []);
-
   const question = "雷電將軍在一心淨土追求永恆的故事是什麼？";
   const queryPlan = classifier.classify({ question });
   await assert.rejects(
@@ -265,4 +252,49 @@ test("unresolved entities and malformed query vectors fail closed", async (conte
     () => createDocumentRetriever({ store, embedQuery: embedText, topK: 0 }),
     /topK must be a positive integer/,
   );
+});
+
+test("a plan without resolved entities ranks the whole index", async (context) => {
+  const store = await createFixtureStore(context);
+  const question = "提瓦特的天空有什麼特點？";
+  const queryPlan = createFixtureClassifier().classify({ question });
+
+  const bundle = await retrieveDocumentEvidence({
+    store,
+    embedQuery: embedText,
+    queryId: "qry:entity-less",
+    queryPlan,
+    question,
+  });
+
+  assert.equal(queryPlan.retrieval_mode, "document");
+  assert.deepEqual(queryPlan.normalized_entities, []);
+  assert.equal(assertEvidenceBundle(bundle), bundle);
+  assert.equal(bundle.items[0].chunk_id, "chunk:fandom-unclassified-world-lore");
+  assert.equal(
+    bundle.items.length,
+    fixturePack.document_chunks.length,
+    "an entity-less plan considers every indexed chunk",
+  );
+});
+
+test("an entity-less plan still honours the exact version filter", async (context) => {
+  const store = await createFixtureStore(context);
+  const question = "5.0 版本更新了哪些內容？";
+  const queryPlan = createFixtureClassifier().classify({ question, game_version: "5.0" });
+
+  const bundle = await retrieveDocumentEvidence({
+    store,
+    embedQuery: embedText,
+    queryId: "qry:entity-less-version",
+    queryPlan,
+    question,
+    gameVersion: "5.0",
+  });
+
+  assert.deepEqual(queryPlan.normalized_entities, []);
+  assert.equal(assertEvidenceBundle(bundle), bundle);
+  assert.ok(bundle.items.length > 0);
+  assert.ok(bundle.items.every((item) => item.game_version === "5.0"));
+  assert.ok(bundle.items.some((item) => item.chunk_id === "chunk:hoyolab-5-0-character-updates"));
 });

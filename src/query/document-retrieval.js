@@ -49,10 +49,6 @@ export function createDocumentRetriever(options) {
 
     const exactGameVersion = resolveExactGameVersion(queryPlan, gameVersion);
     const entityIds = collectResolvedEntityIds(queryPlan);
-    if (entityIds.length === 0) {
-      return createEmptyBundle(queryId);
-    }
-
     const chunks = collectCandidateChunks(store, entityIds, exactGameVersion);
     if (chunks.length === 0) {
       return createEmptyBundle(queryId);
@@ -198,12 +194,19 @@ function collectResolvedEntityIds(queryPlan) {
 }
 
 function collectCandidateChunks(store, entityIds, exactGameVersion) {
+  const versionFilter =
+    exactGameVersion === undefined ? {} : { gameVersion: exactGameVersion };
+
+  // Version notices and unclassified world lore carry no entity_ids, so a plan
+  // without resolved entities ranks the whole index instead of returning
+  // nothing; T19 still refuses when the ranking produces no usable evidence.
+  if (entityIds.length === 0) {
+    return store.listDocumentChunks(versionFilter);
+  }
+
   const chunks = new Map();
   for (const entityId of entityIds) {
-    const filters = {
-      entityId,
-      ...(exactGameVersion === undefined ? {} : { gameVersion: exactGameVersion }),
-    };
+    const filters = { entityId, ...versionFilter };
     for (const chunk of store.listDocumentChunks(filters)) {
       if (!chunks.has(chunk.chunk_id)) {
         chunks.set(chunk.chunk_id, chunk);
