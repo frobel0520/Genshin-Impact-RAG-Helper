@@ -10,6 +10,8 @@ import {
   AUTHORITY_RANKS,
   DOMAIN_CONTRACT_FIXTURE,
   DOMAIN_ID_PREFIXES,
+  compareGameVersions,
+  parseGameVersion,
   ENTITY_TYPES,
   ERROR_CODES,
   QUERY_CATEGORIES,
@@ -87,4 +89,32 @@ test("domain IDs are stable, typed, and validated", () => {
   assert.throws(() => createDomainId("entity"), /key is required/);
   assert.throws(() => createDomainId("entity", "---"), /alphanumeric character/);
   assert.throws(() => assertDomainId("bad-id", "entity"), /Invalid domain ID/);
+});
+
+test("game versions parse into comparable explicit, range, and unknown descriptors", () => {
+  assert.deepEqual(parseGameVersion("5.0"), {
+    status: "explicit",
+    min: [5, 0],
+    max: [5, 0],
+  });
+  assert.deepEqual(parseGameVersion("3.0-3.8"), {
+    status: "range",
+    min: [3, 0],
+    max: [3, 8],
+  });
+  assert.deepEqual(parseGameVersion("3.0 to 3.8"), {
+    status: "range",
+    min: [3, 0],
+    max: [3, 8],
+  });
+
+  for (const value of ["unknown", "", "  5.0", "5.x", "3.8-3.0", 5, null, undefined]) {
+    assert.equal(parseGameVersion(value).status, "unknown", String(value));
+  }
+
+  assert.ok(compareGameVersions("5.1", "5.0") > 0);
+  assert.ok(compareGameVersions("4.8", "5.0") < 0);
+  assert.equal(compareGameVersions("5.0", "5.0.0"), 0);
+  assert.equal(compareGameVersions("5.0", "unknown"), undefined);
+  assert.equal(compareGameVersions("3.0-3.8", "3.4"), undefined);
 });
