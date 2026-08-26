@@ -16,7 +16,8 @@ const PROJECT_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const queryFixture = JSON.parse(
   readFileSync(resolve(PROJECT_ROOT, "fixtures/query-contract.json"), "utf8"),
 );
-const canonicalEntities = loadFixtureSourcePack().canonical_entities;
+const fixturePack = loadFixtureSourcePack();
+const canonicalEntities = fixturePack.canonical_entities;
 
 test("T07 fixture requests classify as structured, narrative, and out of scope", () => {
   const classifier = createQueryClassifier({ canonicalEntities });
@@ -138,10 +139,32 @@ test("out-of-scope policy is fail closed even when a known entity is present", (
     "神里綾華值得抽嗎？",
     "測試服洩漏了哪些新角色？",
     "天雲草實的最快採集路線",
+    fixturePack.test_scenarios.out_of_scope_query.question,
+    "下一期卡池是誰？",
+    "建議練雷電將軍還是納西妲？",
+    "神里綾華的聖遺物推薦是什麼？",
+    "要不要抽專武？",
   ]) {
     const plan = classifier.classify({ question });
     assert.equal(plan.query_category, "out_of_scope", question);
     assert.equal(plan.retrieval_mode, "none", question);
+  }
+});
+
+test("in-scope questions are not over-blocked by the scope patterns", () => {
+  const classifier = createQueryClassifier({ canonicalEntities });
+
+  for (const question of [
+    "雷電將軍的元素屬性是什麼？",
+    "雷電將軍的故事背景是什麼？",
+    "薙草之稻光的滿級基礎攻擊力是多少？",
+    "神里綾華的元素爆發名稱是什麼？",
+    "5.0版本更新了哪些內容？",
+    "稻妻的世界觀設定是什麼？",
+  ]) {
+    const plan = classifier.classify({ question });
+    assert.notEqual(plan.query_category, "out_of_scope", question);
+    assert.notEqual(plan.retrieval_mode, "none", question);
   }
 });
 
