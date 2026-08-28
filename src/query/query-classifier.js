@@ -17,6 +17,7 @@ export const DEFAULT_CLASSIFIER_SPOILER_LEVEL = SPOILER_LEVELS.NONE;
 const CLASSIFIER_OPTION_FIELDS = new Set(["canonicalEntities"]);
 const EXPLICIT_RANGE_PATTERN = /\d+\.\d+\s*(?:-|–|—|~|～|至|到)\s*\d+\.\d+/u;
 const EXPLICIT_VERSION_PATTERN = /(?:版本\s*)?\d+\.\d+/u;
+const VERSION_NUMBER_PATTERN = /\d+\.\d+/u;
 const TEXTUAL_RANGE_PATTERN = /版本區間|版本範圍|哪些版本/u;
 
 const OUT_OF_SCOPE_PATTERNS = Object.freeze([
@@ -80,10 +81,16 @@ export function createQueryClassifier(options) {
       question,
     );
     const routing = classifyRouting(question, normalizedEntities.length > 0);
+    const planGameVersion = resolvePlanGameVersion(
+      versionConstraint,
+      normalizedRequest.game_version,
+      question,
+    );
     const plan = {
       query_category: routing.queryCategory,
       normalized_entities: normalizedEntities,
       version_constraint: versionConstraint,
+      ...(planGameVersion === undefined ? {} : { game_version: planGameVersion }),
       retrieval_mode: routing.retrievalMode,
       spoiler_level:
         normalizedRequest.spoiler_level ?? DEFAULT_CLASSIFIER_SPOILER_LEVEL,
@@ -262,6 +269,27 @@ function classifyVersionConstraint(requestVersion, question) {
     return VERSION_CONSTRAINTS.EXACT;
   }
   return VERSION_CONSTRAINTS.CURRENT_UNSPECIFIED;
+}
+
+/**
+ * Resolve the single version an exact constraint was built for.
+ *
+ * The constraint alone is not enough for a later stage to filter on: a question
+ * that names a version has already been read here, and re-parsing it downstream
+ * would be a second, divergent implementation of this rule. The request wins
+ * when it states a version, because an explicit caller outranks the question
+ * text. A range constraint carries no single version and so carries none.
+ */
+function resolvePlanGameVersion(versionConstraint, requestVersion, question) {
+  if (versionConstraint !== VERSION_CONSTRAINTS.EXACT) {
+    return undefined;
+  }
+  if (typeof requestVersion === "string" && requestVersion !== "unknown") {
+    return requestVersion;
+  }
+
+  const version = VERSION_NUMBER_PATTERN.exec(question);
+  return version === null ? undefined : version[0];
 }
 
 function classifyRouting(question, hasResolvedEntity) {

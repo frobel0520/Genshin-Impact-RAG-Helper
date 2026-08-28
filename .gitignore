@@ -15,3 +15,6 @@ Thumbs.db
 
 # Locally built datasets
 artifacts/*.db
+
+# Generated source pack (rebuild with npm run make:pack)
+artifacts/source-pack.json

@@ -50,6 +50,7 @@ test("T07 fixture requests classify as structured, narrative, and out of scope",
       },
     ],
     version_constraint: "exact",
+    game_version: "5.0",
     retrieval_mode: "document",
     spoiler_level: "explicit",
   });
