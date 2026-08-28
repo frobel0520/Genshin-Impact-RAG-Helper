@@ -30,6 +30,18 @@ form.addEventListener("submit", async (event) => {
     render(response.ok ? describeAnswer(payload) : describeError(payload));
   } catch {
     render(describeError(undefined));
+    // A failure may mean the dataset went away underneath us; ask again rather
+    // than leaving a stale banner on screen.
+    loadHealth();
+
+// The dataset can appear while the page is open — an ingest build finishing in
+// another window — so the page asks again when the player returns to it instead
+// of staying disabled until a reload.
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") {
+    loadHealth();
+  }
+});
   } finally {
     setBusy(false);
   }
@@ -132,3 +144,12 @@ async function loadHealth() {
 }
 
 loadHealth();
+
+// The dataset can appear while the page is open — an ingest build finishing in
+// another window — so the page asks again when the player returns to it instead
+// of staying disabled until a reload.
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") {
+    loadHealth();
+  }
+});
