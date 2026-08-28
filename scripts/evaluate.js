@@ -8,6 +8,7 @@ import { loadRuntimeConfig } from "../src/config/runtime-config.js";
 import { createDocumentStore } from "../src/data/document-store.js";
 import { createStructuredStore } from "../src/data/structured-store.js";
 import { meetsAllTargets, runEvaluation } from "../src/evaluation/evaluation-runner.js";
+import { createJsonLineLogger } from "../src/observability/run-log-adapter.js";
 
 const USAGE = `Usage:
   node scripts/evaluate.js <eval-cases.json> [--report <path>]
@@ -45,10 +46,18 @@ export async function main(argv) {
   try {
     const dataset = JSON.parse(readFileSync(resolve(casesPath), "utf8"));
     const cases = Array.isArray(dataset) ? dataset : dataset.cases;
-    const service = createQueryServiceForStores({ config, structuredStore, documentStore });
+    // Records go to stderr so stdout stays the run summary a caller can pipe.
+    const logger = createJsonLineLogger({ write: (line) => process.stderr.write(line) });
+    const service = createQueryServiceForStores({
+      config,
+      structuredStore,
+      documentStore,
+      logger,
+    });
     const { run, results, metrics } = await runEvaluation({
       cases,
       answer: service.answer,
+      logger,
       ...(flags.report === undefined ? {} : { reportPath: flags.report }),
     });
 
