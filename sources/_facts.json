@@ -1,0 +1,345 @@
+{
+  "schema_version": 1,
+  "source_documents": [],
+  "document_chunks": [],
+  "canonical_entities": [
+    {
+      "entity_id": "ent:natlan",
+      "entity_type": "region",
+      "canonical_name": "納塔",
+      "aliases": ["Natlan", "彩石與焰泉之國"],
+      "locale": "zh-TW"
+    },
+    {
+      "entity_id": "ent:mualani",
+      "entity_type": "character",
+      "canonical_name": "瑪拉妮",
+      "aliases": ["嘩啦啦逐浪客", "Mualani"],
+      "locale": "zh-TW"
+    },
+    {
+      "entity_id": "ent:kinich",
+      "entity_type": "character",
+      "canonical_name": "基尼奇",
+      "aliases": ["回火之狩", "Kinich"],
+      "locale": "zh-TW"
+    },
+    {
+      "entity_id": "ent:kachina",
+      "entity_type": "character",
+      "canonical_name": "卡齊娜",
+      "aliases": ["斑金礦樸", "Kachina"],
+      "locale": "zh-TW"
+    },
+    {
+      "entity_id": "ent:inazuma",
+      "entity_type": "region",
+      "canonical_name": "稻妻",
+      "aliases": ["Inazuma"],
+      "locale": "zh-TW"
+    },
+    {
+      "entity_id": "ent:raiden-shogun",
+      "entity_type": "character",
+      "canonical_name": "雷電將軍",
+      "aliases": ["一心淨土", "雷神", "Raiden Shogun"],
+      "locale": "zh-TW"
+    },
+    {
+      "entity_id": "ent:kujou-sara",
+      "entity_type": "character",
+      "canonical_name": "九條裟羅",
+      "aliases": ["黑羽鳴鏑", "Kujou Sara"],
+      "locale": "zh-TW"
+    },
+    {
+      "entity_id": "ent:sangonomiya-kokomi",
+      "entity_type": "character",
+      "canonical_name": "珊瑚宮心海",
+      "aliases": ["真珠之智", "Sangonomiya Kokomi"],
+      "locale": "zh-TW"
+    },
+    {
+      "entity_id": "ent:aloy",
+      "entity_type": "character",
+      "canonical_name": "亞蘿伊",
+      "aliases": ["異界的救世主", "Aloy"],
+      "locale": "zh-TW"
+    }
+  ],
+  "structured_facts": [
+    {
+      "fact_id": "fact:natlan-release-version",
+      "entity_id": "ent:natlan",
+      "field_key": "release_version",
+      "value": "5.0",
+      "unit": null,
+      "game_version": "5.0",
+      "source_id": "src:hoyolab-version-5-0",
+      "validity": "active"
+    },
+    {
+      "fact_id": "fact:version-5-0-update-start",
+      "entity_id": "ent:natlan",
+      "field_key": "version_update_start",
+      "value": "2024-08-28T06:00:00+08:00",
+      "unit": null,
+      "game_version": "5.0",
+      "source_id": "src:hoyolab-version-5-0",
+      "validity": "active"
+    },
+    {
+      "fact_id": "fact:mualani-element",
+      "entity_id": "ent:mualani",
+      "field_key": "element",
+      "value": "Hydro",
+      "unit": null,
+      "game_version": "5.0",
+      "source_id": "src:hoyolab-version-5-0",
+      "validity": "active"
+    },
+    {
+      "fact_id": "fact:mualani-weapon-type",
+      "entity_id": "ent:mualani",
+      "field_key": "weapon_type",
+      "value": "Catalyst",
+      "unit": null,
+      "game_version": "5.0",
+      "source_id": "src:hoyolab-version-5-0",
+      "validity": "active"
+    },
+    {
+      "fact_id": "fact:mualani-rarity",
+      "entity_id": "ent:mualani",
+      "field_key": "rarity",
+      "value": 5,
+      "unit": "stars",
+      "game_version": "5.0",
+      "source_id": "src:hoyolab-version-5-0",
+      "validity": "active"
+    },
+    {
+      "fact_id": "fact:kinich-element",
+      "entity_id": "ent:kinich",
+      "field_key": "element",
+      "value": "Dendro",
+      "unit": null,
+      "game_version": "5.0",
+      "source_id": "src:hoyolab-version-5-0",
+      "validity": "active"
+    },
+    {
+      "fact_id": "fact:kinich-weapon-type",
+      "entity_id": "ent:kinich",
+      "field_key": "weapon_type",
+      "value": "Claymore",
+      "unit": null,
+      "game_version": "5.0",
+      "source_id": "src:hoyolab-version-5-0",
+      "validity": "active"
+    },
+    {
+      "fact_id": "fact:kinich-rarity",
+      "entity_id": "ent:kinich",
+      "field_key": "rarity",
+      "value": 5,
+      "unit": "stars",
+      "game_version": "5.0",
+      "source_id": "src:hoyolab-version-5-0",
+      "validity": "active"
+    },
+    {
+      "fact_id": "fact:kachina-element",
+      "entity_id": "ent:kachina",
+      "field_key": "element",
+      "value": "Geo",
+      "unit": null,
+      "game_version": "5.0",
+      "source_id": "src:hoyolab-version-5-0",
+      "validity": "active"
+    },
+    {
+      "fact_id": "fact:kachina-weapon-type",
+      "entity_id": "ent:kachina",
+      "field_key": "weapon_type",
+      "value": "Polearm",
+      "unit": null,
+      "game_version": "5.0",
+      "source_id": "src:hoyolab-version-5-0",
+      "validity": "active"
+    },
+    {
+      "fact_id": "fact:kachina-rarity",
+      "entity_id": "ent:kachina",
+      "field_key": "rarity",
+      "value": 4,
+      "unit": "stars",
+      "game_version": "5.0",
+      "source_id": "src:hoyolab-version-5-0",
+      "validity": "active"
+    },
+    {
+      "fact_id": "fact:version-2-1-update-start",
+      "entity_id": "ent:inazuma",
+      "field_key": "version_update_start",
+      "value": "2021-09-01T06:00:00+08:00",
+      "unit": null,
+      "game_version": "2.1",
+      "source_id": "src:hoyolab-version-2-1",
+      "validity": "active"
+    },
+    {
+      "fact_id": "fact:raiden-shogun-element",
+      "entity_id": "ent:raiden-shogun",
+      "field_key": "element",
+      "value": "Electro",
+      "unit": null,
+      "game_version": "2.1",
+      "source_id": "src:hoyolab-version-2-1",
+      "validity": "active"
+    },
+    {
+      "fact_id": "fact:raiden-shogun-weapon-type",
+      "entity_id": "ent:raiden-shogun",
+      "field_key": "weapon_type",
+      "value": "Polearm",
+      "unit": null,
+      "game_version": "2.1",
+      "source_id": "src:hoyolab-version-2-1",
+      "validity": "active"
+    },
+    {
+      "fact_id": "fact:raiden-shogun-rarity",
+      "entity_id": "ent:raiden-shogun",
+      "field_key": "rarity",
+      "value": 5,
+      "unit": "stars",
+      "game_version": "2.1",
+      "source_id": "src:hoyolab-version-2-1",
+      "validity": "active"
+    },
+    {
+      "fact_id": "fact:kujou-sara-element",
+      "entity_id": "ent:kujou-sara",
+      "field_key": "element",
+      "value": "Electro",
+      "unit": null,
+      "game_version": "2.1",
+      "source_id": "src:hoyolab-version-2-1",
+      "validity": "active"
+    },
+    {
+      "fact_id": "fact:kujou-sara-weapon-type",
+      "entity_id": "ent:kujou-sara",
+      "field_key": "weapon_type",
+      "value": "Bow",
+      "unit": null,
+      "game_version": "2.1",
+      "source_id": "src:hoyolab-version-2-1",
+      "validity": "active"
+    },
+    {
+      "fact_id": "fact:kujou-sara-rarity",
+      "entity_id": "ent:kujou-sara",
+      "field_key": "rarity",
+      "value": 4,
+      "unit": "stars",
+      "game_version": "2.1",
+      "source_id": "src:hoyolab-version-2-1",
+      "validity": "active"
+    },
+    {
+      "fact_id": "fact:sangonomiya-kokomi-element",
+      "entity_id": "ent:sangonomiya-kokomi",
+      "field_key": "element",
+      "value": "Hydro",
+      "unit": null,
+      "game_version": "2.1",
+      "source_id": "src:hoyolab-version-2-1",
+      "validity": "active"
+    },
+    {
+      "fact_id": "fact:sangonomiya-kokomi-weapon-type",
+      "entity_id": "ent:sangonomiya-kokomi",
+      "field_key": "weapon_type",
+      "value": "Catalyst",
+      "unit": null,
+      "game_version": "2.1",
+      "source_id": "src:hoyolab-version-2-1",
+      "validity": "active"
+    },
+    {
+      "fact_id": "fact:sangonomiya-kokomi-rarity",
+      "entity_id": "ent:sangonomiya-kokomi",
+      "field_key": "rarity",
+      "value": 5,
+      "unit": "stars",
+      "game_version": "2.1",
+      "source_id": "src:hoyolab-version-2-1",
+      "validity": "active"
+    },
+    {
+      "fact_id": "fact:aloy-element",
+      "entity_id": "ent:aloy",
+      "field_key": "element",
+      "value": "Cryo",
+      "unit": null,
+      "game_version": "2.1",
+      "source_id": "src:hoyolab-version-2-1",
+      "validity": "active"
+    },
+    {
+      "fact_id": "fact:aloy-weapon-type",
+      "entity_id": "ent:aloy",
+      "field_key": "weapon_type",
+      "value": "Bow",
+      "unit": null,
+      "game_version": "2.1",
+      "source_id": "src:hoyolab-version-2-1",
+      "validity": "active"
+    },
+    {
+      "fact_id": "fact:aloy-rarity",
+      "entity_id": "ent:aloy",
+      "field_key": "rarity",
+      "value": 5,
+      "unit": "stars",
+      "game_version": "2.1",
+      "source_id": "src:hoyolab-version-2-1",
+      "validity": "active"
+    }
+  ],
+  "claims": [
+    {
+      "claim_id": "claim:natlan-sub-regions-5-0",
+      "claim_key": "natlan_sub_regions",
+      "entity_id": "ent:natlan",
+      "claim_text": "官方公告記載5.0版本納塔地區開放「堅岩隘谷」、「踞石山」、「湧流地」和「萬火之甌」四個區域。",
+      "game_version": "5.0",
+      "source_id": "src:hoyolab-version-5-0",
+      "authority_rank": 1,
+      "conflict_group_id": null
+    },
+    {
+      "claim_id": "claim:raiden-shogun-burst-official",
+      "claim_key": "elemental_burst_name",
+      "entity_id": "ent:raiden-shogun",
+      "claim_text": "官方公告記載雷電將軍的元素爆發名稱為「奧義·夢想真說」。",
+      "game_version": "2.1",
+      "source_id": "src:hoyolab-version-2-1",
+      "authority_rank": 1,
+      "conflict_group_id": null
+    },
+    {
+      "claim_id": "claim:inazuma-new-islands-2-1",
+      "claim_key": "inazuma_new_islands",
+      "entity_id": "ent:inazuma",
+      "claim_text": "官方公告記載2.1版本稻妻地區開放「清籟島」與「海祇島」兩個島嶼。",
+      "game_version": "2.1",
+      "source_id": "src:hoyolab-version-2-1",
+      "authority_rank": 1,
+      "conflict_group_id": null
+    }
+  ],
+  "conflict_groups": []
+}
