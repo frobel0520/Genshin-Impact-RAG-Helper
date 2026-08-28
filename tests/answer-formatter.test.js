@@ -293,6 +293,19 @@ test("the fixture conflict scenario is answered because authority resolves the g
 
   assert.equal(response.answer_status, "answered");
   assert.ok(response.citations.length > 0);
+
+  // The rejected claim's source must not be cited: an answer never carries the
+  // source whose statement the policy just discarded.
+  const losingSourceId = fixturePack.claims.find(
+    (claim) => claim.claim_id === scenario.differing_claim_id,
+  ).source_id;
+  const losingSourceUrl = fixturePack.source_documents.find(
+    (source) => source.source_id === losingSourceId,
+  ).source_url;
+  assert.equal(
+    response.citations.some((citation) => citation.source_url === losingSourceUrl),
+    false,
+  );
 });
 
 test("an uncertain version_unknown answer keeps its citations and reports the count", () => {
