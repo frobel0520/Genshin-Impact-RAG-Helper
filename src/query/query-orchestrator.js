@@ -69,6 +69,9 @@ export function createQueryOrchestrator(options) {
       ruleset_version: QUERY_ORCHESTRATOR_RULESET_VERSION,
       query_plan: queryPlan,
       retrieval_mode: queryPlan.retrieval_mode,
+      // Reported so the policy stage uses the version this run actually
+      // filtered on, instead of deriving it from the request a second time.
+      ...(gameVersion === undefined ? {} : { game_version: gameVersion }),
       bundle: mergeEvidenceBundles(queryId, [structured, document]),
       retrieved: Object.freeze({
         structured_count: structured.items.length,
