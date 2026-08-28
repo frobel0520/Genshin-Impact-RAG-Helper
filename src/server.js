@@ -1,10 +1,11 @@
 import { existsSync } from "node:fs";
-import { resolve } from "node:path";
-import { pathToFileURL } from "node:url";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { createHealthReporter, createHealthRoute } from "./api/health-api.js";
 import { createHttpServer } from "./api/http-server.js";
 import { createQueryRoute, createQueryServiceForStores } from "./api/query-api.js";
+import { createStaticRoute } from "./api/static-assets.js";
 import { loadRuntimeConfig } from "./config/runtime-config.js";
 import { createDocumentStore } from "./data/document-store.js";
 import { createStructuredStore } from "./data/structured-store.js";
@@ -48,6 +49,9 @@ export function createApplication(environment = process.env, routes = {}) {
   const reporter = createHealthReporter({ config, ...stores });
   const composed = {
     healthHandler: createHealthRoute({ reporter }),
+    staticHandler: createStaticRoute({
+      rootDir: resolve(dirname(fileURLToPath(import.meta.url)), "ui"),
+    }),
     ...(createQueryHandler(config, stores, reporter) ?? {}),
     ...routes,
   };
