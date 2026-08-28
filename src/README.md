@@ -4,6 +4,9 @@
 but feature modules must not import the composition root or one another through
 back references.
 
+Files may import siblings within the same runtime module. Imports across runtime
+modules must follow the allowlist enforced by `scripts/check-boundaries.js`.
+
 ## Runtime modules
 
 - `config/`: environment parsing and fixed runtime settings only.

@@ -18,7 +18,7 @@ const RUNTIME_LAYERS = new Set([
 ]);
 
 const ALLOWED_IMPORTS = new Map([
-  ["api", new Set(["config", "evaluation", "ingest", "observability", "policy", "query"])],
+  ["api", new Set(["config", "domain", "evaluation", "ingest", "observability", "policy", "query"])],
   ["config", new Set()],
   ["data", new Set(["domain"])],
   ["domain", new Set()],
@@ -68,6 +68,10 @@ export function checkBoundaries() {
 
       const targetLayer = layerFor(targetPath);
       if (sourceLayer === "root") {
+        continue;
+      }
+
+      if (sourceLayer === targetLayer && RUNTIME_LAYERS.has(sourceLayer)) {
         continue;
       }
 
