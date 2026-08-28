@@ -1,0 +1,141 @@
+:root {
+  color-scheme: light dark;
+  --ink: #1f2430;
+  --muted: #5b6478;
+  --line: #d8dce6;
+  --answered: #1d7a48;
+  --uncertain: #9a6b00;
+  --refused: #a33a2a;
+  --error: #7a1f1f;
+}
+
+body {
+  margin: 0;
+  padding: 2rem 1rem 4rem;
+  font-family: "Noto Sans TC", "Microsoft JhengHei", system-ui, sans-serif;
+  line-height: 1.7;
+  color: var(--ink);
+}
+
+main {
+  max-width: 46rem;
+  margin: 0 auto;
+}
+
+h1 {
+  margin-bottom: 0.25rem;
+  font-size: 1.6rem;
+}
+
+.intro,
+.service-status {
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.service-status[data-ready="false"] {
+  color: var(--refused);
+}
+
+form {
+  display: grid;
+  gap: 0.75rem;
+  margin: 1.5rem 0;
+}
+
+textarea,
+input,
+select {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font: inherit;
+  box-sizing: border-box;
+}
+
+.options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: 0.75rem;
+}
+
+button {
+  justify-self: start;
+  padding: 0.5rem 1.25rem;
+  border: 0;
+  border-radius: 6px;
+  background: var(--ink);
+  color: #fff;
+  font: inherit;
+  cursor: pointer;
+}
+
+button[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.answer:empty {
+  display: none;
+}
+
+.answer {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+}
+
+.status-badge {
+  margin: 0 0 0.5rem;
+  font-weight: 700;
+}
+
+.answer[data-status="answered"] .status-badge { color: var(--answered); }
+.answer[data-status="uncertain"] .status-badge { color: var(--uncertain); }
+.answer[data-status="refused"] .status-badge { color: var(--refused); }
+.answer[data-status="error"] .status-badge { color: var(--error); }
+
+.spoiler-notice {
+  margin: 0 0 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-left: 3px solid var(--uncertain);
+  background: rgba(154, 107, 0, 0.08);
+}
+
+.reason,
+.version-scope,
+.trace,
+.error-code,
+.citations-empty {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin: 0.25rem 0;
+}
+
+.citations {
+  margin-top: 1rem;
+  border-top: 1px solid var(--line);
+  padding-top: 0.75rem;
+}
+
+.citations-title {
+  font-size: 1rem;
+  margin: 0 0 0.5rem;
+}
+
+.citations ul {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.citations li {
+  margin-bottom: 0.5rem;
+}
+
+.citation-kind,
+.citation-meta {
+  display: block;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
