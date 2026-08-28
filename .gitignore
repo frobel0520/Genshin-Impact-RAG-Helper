@@ -12,3 +12,6 @@ artifacts/session-summaries/
 .DS_Store
 Thumbs.db
 
+
+# Locally built datasets
+artifacts/*.db
