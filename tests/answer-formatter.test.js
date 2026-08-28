@@ -363,6 +363,15 @@ test("spoiler level only adds a notice and never changes status or citations", (
   assert.equal(none.spoiler_notice, undefined);
   assert.equal(notice.spoiler_notice, SPOILER_NOTICES.notice);
   assert.equal(explicit.spoiler_notice, SPOILER_NOTICES.explicit);
+  assert.equal(
+    formatAnswer({
+      queryPlan: plan({ spoiler_level: "explicit" }),
+      bundle: bundle([]),
+      refusalDecision: evaluateRefusalScope({ queryPlan: plan(), bundle: bundle([]) }),
+      traceId: "trace:formatter-spoiler-refused",
+    }).spoiler_notice,
+    undefined,
+  );
   for (const response of [notice, explicit]) {
     assert.equal(response.answer_status, none.answer_status);
     assert.deepEqual(response.citations, none.citations);
