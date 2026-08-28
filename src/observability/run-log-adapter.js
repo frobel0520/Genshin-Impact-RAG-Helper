@@ -19,6 +19,8 @@ export const RUN_LOG_EVENTS = Object.freeze({
   ANSWER_RUN: "answer_run",
   EVIDENCE: "evidence",
   EVAL_RESULT: "eval_result",
+  REQUEST_REJECTED: "request_rejected",
+  FAILURE: "failure",
 });
 
 export const REDACTED = "[redacted]";
@@ -124,6 +126,32 @@ export function createRunLogger(options) {
         citation_count: answer?.citations?.length,
         citation_urls: (answer?.citations ?? []).map((citation) => citation?.source_url),
         answer_text: clip(answer?.answer_text, maxTextLength),
+      });
+    },
+
+    /**
+     * A request refused before it became a query: still traced, because a
+     * caller holding the trace from an error response has to find something.
+     */
+    logRequestRejected({ traceId, statusCode, code, message }) {
+      return emit(RUN_LOG_EVENTS.REQUEST_REJECTED, {
+        trace_id: requireTraceId(traceId),
+        status_code: statusCode,
+        code,
+        message: clip(message, maxTextLength),
+      });
+    },
+
+    /**
+     * A system failure. The internal message is recorded here and never sent to
+     * the player, who gets the code and the trace instead.
+     */
+    logFailure({ traceId, queryId, code, message }) {
+      return emit(RUN_LOG_EVENTS.FAILURE, {
+        trace_id: requireTraceId(traceId),
+        query_id: queryId,
+        code,
+        message: clip(message, maxTextLength),
       });
     },
 
