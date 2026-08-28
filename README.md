@@ -27,3 +27,16 @@ tests. The source layout and dependency direction are documented in
 [`src/README.md`](src/README.md). The application currently includes the T01
 startup skeleton and the T02–T09 versioned contracts; ingestion and RAG runtime
 features arrive in later Tasks.
+
+## Sources
+
+Real source articles are copied by hand into `sources/` as one JSON file each
+and converted into an ingest dataset:
+
+```powershell
+npm run make:pack -- sources --out artifacts\source-pack.json
+npm run ingest:validate -- artifacts\source-pack.json
+```
+
+See [`sources/README.md`](sources/README.md) for the article format, the
+defaults the converter fills in, and the licence note each source kind carries.
