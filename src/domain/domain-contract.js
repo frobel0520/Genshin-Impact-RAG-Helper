@@ -187,6 +187,92 @@ export function assertDomainId(value, expectedKind) {
   return value;
 }
 
+export const GAME_VERSION_UNKNOWN = "unknown";
+
+const GAME_VERSION_RANGE_SEPARATOR = /\s*(?:\.\.|-|–|—|to)\s*/iu;
+const GAME_VERSION_SEGMENTS_PATTERN = /^\d+(?:\.\d+)*$/u;
+
+/**
+ * Parse a game version string into a comparable descriptor.
+ *
+ * Shared here so version semantics stay identical across the data, query, and
+ * policy layers; `unknown` is preserved as its own status and must never be
+ * treated as the current version.
+ *
+ * @param {unknown} value
+ * @returns {{ status: string, min?: number[], max?: number[] }}
+ */
+export function parseGameVersion(value) {
+  if (typeof value !== "string" || value.trim() !== value || value.length === 0) {
+    return { status: VERSION_STATUSES.UNKNOWN };
+  }
+  if (value === GAME_VERSION_UNKNOWN) {
+    return { status: VERSION_STATUSES.UNKNOWN };
+  }
+
+  const segments = value.split(GAME_VERSION_RANGE_SEPARATOR).filter((part) => part.length > 0);
+  if (segments.length === 2) {
+    const min = toVersionSegments(segments[0]);
+    const max = toVersionSegments(segments[1]);
+    if (min === undefined || max === undefined || compareVersionSegments(min, max) > 0) {
+      return { status: VERSION_STATUSES.UNKNOWN };
+    }
+    return { status: VERSION_STATUSES.RANGE, min, max };
+  }
+
+  const explicit = toVersionSegments(value);
+  return explicit === undefined
+    ? { status: VERSION_STATUSES.UNKNOWN }
+    : { status: VERSION_STATUSES.EXPLICIT, min: explicit, max: explicit };
+}
+
+/**
+ * Compare two explicit game versions segment by segment.
+ *
+ * @param {unknown} left
+ * @param {unknown} right
+ * @returns {number | undefined} undefined when either side is not explicit
+ */
+export function compareGameVersions(left, right) {
+  const parsedLeft = parseGameVersion(left);
+  const parsedRight = parseGameVersion(right);
+  if (
+    parsedLeft.status !== VERSION_STATUSES.EXPLICIT ||
+    parsedRight.status !== VERSION_STATUSES.EXPLICIT
+  ) {
+    return undefined;
+  }
+  return compareVersionSegments(parsedLeft.min, parsedRight.min);
+}
+
+/**
+ * @param {unknown} value
+ * @returns {number[] | undefined}
+ */
+function toVersionSegments(value) {
+  const trimmed = typeof value === "string" ? value.trim() : "";
+  if (!GAME_VERSION_SEGMENTS_PATTERN.test(trimmed)) {
+    return undefined;
+  }
+  return trimmed.split(".").map(Number);
+}
+
+/**
+ * @param {number[]} left
+ * @param {number[]} right
+ * @returns {number}
+ */
+function compareVersionSegments(left, right) {
+  const length = Math.max(left.length, right.length);
+  for (let index = 0; index < length; index += 1) {
+    const difference = (left[index] ?? 0) - (right[index] ?? 0);
+    if (difference !== 0) {
+      return difference;
+    }
+  }
+  return 0;
+}
+
 export const DOMAIN_CONTRACT_FIXTURE = Object.freeze({
   entityTypes: Object.freeze(Object.values(ENTITY_TYPES)),
   sourceKinds: Object.freeze(Object.values(SOURCE_KINDS)),

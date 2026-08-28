@@ -215,13 +215,13 @@ Question
 
 ```text
 query_category: structured | narrative | version | composite | out_of_scope
-normalized_entities: [{ entity_id?, text, entity_type?, aliases_used[] }]
+normalized_entities: [{ entity_id?, text, entity_type?, resolution_status, aliases_used[] }]
 version_constraint: exact | range | current-unspecified | unknown
 retrieval_mode: structured | document | hybrid | none
 spoiler_level: none | notice | explicit
 ```
 
-`QueryPlan` 是 Query Classifier 與 Retrieval Orchestrator 之間的固定契約；下游不得重新猜測已解析的限制。
+`normalized_entities` 另需帶 `resolution_status: resolved | unrecognized`。`resolved` 必須同時帶有 typed `entity_id` 與 `entity_type`；`unrecognized` 不得帶任何 entity identity（欄位可省略或為 `null`）。`QueryPlan` 是 Query Classifier 與 Retrieval Orchestrator 之間的固定契約；下游不得重新猜測已解析的限制。
 
 ### 5.3 EvidenceBundle
 
@@ -229,6 +229,7 @@ spoiler_level: none | notice | explicit
 query_id: string
 items:
   - evidence_id: string
+    source_id: string
     source_kind: hoyolab | genshin-db | fandom
     source_url: string
     source_title: string
@@ -264,8 +265,44 @@ trace_id: string
 - `uncertain`／`refused` 必須有原因或可理解的限制說明。
 - `error` 只表示系統故障，不可把故障包裝成資料拒答。
 - `trace_id` 必須能反查 QueryRun、EvidenceBundle 與 AnswerRun。
+- `EvidenceItem.source_id` 是內部穩定來源關聯欄位，必填；公開 `Citation` 是來源 metadata projection，不暴露 `source_id`、`evidence_id` 或 `answer_id`。
+- Answer Formatter 必須以內部 `evidence_id`／`answer_id` 建立追溯映射，並以 `trace_id` 對外關聯 AnswerRun；純契約 validator 不負責驗證跨物件 membership。
 
 ### 5.5 Maintainer／Evaluator 契約
+
+T10 將 `IngestRequest` 的來源批次驗證固定為以下最小 envelope：
+
+```json
+{
+  "schema_version": 1,
+  "documents": ["SourceDocument"]
+}
+```
+
+- `documents` 必須是非空陣列；單筆欄位沿用 T03 `SourceDocument` validator。
+- 同一批次的 `source_id` 與 `content_hash` 必須唯一；重複值需回傳可分類錯誤。
+- 缺欄位、格式、版本與 `rights_note` 錯誤保留巢狀路徑，供維護者定位批次項目。
+- T10 只做輸入邊界驗證，不執行來源抓取、名稱正規化、法律權利判定或索引建立。
+
+T11 名稱／別名 normalizer 固定以下輸出邊界：
+
+```json
+{
+  "schema_version": 1,
+  "ruleset_version": 1,
+  "source_text": "來源原文",
+  "normalized_text": "CanonicalEntity.canonical_name 或整理後未知名稱",
+  "normalized_key": "穩定比較鍵",
+  "locale": "zh-TW",
+  "resolution": "EntityResolution"
+}
+```
+
+- `source_text` 必須原樣保留；`normalized_text` 使用 NFKC、去除首尾空白並將連續空白折疊為一格。
+- `normalized_key` 在上述整理後再以小寫建立；已辨識名稱統一使用 canonical name 的 key。
+- 繁簡差異、常見拼寫與其他語言名稱只透過 `CanonicalEntity.aliases` 的明確字典匹配；T11 不做模糊、音近或外部翻譯猜測。
+- 未知名稱保留其原文與整理結果，`resolution.resolution_status` 為 `unrecognized`，不得產生 entity identity。
+- 不同實體產生相同 normalized key 時，字典建立失敗；不可用陣列順序猜測唯一實體。
 
 維護與評估命令共用下列最小輸出：
 
@@ -362,6 +399,16 @@ API 邊界規則：
 **理由**：讓資料、檢索、回答、評估與 UI 可平行開發，減少互相等待。
 
 **影響**：fixture 必須標示為測試資料，不得誤發布成真實來源；整合 Gate 最後再接真實資料。
+
+### ADR-007：明確的 Entity Resolution 與公開引用脫敏
+
+**狀態**：Accepted（2026-08-22）
+
+**決策**：T07 `normalized_entities` 使用必填 `resolution_status`；`resolved` 必須同時具備 `entity_id`／`entity_type`，`unrecognized` 不得攜帶 entity identity。T08 EvidenceItem 強制保存 typed `source_id`；公開 Citation 維持 metadata projection，內部 `evidence_id`／`answer_id` 由 Answer Formatter 與 `trace_id` 建立映射，不直接暴露給玩家。
+
+**理由**：避免 partial entity identity 進入結構化檢索，並在不暴露索引／執行內部 ID 的前提下保留可追溯性。
+
+**影響**：T07 與 T08 fixture schema version 升為 `2`；T15、T16、T20、T26 必須遵守狀態與 traceability mapping。
 
 ## 8. 細粒度 Task Breakdown
 
