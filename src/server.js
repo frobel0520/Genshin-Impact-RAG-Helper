@@ -25,21 +25,24 @@ const LOOPBACK_HOST = "127.0.0.1";
 
 /**
  * @param {Record<string, string | undefined>} environment
+ * @param {{ queryHandler?: Function }} [routes] injected once an ingest run has
+ *   produced the structured store and the fixed index the query route needs
  * @returns {Application}
  */
-export function createApplication(environment = process.env) {
+export function createApplication(environment = process.env, routes = {}) {
   const config = loadRuntimeConfig(environment);
-  const server = createHttpServer(config);
+  const server = createHttpServer(config, routes);
 
   return Object.freeze({ config, server });
 }
 
 /**
  * @param {Record<string, string | undefined>} environment
+ * @param {{ queryHandler?: Function }} [routes]
  * @returns {Application}
  */
-export function startServer(environment = process.env) {
-  const application = createApplication(environment);
+export function startServer(environment = process.env, routes = {}) {
+  const application = createApplication(environment, routes);
 
   application.server.listen(
     application.config.port,

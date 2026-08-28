@@ -18,7 +18,7 @@ import {
   prefixErrors,
 } from "../domain/contract-validation.js";
 
-export const EVIDENCE_ANSWER_SCHEMA_VERSION = 1;
+export const EVIDENCE_ANSWER_SCHEMA_VERSION = 2;
 
 export const EVIDENCE_BUNDLE_REQUIRED_FIELDS = Object.freeze([
   "query_id",
@@ -35,6 +35,7 @@ export const EVIDENCE_BUNDLE_FIELDS = Object.freeze([
 
 export const EVIDENCE_ITEM_REQUIRED_FIELDS = Object.freeze([
   "evidence_id",
+  "source_id",
   "source_kind",
   "source_url",
   "source_title",
@@ -107,6 +108,7 @@ export const EVIDENCE_ANSWER_VALIDATION_CODES = Object.freeze({
   INVALID_ITEMS: "invalid_items",
   INVALID_CONFLICT_GROUPS: "invalid_conflict_groups",
   INVALID_EVIDENCE_ID: "invalid_evidence_id",
+  INVALID_SOURCE_ID: "invalid_source_id",
   INVALID_SOURCE_KIND: "invalid_source_kind",
   INVALID_SOURCE_URL: "invalid_source_url",
   INVALID_SOURCE_TITLE: "invalid_source_title",
@@ -312,6 +314,16 @@ export function validateEvidenceItem(item) {
         EVIDENCE_ANSWER_VALIDATION_CODES.INVALID_EVIDENCE_ID,
         "evidence_id",
         "evidence_id must be a typed evidence domain ID (evd:<key>).",
+      ),
+    );
+  }
+
+  if (item.source_id !== undefined && !isDomainId(item.source_id, "source")) {
+    errors.push(
+      createError(
+        EVIDENCE_ANSWER_VALIDATION_CODES.INVALID_SOURCE_ID,
+        "source_id",
+        "source_id must be a typed source domain ID (src:<key>).",
       ),
     );
   }
