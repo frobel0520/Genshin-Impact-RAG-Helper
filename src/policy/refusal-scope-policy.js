@@ -8,7 +8,7 @@ import {
 import { isRecord } from "../domain/contract-validation.js";
 import { assertEvidenceBundle } from "./evidence-answer-contract.js";
 
-export const REFUSAL_SCOPE_POLICY_RULESET_VERSION = 1;
+export const REFUSAL_SCOPE_POLICY_RULESET_VERSION = 2;
 
 export const REFUSAL_RULES = Object.freeze([
   "out_of_scope",
@@ -16,6 +16,8 @@ export const REFUSAL_RULES = Object.freeze([
   "insufficient_evidence",
   "source_conflict",
   "version_unknown",
+  "policy_refused",
+  "policy_uncertain",
 ]);
 
 export const REFUSAL_SCOPE_POLICY_RULES = Object.freeze({
@@ -26,6 +28,7 @@ export const REFUSAL_SCOPE_POLICY_RULES = Object.freeze({
 });
 
 const POLICY_REQUEST_FIELDS = new Set(["queryPlan", "bundle", "policyDecision"]);
+const UNCERTAINTY_REASON_VALUES = new Set(Object.values(UNCERTAINTY_REASONS));
 const RESOLVED_STATUS = "resolved";
 
 /**
@@ -92,6 +95,10 @@ function validateRequest(request) {
     if (!Array.isArray(request.policyDecision.applicable_items)) {
       throw new TypeError("policyDecision.applicable_items must be an array.");
     }
+    const reason = request.policyDecision.uncertainty_reason;
+    if (reason !== undefined && !UNCERTAINTY_REASON_VALUES.has(reason)) {
+      throw new TypeError(`Unknown policyDecision.uncertainty_reason: ${reason}.`);
+    }
   }
   return {
     queryPlan: request.queryPlan,
@@ -118,6 +125,23 @@ function classify(queryPlan, evidenceItems, policyDecision) {
       answerStatus: ANSWER_STATUSES.UNCERTAIN,
       uncertaintyReason: UNCERTAINTY_REASONS.VERSION_UNKNOWN,
       matchedRule: "version_unknown",
+    };
+  }
+  // Fail closed on a reason this ruleset does not know: a conflict/version
+  // decision the refusal rules cannot interpret must not be downgraded into an
+  // answer just because it fell past every named rule.
+  if (policyDecision?.answer_status === ANSWER_STATUSES.REFUSED) {
+    return refuse(
+      policyDecision.uncertainty_reason ?? UNCERTAINTY_REASONS.INSUFFICIENT_EVIDENCE,
+      "policy_refused",
+    );
+  }
+  if (policyDecision?.answer_status === ANSWER_STATUSES.UNCERTAIN) {
+    return {
+      answerStatus: ANSWER_STATUSES.UNCERTAIN,
+      uncertaintyReason:
+        policyDecision.uncertainty_reason ?? UNCERTAINTY_REASONS.VERSION_UNKNOWN,
+      matchedRule: "policy_uncertain",
     };
   }
   return {

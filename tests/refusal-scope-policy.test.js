@@ -76,6 +76,58 @@ test("the fixture out-of-scope scenario is refused with out_of_scope", () => {
   assert.equal(decision.ruleset_version, REFUSAL_SCOPE_POLICY_RULESET_VERSION);
 });
 
+test("a refusal this ruleset cannot interpret is honoured instead of answered", () => {
+  const decision = evaluateRefusalScope({
+    queryPlan: plan(),
+    bundle: bundle([factItem()]),
+    policyDecision: {
+      query_id: "qry:refusal",
+      answer_status: "refused",
+      uncertainty_reason: "entity_unknown",
+      applicable_items: [factItem()],
+    },
+  });
+
+  assert.equal(decision.answerability, "refuse");
+  assert.equal(decision.answer_status, "refused");
+  assert.equal(decision.uncertainty_reason, "entity_unknown");
+  assert.equal(decision.matched_rule, "policy_refused");
+});
+
+test("an uncertain decision this ruleset cannot interpret stays uncertain", () => {
+  const decision = evaluateRefusalScope({
+    queryPlan: plan(),
+    bundle: bundle([factItem()]),
+    policyDecision: {
+      query_id: "qry:refusal",
+      answer_status: "uncertain",
+      uncertainty_reason: "insufficient_evidence",
+      applicable_items: [factItem()],
+    },
+  });
+
+  assert.equal(decision.answer_status, "uncertain");
+  assert.equal(decision.uncertainty_reason, "insufficient_evidence");
+  assert.equal(decision.matched_rule, "policy_uncertain");
+});
+
+test("an uncertainty reason outside the enum is rejected, not ignored", () => {
+  assert.throws(
+    () =>
+      evaluateRefusalScope({
+        queryPlan: plan(),
+        bundle: bundle([factItem()]),
+        policyDecision: {
+          query_id: "qry:refusal",
+          answer_status: "refused",
+          uncertainty_reason: "some_future_reason",
+          applicable_items: [factItem()],
+        },
+      }),
+    /Unknown policyDecision.uncertainty_reason/,
+  );
+});
+
 test("scope is checked before evidence, so relevant-looking evidence cannot rescue it", () => {
   const decision = evaluateRefusalScope({
     queryPlan: plan({ query_category: "out_of_scope", retrieval_mode: "none" }),
