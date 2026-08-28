@@ -1,5 +1,7 @@
 import { createServer } from "node:http";
 
+import { QUERY_API_ROUTE } from "./query-api.js";
+
 const LOOPBACK_ORIGIN = "http://127.0.0.1";
 const HTTP_METHODS = Object.freeze({ GET: "GET" });
 const ROUTES = Object.freeze({ ROOT: "/", HEALTH: "/health" });
@@ -10,12 +12,18 @@ const JSON_HEADERS = Object.freeze({
 });
 
 /**
+ * The query route is injected because it needs a built structured store and a
+ * built fixed index, which only exist after an ingest run. Without it the route
+ * is simply not mounted, so the server can still start and answer /health.
+ *
  * @param {{ serviceName: string }} config
+ * @param {{ queryHandler?: Function }} [routes]
  * @returns {import("node:http").Server}
  * @throws {TypeError} when the server configuration is invalid
  */
-export function createHttpServer(config) {
+export function createHttpServer(config, routes = {}) {
   assertServerConfig(config);
+  const queryHandler = assertRoutes(routes);
 
   return createServer((request, response) => {
     if (typeof request.url !== "string") {
@@ -27,6 +35,11 @@ export function createHttpServer(config) {
     }
 
     const requestUrl = new URL(request.url, LOOPBACK_ORIGIN);
+
+    if (queryHandler !== undefined && requestUrl.pathname === QUERY_API_ROUTE) {
+      queryHandler(request, response);
+      return;
+    }
 
     if (request.method === HTTP_METHODS.GET && requestUrl.pathname === ROUTES.HEALTH) {
       sendJson(response, HTTP_STATUS.OK, {
@@ -49,6 +62,21 @@ export function createHttpServer(config) {
       message: "The requested route does not exist.",
     });
   });
+}
+
+function assertRoutes(routes) {
+  if (routes === null || typeof routes !== "object") {
+    throw new TypeError("routes must be a plain object.");
+  }
+  for (const field of Object.keys(routes)) {
+    if (field !== "queryHandler") {
+      throw new TypeError(`Unknown route option: ${field}.`);
+    }
+  }
+  if (routes.queryHandler !== undefined && typeof routes.queryHandler !== "function") {
+    throw new TypeError("queryHandler must be a function when provided.");
+  }
+  return routes.queryHandler;
 }
 
 function assertServerConfig(config) {
