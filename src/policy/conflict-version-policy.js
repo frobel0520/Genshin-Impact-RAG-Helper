@@ -10,7 +10,7 @@ import {
 import { isRecord, isStableString } from "../domain/contract-validation.js";
 import { assertEvidenceBundle } from "./evidence-answer-contract.js";
 
-export const CONFLICT_VERSION_POLICY_RULESET_VERSION = 2;
+export const CONFLICT_VERSION_POLICY_RULESET_VERSION = 3;
 
 export const EXCLUSION_REASONS = Object.freeze({
   VERSION_MISMATCH: "version_mismatch",
@@ -33,6 +33,7 @@ export const CONFLICT_VERSION_POLICY_RULES = Object.freeze({
 });
 
 const POLICY_REQUEST_FIELDS = new Set(["bundle", "versionConstraint", "gameVersion"]);
+const VERSION_SPAN_SEPARATOR = "-";
 const VERSION_CONSTRAINT_VALUES = new Set(Object.values(VERSION_CONSTRAINTS));
 
 /**
@@ -62,7 +63,7 @@ export function applyConflictVersionPolicy(request) {
   applicableItems.sort(compareByAuthorityThenRecency);
 
   const conflictResolutions = bundle.conflict_groups.map((group) =>
-    resolveConflictGroup(group, applicableItems),
+    resolveConflictGroup(group, applicableItems, targetVersion),
   );
 
   // A claim that lost its conflict must not stay applicable: citing the source
@@ -78,7 +79,10 @@ export function applyConflictVersionPolicy(request) {
         reason: EXCLUSION_REASONS.LOST_CONFLICT,
       });
     } else {
-      survivingItems.push(item);
+      // Rank follows this decision's order: the items were re-sorted by
+      // authority, so the retrieval rank they arrived with no longer describes
+      // their position and must not be handed on as if it did.
+      survivingItems.push({ ...item, rank: survivingItems.length + 1 });
     }
   }
 
@@ -232,7 +236,7 @@ function toTimestamp(value) {
   return Number.isNaN(timestamp) ? undefined : timestamp;
 }
 
-function resolveConflictGroup(group, applicableItems) {
+function resolveConflictGroup(group, applicableItems, targetVersion) {
   const members = applicableItems.filter(
     (item) => item.claim_id !== undefined && group.claim_ids.includes(item.claim_id),
   );
@@ -246,14 +250,34 @@ function resolveConflictGroup(group, applicableItems) {
     };
   }
 
-  if (members.length === 1) {
+  // Without a version filter, a missing member was never retrieved rather than
+  // ruled out. Declaring a winner then would resolve the conflict by absence:
+  // the claim that is not here could be the authoritative one.
+  if (members.length < group.claim_ids.length && targetVersion === undefined) {
     return {
       conflict_group_id: group.conflict_group_id,
-      resolution: CONFLICT_RESOLUTIONS.RESOLVED_BY_VERSION,
+      resolution: CONFLICT_RESOLUTIONS.UNRESOLVED,
       claim_ids: members.map((item) => item.claim_id),
-      winning_claim_id: members[0].claim_id,
-      reason: "only one claim in the group applies to the requested version",
+      reason: "at least one claim in the group was never retrieved, so nothing can be compared",
     };
+  }
+
+  if (members.length === 1) {
+    return members.length === group.claim_ids.length
+      ? {
+          conflict_group_id: group.conflict_group_id,
+          resolution: CONFLICT_RESOLUTIONS.DOMINATED,
+          claim_ids: members.map((item) => item.claim_id),
+          winning_claim_id: members[0].claim_id,
+          reason: "the group holds a single claim, so nothing contradicts it",
+        }
+      : {
+          conflict_group_id: group.conflict_group_id,
+          resolution: CONFLICT_RESOLUTIONS.RESOLVED_BY_VERSION,
+          claim_ids: members.map((item) => item.claim_id),
+          winning_claim_id: members[0].claim_id,
+          reason: "only one claim in the group applies to the requested version",
+        };
   }
 
   const [best, runnerUp] = members;
@@ -290,16 +314,46 @@ function collectLosingClaimIds(conflictResolutions) {
   return losing;
 }
 
+/**
+ * `unknown` means the applicable evidence cannot be pinned to a version, not
+ * that it covers several. Evidence spanning known versions reports the span, so
+ * a well-sourced multi-version answer is not downgraded to uncertain. Any item
+ * whose own version is unknown still makes the whole scope unknown: the scope
+ * has to hold for every citation behind the answer.
+ */
 function resolveVersionScope(targetVersion, applicableItems) {
   if (targetVersion !== undefined) {
     return targetVersion;
   }
-  const versions = new Set(
-    applicableItems
-      .map((item) => item.game_version)
-      .filter((version) => version !== undefined && version !== GAME_VERSION_UNKNOWN),
+
+  const known = [];
+  for (const item of applicableItems) {
+    const parsed = parseGameVersion(item.game_version);
+    if (parsed.status === VERSION_STATUSES.UNKNOWN) {
+      return GAME_VERSION_UNKNOWN;
+    }
+    known.push({ version: item.game_version, min: parsed.min, max: parsed.max });
+  }
+  if (known.length === 0) {
+    return GAME_VERSION_UNKNOWN;
+  }
+
+  const distinct = new Set(known.map((entry) => entry.version));
+  if (distinct.size === 1) {
+    return [...distinct][0];
+  }
+
+  const lowest = known.reduce((best, entry) =>
+    compareSegments(entry.min, best.min) < 0 ? entry : best,
   );
-  return versions.size === 1 ? [...versions][0] : GAME_VERSION_UNKNOWN;
+  const highest = known.reduce((best, entry) =>
+    compareSegments(entry.max, best.max) > 0 ? entry : best,
+  );
+  return `${formatSegments(lowest.min)}${VERSION_SPAN_SEPARATOR}${formatSegments(highest.max)}`;
+}
+
+function formatSegments(segments) {
+  return segments.join(".");
 }
 
 function decideOutcome({ applicableItems, conflictResolutions, versionScope }) {
