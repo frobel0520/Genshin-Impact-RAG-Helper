@@ -76,17 +76,24 @@ test("the build command targets the configured databases, never memory", async (
   const previous = {
     structured: process.env.STRUCTURED_DB_PATH,
     document: process.env.DOCUMENT_DB_PATH,
+    ollama: process.env.OLLAMA_HOST,
   };
   process.env.STRUCTURED_DB_PATH = structuredDatabasePath;
   process.env.DOCUMENT_DB_PATH = documentDatabasePath;
+  // A developer machine may well have Ollama running on the default port, and
+  // the offline guard allows loopback, so the embedder is pointed at a closed
+  // loopback port instead. The index step then fails for everyone, which is
+  // what this test is about — not for whoever happens not to run Ollama.
+  process.env.OLLAMA_HOST = "http://127.0.0.1:1";
   context.after(() => {
     restoreEnvironment("STRUCTURED_DB_PATH", previous.structured);
     restoreEnvironment("DOCUMENT_DB_PATH", previous.document);
+    restoreEnvironment("OLLAMA_HOST", previous.ollama);
   });
 
-  // Ollama is not running under the offline guard, so the index step fails —
-  // but the structured store must still have been written to the configured
-  // file rather than to an in-memory database that vanishes.
+  // The index step fails without a reachable embedder, but the structured store
+  // must still have been written to the configured file rather than to an
+  // in-memory database that vanishes.
   const code = await main(["build", path], output.streams);
   const response = output.runResponse();
 
