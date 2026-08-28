@@ -4,15 +4,10 @@ import { pathToFileURL } from "node:url";
 
 import { createHealthReporter, createHealthRoute } from "./api/health-api.js";
 import { createHttpServer } from "./api/http-server.js";
-import { createQueryRoute, createQueryService } from "./api/query-api.js";
+import { createQueryRoute, createQueryServiceForStores } from "./api/query-api.js";
 import { loadRuntimeConfig } from "./config/runtime-config.js";
 import { createDocumentStore } from "./data/document-store.js";
 import { createStructuredStore } from "./data/structured-store.js";
-import { createOllamaEmbedder } from "./ingest/ollama-embedder.js";
-import { createDocumentRetriever } from "./query/document-retrieval.js";
-import { createQueryClassifier } from "./query/query-classifier.js";
-import { createQueryOrchestrator } from "./query/query-orchestrator.js";
-import { createStructuredRetriever } from "./query/structured-retrieval.js";
 
 const LOOPBACK_HOST = "127.0.0.1";
 
@@ -85,28 +80,7 @@ function createQueryHandler(config, { structuredStore, documentStore }, reporter
     return undefined;
   }
 
-  const embedder = createOllamaEmbedder({
-    host: config.ollamaHost,
-    model: config.embeddingModel,
-  });
-  const service = createQueryService({
-    orchestrator: createQueryOrchestrator({
-      classifier: createQueryClassifier({
-        canonicalEntities: structuredStore.listCanonicalEntities(),
-      }),
-      structuredRetriever: createStructuredRetriever({ store: structuredStore }),
-      documentRetriever: createDocumentRetriever({
-        store: documentStore,
-        embedQuery: async (question) => {
-          const [vector] = await embedder.embedDocuments([question], {
-            model: config.embeddingModel,
-            dimensions: documentStore.getIndexManifest().embedding_dimensions,
-          });
-          return vector;
-        },
-      }),
-    }),
-  });
+  const service = createQueryServiceForStores({ config, structuredStore, documentStore });
   return { queryHandler: createQueryRoute({ service }) };
 }
 
