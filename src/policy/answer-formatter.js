@@ -53,6 +53,7 @@ export const ANSWER_FORMATTER_RULES = Object.freeze({
   version: ANSWER_FORMATTER_RULESET_VERSION,
   statusSource: "refusal-scope-policy",
   citationsFromApplicableItemsOnly: true,
+  refusalCarriesNoSpoilerNotice: true,
   refusedCarriesCitationsOnlyForSourceConflict: true,
   citationsDeduplicatedBySourceUrl: true,
   internalIdsNeverExposed: true,
@@ -83,7 +84,11 @@ export function formatAnswer(request) {
   const evidenceItems = policyDecision?.applicable_items ?? bundle.items;
   const citations = buildCitations(evidenceItems, refusalDecision);
   const versionScope = policyDecision?.version_scope ?? UNKNOWN_VERSION_SCOPE;
-  const spoilerNotice = SPOILER_NOTICES[queryPlan.spoiler_level];
+  // A refusal has no content to warn about, so it carries no spoiler notice.
+  const spoilerNotice =
+    refusalDecision.answer_status === ANSWER_STATUSES.REFUSED
+      ? undefined
+      : SPOILER_NOTICES[queryPlan.spoiler_level];
 
   return assertAnswerResponse({
     answer_status: refusalDecision.answer_status,

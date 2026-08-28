@@ -59,13 +59,15 @@ export function createQueryService(options) {
     const traceId = generateTraceId();
     const queryId = createDomainId("query", traceId);
 
-    const { query_plan: queryPlan, bundle } = await orchestrator.run({ queryId, request });
+    const {
+      query_plan: queryPlan,
+      bundle,
+      game_version: gameVersion,
+    } = await orchestrator.run({ queryId, request });
     const policyDecision = applyConflictVersionPolicy({
       bundle,
       versionConstraint: queryPlan.version_constraint,
-      ...(queryPlan.version_constraint === "exact"
-        ? { gameVersion: request.game_version }
-        : {}),
+      ...(gameVersion === undefined ? {} : { gameVersion }),
     });
     const refusalDecision = evaluateRefusalScope({ queryPlan, bundle, policyDecision });
 
