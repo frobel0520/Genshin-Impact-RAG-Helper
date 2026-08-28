@@ -24,10 +24,14 @@ the run failed or a scored metric missed its target.`;
  * executed cleanly still exits non-zero when a target was missed, because a
  * regression the numbers show must not pass as a green command.
  */
-export async function main(argv) {
+export async function main(argv, streams = {}) {
+  // Injected so a caller can read what the command printed without patching the
+  // process's own streams, which the test runner also writes to.
+  const out = streams.stdout ?? ((text) => process.stdout.write(text));
+  const err = streams.stderr ?? ((text) => process.stderr.write(text));
   const [casesPath, ...rest] = argv;
   if (casesPath === undefined) {
-    process.stderr.write(`${USAGE}\n`);
+    err(`${USAGE}\n`);
     return 2;
   }
   const flags = parseFlags(rest);
@@ -35,7 +39,7 @@ export async function main(argv) {
   const config = loadRuntimeConfig(process.env);
   for (const path of [config.structuredDatabasePath, config.documentDatabasePath]) {
     if (!existsSync(resolve(path))) {
-      process.stderr.write(`No dataset at ${path}. Run the ingest build first.\n`);
+      err(`No dataset at ${path}. Run the ingest build first.\n`);
       return 1;
     }
   }
@@ -47,7 +51,7 @@ export async function main(argv) {
     const dataset = JSON.parse(readFileSync(resolve(casesPath), "utf8"));
     const cases = Array.isArray(dataset) ? dataset : dataset.cases;
     // Records go to stderr so stdout stays the run summary a caller can pipe.
-    const logger = createJsonLineLogger({ write: (line) => process.stderr.write(line) });
+    const logger = createJsonLineLogger({ write: (line) => err(line) });
     const service = createQueryServiceForStores({
       config,
       structuredStore,
@@ -68,7 +72,7 @@ export async function main(argv) {
         "utf8",
       );
     }
-    process.stdout.write(`${JSON.stringify({ run, metrics }, null, 2)}\n`);
+    out(`${JSON.stringify({ run, metrics }, null, 2)}\n`);
 
     return run.status === "passed" && meetsAllTargets(metrics) ? 0 : 1;
   } finally {

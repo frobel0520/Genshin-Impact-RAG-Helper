@@ -9,6 +9,8 @@ export const DATASET_STATES = Object.freeze({
   READY: "ready",
   MISSING: "missing",
   CORRUPT: "corrupt",
+  MISMATCHED: "mismatched",
+  UNREADABLE: "unreadable",
 });
 
 /**
@@ -38,15 +40,16 @@ export const HEALTH_RULES = Object.freeze({
  *   config: object,
  *   structuredStore?: object,
  *   documentStore?: object,
+ *   storeFailures?: { structured?: string, document?: string },
  * }} options
  * @returns {{ report: () => object }}
  */
 export function createHealthReporter(options) {
-  const { config, structuredStore, documentStore } = validateOptions(options);
+  const { config, structuredStore, documentStore, storeFailures } = validateOptions(options);
 
   function report() {
-    const structured = describeStructuredStore(structuredStore);
-    const index = describeDocumentIndex(documentStore);
+    const structured = describeStructuredStore(structuredStore, storeFailures.structured);
+    const index = describeDocumentIndex(documentStore, storeFailures.document);
     const dataset = resolveDatasetState(structured, index);
 
     return {
@@ -96,7 +99,10 @@ export function createHealthRoute(options) {
   };
 }
 
-function describeStructuredStore(store) {
+function describeStructuredStore(store, failure) {
+  if (failure !== undefined) {
+    return { available: false, unreadable: true, reason: failure };
+  }
   if (store === undefined) {
     return { available: false };
   }
@@ -105,10 +111,14 @@ function describeStructuredStore(store) {
     available: status.isOpen,
     schema_version: status.schemaVersion,
     counts: status.counts,
+    dataset_version: status.datasetVersion ?? null,
   };
 }
 
-function describeDocumentIndex(store) {
+function describeDocumentIndex(store, failure) {
+  if (failure !== undefined) {
+    return { available: false, unreadable: true, reason: failure };
+  }
   if (store === undefined) {
     return { available: false };
   }
@@ -127,6 +137,7 @@ function describeDocumentIndex(store) {
     schema_version: status.schemaVersion,
     counts: status.counts,
     index_hash: status.indexHash,
+    dataset_version: status.datasetVersion ?? null,
     verified: verification.ok,
     ...(manifest === undefined
       ? {}
@@ -139,17 +150,35 @@ function describeDocumentIndex(store) {
 }
 
 /**
- * A store that is open but holds nothing is `missing`, not `corrupt`: an ingest
- * run has simply not happened yet. `corrupt` is reserved for an index that
- * exists and does not match its manifest, which is the case a maintainer has to
- * act on before the helper answers anything.
+ * Readiness covers both stores, because an answer needs both.
+ *
+ * `unreadable` means a database file exists but could not be opened at all.
+ * `missing` means an ingest run has not happened yet. `mismatched` means the
+ * two stores were left holding different batches — the state a build that
+ * replaced one and failed on the other produces, where every answer would
+ * quietly mix new facts with stale text. `corrupt` means the index no longer
+ * matches its own manifest. Only `ready` may report `ok`.
  */
 function resolveDatasetState(structured, index) {
+  if (structured.unreadable === true || index.unreadable === true) {
+    return DATASET_STATES.UNREADABLE;
+  }
   if (!structured.available || !index.available) {
     return DATASET_STATES.MISSING;
   }
-  if (index.index_hash === null || index.counts.documentChunks === 0) {
+  if (
+    index.index_hash === null ||
+    index.counts.documentChunks === 0 ||
+    structured.counts.canonicalEntities === 0
+  ) {
     return DATASET_STATES.MISSING;
+  }
+  if (
+    structured.dataset_version !== null &&
+    index.dataset_version !== null &&
+    structured.dataset_version !== index.dataset_version
+  ) {
+    return DATASET_STATES.MISMATCHED;
   }
   return index.verified ? DATASET_STATES.READY : DATASET_STATES.CORRUPT;
 }
@@ -159,7 +188,7 @@ function validateOptions(options) {
     throw new TypeError("Health reporter options must be a plain object.");
   }
   for (const field of Object.keys(options)) {
-    if (!["config", "structuredStore", "documentStore"].includes(field)) {
+    if (!["config", "structuredStore", "documentStore", "storeFailures"].includes(field)) {
       throw new TypeError(`Unknown health reporter option: ${field}.`);
     }
   }
@@ -184,5 +213,6 @@ function validateOptions(options) {
     config,
     structuredStore: options.structuredStore,
     documentStore: options.documentStore,
+    storeFailures: options.storeFailures ?? {},
   };
 }
