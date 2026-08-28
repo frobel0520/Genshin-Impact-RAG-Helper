@@ -20,13 +20,13 @@ const JSON_HEADERS = Object.freeze({
  * to a liveness-only answer.
  *
  * @param {{ serviceName: string }} config
- * @param {{ queryHandler?: Function, healthHandler?: Function }} [routes]
+ * @param {{ queryHandler?: Function, healthHandler?: Function, staticHandler?: Function }} [routes]
  * @returns {import("node:http").Server}
  * @throws {TypeError} when the server configuration is invalid
  */
 export function createHttpServer(config, routes = {}) {
   assertServerConfig(config);
-  const { queryHandler, healthHandler } = assertRoutes(routes);
+  const { queryHandler, healthHandler, staticHandler } = assertRoutes(routes);
 
   return createServer((request, response) => {
     if (typeof request.url !== "string") {
@@ -41,6 +41,10 @@ export function createHttpServer(config, routes = {}) {
 
     if (queryHandler !== undefined && requestUrl.pathname === QUERY_API_ROUTE) {
       queryHandler(request, response);
+      return;
+    }
+
+    if (staticHandler !== undefined && staticHandler(request, response, requestUrl.pathname)) {
       return;
     }
 
@@ -77,16 +81,20 @@ function assertRoutes(routes) {
     throw new TypeError("routes must be a plain object.");
   }
   for (const field of Object.keys(routes)) {
-    if (field !== "queryHandler" && field !== "healthHandler") {
+    if (!["queryHandler", "healthHandler", "staticHandler"].includes(field)) {
       throw new TypeError(`Unknown route option: ${field}.`);
     }
   }
-  for (const field of ["queryHandler", "healthHandler"]) {
+  for (const field of ["queryHandler", "healthHandler", "staticHandler"]) {
     if (routes[field] !== undefined && typeof routes[field] !== "function") {
       throw new TypeError(`${field} must be a function when provided.`);
     }
   }
-  return { queryHandler: routes.queryHandler, healthHandler: routes.healthHandler };
+  return {
+    queryHandler: routes.queryHandler,
+    healthHandler: routes.healthHandler,
+    staticHandler: routes.staticHandler,
+  };
 }
 
 function assertServerConfig(config) {
