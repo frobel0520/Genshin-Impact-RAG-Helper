@@ -46,8 +46,8 @@ const LOOPBACK_HOST = "127.0.0.1";
  */
 export function createApplication(environment = process.env, routes = {}) {
   const config = loadRuntimeConfig(environment);
-  const stores = openExistingStores(config);
-  const reporter = createHealthReporter({ config, ...stores });
+  const { stores, storeFailures } = openExistingStores(config);
+  const reporter = createHealthReporter({ config, ...stores, storeFailures });
   const composed = {
     healthHandler: createHealthRoute({ reporter }),
     staticHandler: createStaticRoute({
@@ -67,17 +67,38 @@ export function createApplication(environment = process.env, routes = {}) {
   });
 }
 
+/**
+ * A database that exists but cannot be opened — corrupt, half-written, or from
+ * an incompatible schema — is reported, not thrown. The one broken state health
+ * could never describe is the one that stops the process from starting.
+ */
 function openExistingStores(config) {
   const stores = {};
+  const storeFailures = {};
+
   if (existsSync(resolve(config.structuredDatabasePath))) {
-    stores.structuredStore = createStructuredStore({
-      databasePath: config.structuredDatabasePath,
-    });
+    try {
+      stores.structuredStore = createStructuredStore({
+        databasePath: config.structuredDatabasePath,
+      });
+    } catch (error) {
+      storeFailures.structured = describeStoreFailure(config.structuredDatabasePath, error);
+    }
   }
   if (existsSync(resolve(config.documentDatabasePath))) {
-    stores.documentStore = createDocumentStore({ databasePath: config.documentDatabasePath });
+    try {
+      stores.documentStore = createDocumentStore({ databasePath: config.documentDatabasePath });
+    } catch (error) {
+      storeFailures.document = describeStoreFailure(config.documentDatabasePath, error);
+    }
   }
-  return stores;
+  return { stores, storeFailures };
+}
+
+function describeStoreFailure(path, error) {
+  const detail = error instanceof Error ? error.message : "unknown error";
+  logError("store_unreadable", { path, error: detail });
+  return `${path} could not be opened: ${detail}`;
 }
 
 function createQueryHandler(config, { structuredStore, documentStore }, reporter) {

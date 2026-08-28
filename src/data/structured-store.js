@@ -13,7 +13,7 @@ import { assertSourceDocument } from "./source-document-contract.js";
 import { AUTHORITY_RANKS, isDomainId } from "../domain/domain-contract.js";
 import { isRecord, isStableString } from "../domain/contract-validation.js";
 
-export const STRUCTURED_STORE_SCHEMA_VERSION = 1;
+export const STRUCTURED_STORE_SCHEMA_VERSION = 2;
 export const DEFAULT_STRUCTURED_STORE_DATABASE_PATH = ":memory:";
 
 const STORE_OPTION_FIELDS = new Set(["databasePath"]);
@@ -39,7 +39,8 @@ const CLAIM_FILTER_FIELDS = new Set(["entityId", "claimKey", "gameVersion"]);
 const CREATE_SCHEMA_SQL = `
   CREATE TABLE IF NOT EXISTS structured_store_metadata (
     singleton INTEGER PRIMARY KEY CHECK (singleton = 1),
-    schema_version INTEGER NOT NULL
+    schema_version INTEGER NOT NULL,
+    dataset_version TEXT
   ) STRICT;
 
   INSERT INTO structured_store_metadata (singleton, schema_version)
@@ -137,6 +138,7 @@ export function createStructuredStore(options = {}) {
   const database = new DatabaseSync(databasePath);
   let isOpen = true;
   let lastKnownCounts;
+  let lastKnownDatasetVersion = null;
 
   try {
     database.exec("PRAGMA foreign_keys = ON;");
@@ -144,6 +146,7 @@ export function createStructuredStore(options = {}) {
     database.exec(CREATE_SCHEMA_SQL);
     assertCompatibleSchema(database);
     lastKnownCounts = readCounts(database);
+    lastKnownDatasetVersion = readDatasetVersion(database);
   } catch (error) {
     database.close();
     throw error;
@@ -151,10 +154,17 @@ export function createStructuredStore(options = {}) {
 
   const insertStatements = prepareInsertStatements(database);
 
-  function replaceData(data) {
+  /**
+   * @param {object} data
+   * @param {{ datasetVersion?: string }} [options] the version of the batch this
+   *   data came from, recorded so a reader can tell whether the document index
+   *   beside it was built from the same one
+   */
+  function replaceData(data, options = {}) {
     assertStoreIsOpen(isOpen);
     const validatedData = validateStoreData(data);
     const serializedData = serializeStoreData(validatedData);
+    const datasetVersion = validateDatasetVersion(options);
     let transactionStarted = false;
 
     try {
@@ -162,6 +172,9 @@ export function createStructuredStore(options = {}) {
       transactionStarted = true;
       database.exec(CLEAR_DATA_SQL);
       insertSerializedData(insertStatements, serializedData);
+      database
+        .prepare("UPDATE structured_store_metadata SET dataset_version = ? WHERE singleton = 1")
+        .run(datasetVersion ?? null);
       database.exec("COMMIT;");
       transactionStarted = false;
     } catch (error) {
@@ -172,7 +185,8 @@ export function createStructuredStore(options = {}) {
     }
 
     lastKnownCounts = readCounts(database);
-    return createStatusSnapshot(isOpen, lastKnownCounts);
+    lastKnownDatasetVersion = datasetVersion ?? null;
+    return createStatusSnapshot(isOpen, lastKnownCounts, lastKnownDatasetVersion);
   }
 
   function findStructuredFacts(filters) {
@@ -258,8 +272,9 @@ export function createStructuredStore(options = {}) {
   function getStatus() {
     if (isOpen) {
       lastKnownCounts = readCounts(database);
+      lastKnownDatasetVersion = readDatasetVersion(database);
     }
-    return createStatusSnapshot(isOpen, lastKnownCounts);
+    return createStatusSnapshot(isOpen, lastKnownCounts, lastKnownDatasetVersion);
   }
 
   function close() {
@@ -783,12 +798,35 @@ function readTableCount(database, tableName) {
   return database.prepare(`SELECT COUNT(*) AS count FROM ${tableName}`).get().count;
 }
 
-function createStatusSnapshot(isOpen, counts) {
+function createStatusSnapshot(isOpen, counts, datasetVersion = null) {
   return Object.freeze({
     isOpen,
     schemaVersion: STRUCTURED_STORE_SCHEMA_VERSION,
     counts: Object.freeze({ ...counts }),
+    datasetVersion,
   });
+}
+
+function readDatasetVersion(database) {
+  const row = database
+    .prepare("SELECT dataset_version FROM structured_store_metadata WHERE singleton = 1")
+    .get();
+  return row?.dataset_version ?? null;
+}
+
+function validateDatasetVersion(options) {
+  if (!isRecord(options)) {
+    throw new TypeError("replaceData options must be a plain object.");
+  }
+  for (const field of Object.keys(options)) {
+    if (field !== "datasetVersion") {
+      throw new TypeError(`Unknown replaceData option: ${field}.`);
+    }
+  }
+  if (options.datasetVersion !== undefined && !isStableString(options.datasetVersion)) {
+    throw new TypeError("datasetVersion must be a non-empty string when provided.");
+  }
+  return options.datasetVersion;
 }
 
 function assertStoreIsOpen(isOpen) {
