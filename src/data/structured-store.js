@@ -203,6 +203,20 @@ export function createStructuredStore(options = {}) {
     return sortClaims(rows.map(toClaim), sourceDocuments);
   }
 
+  /**
+   * Read back every CanonicalEntity, ordered by ID so the result is stable.
+   *
+   * The query classifier needs the entity dictionary at runtime, and after an
+   * ingest run this store is the only place it exists.
+   */
+  function listCanonicalEntities() {
+    assertStoreIsOpen(isOpen);
+    return database
+      .prepare("SELECT * FROM canonical_entities ORDER BY entity_id")
+      .all()
+      .map(toCanonicalEntity);
+  }
+
   function getSourceDocument(sourceId) {
     assertStoreIsOpen(isOpen);
     assertDomainId(sourceId, "source", "sourceId");
@@ -262,6 +276,7 @@ export function createStructuredStore(options = {}) {
     replaceData,
     findStructuredFacts,
     findClaims,
+    listCanonicalEntities,
     getSourceDocument,
     getConflictGroup,
     getStatus,
@@ -721,6 +736,16 @@ function toClaimSourceDocument(row) {
     document.published_at = row.source_published_at;
   }
   return document;
+}
+
+function toCanonicalEntity(row) {
+  return {
+    entity_id: row.entity_id,
+    entity_type: row.entity_type,
+    canonical_name: row.canonical_name,
+    aliases: JSON.parse(row.aliases_json),
+    locale: row.locale,
+  };
 }
 
 function toSourceDocument(row) {
