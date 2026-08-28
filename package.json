@@ -13,6 +13,8 @@
     "check:syntax": "node scripts/check-syntax.js",
     "test": "node --test",
     "lint": "node scripts/check-boundaries.js",
+    "ingest:validate": "node scripts/ingest.js validate",
+    "ingest:build": "node scripts/ingest.js build",
     "check": "npm run check:syntax && npm run lint && npm test"
   }
 }
