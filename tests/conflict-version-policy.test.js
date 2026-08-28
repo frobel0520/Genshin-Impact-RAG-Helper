@@ -84,6 +84,48 @@ test("the fixture conflict is dominated by the higher-authority source", (contex
   assert.equal(decision.ruleset_version, CONFLICT_VERSION_POLICY_RULESET_VERSION);
 });
 
+test("a claim that lost its conflict stops being applicable evidence", (context) => {
+  const evidenceBundle = fixtureConflictBundle(context);
+  const scenario = fixturePack.test_scenarios.conflict_query;
+
+  const decision = applyConflictVersionPolicy({
+    bundle: evidenceBundle,
+    versionConstraint: "current-unspecified",
+  });
+
+  const applicableClaimIds = decision.applicable_items.map((item) => item.claim_id);
+  assert.ok(applicableClaimIds.includes(scenario.official_claim_id));
+  assert.equal(applicableClaimIds.includes(scenario.differing_claim_id), false);
+
+  const losingEvidenceId = evidenceBundle.items.find(
+    (item) => item.claim_id === scenario.differing_claim_id,
+  ).evidence_id;
+  assert.deepEqual(
+    decision.excluded_items.find((entry) => entry.evidence_id === losingEvidenceId),
+    { evidence_id: losingEvidenceId, reason: EXCLUSION_REASONS.LOST_CONFLICT },
+  );
+});
+
+test("an unresolved conflict keeps every claim so the refusal can show both sides", () => {
+  const evidenceBundle = bundle(
+    [
+      claimItem({ evidence_id: "evd:kept-a", claim_id: "claim:kept-a" }),
+      claimItem({ evidence_id: "evd:kept-b", claim_id: "claim:kept-b" }),
+    ],
+    [{ conflict_group_id: "conflict:kept", claim_ids: ["claim:kept-a", "claim:kept-b"] }],
+  );
+
+  const decision = applyConflictVersionPolicy({
+    bundle: evidenceBundle,
+    versionConstraint: "current-unspecified",
+  });
+
+  assert.equal(decision.answer_status, "refused");
+  assert.equal(decision.uncertainty_reason, "source_conflict");
+  assert.equal(decision.applicable_items.length, 2);
+  assert.deepEqual(decision.excluded_items, []);
+});
+
 test("equal authority within one version scope refuses instead of picking a claim", () => {
   const evidenceBundle = bundle(
     [

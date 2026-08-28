@@ -10,11 +10,12 @@ import {
 import { isRecord, isStableString } from "../domain/contract-validation.js";
 import { assertEvidenceBundle } from "./evidence-answer-contract.js";
 
-export const CONFLICT_VERSION_POLICY_RULESET_VERSION = 1;
+export const CONFLICT_VERSION_POLICY_RULESET_VERSION = 2;
 
 export const EXCLUSION_REASONS = Object.freeze({
   VERSION_MISMATCH: "version_mismatch",
   VERSION_UNKNOWN: "version_unknown",
+  LOST_CONFLICT: "lost_conflict",
 });
 
 export const CONFLICT_RESOLUTIONS = Object.freeze({
@@ -63,9 +64,27 @@ export function applyConflictVersionPolicy(request) {
   const conflictResolutions = bundle.conflict_groups.map((group) =>
     resolveConflictGroup(group, applicableItems),
   );
-  const versionScope = resolveVersionScope(targetVersion, applicableItems);
+
+  // A claim that lost its conflict must not stay applicable: citing the source
+  // the policy just rejected would put a discredited statement behind the
+  // answer. Losers are excluded here rather than in the formatter, so the
+  // reason stays with the decision that produced it.
+  const losingClaimIds = collectLosingClaimIds(conflictResolutions);
+  const survivingItems = [];
+  for (const item of applicableItems) {
+    if (item.claim_id !== undefined && losingClaimIds.has(item.claim_id)) {
+      excludedItems.push({
+        evidence_id: item.evidence_id,
+        reason: EXCLUSION_REASONS.LOST_CONFLICT,
+      });
+    } else {
+      survivingItems.push(item);
+    }
+  }
+
+  const versionScope = resolveVersionScope(targetVersion, survivingItems);
   const { answerStatus, uncertaintyReason } = decideOutcome({
-    applicableItems,
+    applicableItems: survivingItems,
     conflictResolutions,
     versionScope,
   });
@@ -76,7 +95,7 @@ export function applyConflictVersionPolicy(request) {
     answer_status: answerStatus,
     ...(uncertaintyReason === undefined ? {} : { uncertainty_reason: uncertaintyReason }),
     version_scope: versionScope,
-    applicable_items: applicableItems,
+    applicable_items: survivingItems,
     excluded_items: excludedItems,
     conflict_resolutions: conflictResolutions,
   };
@@ -254,6 +273,21 @@ function resolveConflictGroup(group, applicableItems) {
     claim_ids: members.map((item) => item.claim_id),
     reason: "no claim dominates: equal source authority within the same version scope",
   };
+}
+
+function collectLosingClaimIds(conflictResolutions) {
+  const losing = new Set();
+  for (const resolution of conflictResolutions) {
+    if (resolution.winning_claim_id === undefined) {
+      continue;
+    }
+    for (const claimId of resolution.claim_ids) {
+      if (claimId !== resolution.winning_claim_id) {
+        losing.add(claimId);
+      }
+    }
+  }
+  return losing;
 }
 
 function resolveVersionScope(targetVersion, applicableItems) {
