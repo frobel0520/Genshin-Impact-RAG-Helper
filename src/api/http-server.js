@@ -1,5 +1,6 @@
 import { createServer } from "node:http";
 
+import { HEALTH_API_ROUTE } from "./health-api.js";
 import { QUERY_API_ROUTE } from "./query-api.js";
 
 const LOOPBACK_ORIGIN = "http://127.0.0.1";
@@ -14,16 +15,18 @@ const JSON_HEADERS = Object.freeze({
 /**
  * The query route is injected because it needs a built structured store and a
  * built fixed index, which only exist after an ingest run. Without it the route
- * is simply not mounted, so the server can still start and answer /health.
+ * is simply not mounted, so the server can still start and report its health.
+ * The health route is injected the same way; without it the server falls back
+ * to a liveness-only answer.
  *
  * @param {{ serviceName: string }} config
- * @param {{ queryHandler?: Function }} [routes]
+ * @param {{ queryHandler?: Function, healthHandler?: Function }} [routes]
  * @returns {import("node:http").Server}
  * @throws {TypeError} when the server configuration is invalid
  */
 export function createHttpServer(config, routes = {}) {
   assertServerConfig(config);
-  const queryHandler = assertRoutes(routes);
+  const { queryHandler, healthHandler } = assertRoutes(routes);
 
   return createServer((request, response) => {
     if (typeof request.url !== "string") {
@@ -38,6 +41,11 @@ export function createHttpServer(config, routes = {}) {
 
     if (queryHandler !== undefined && requestUrl.pathname === QUERY_API_ROUTE) {
       queryHandler(request, response);
+      return;
+    }
+
+    if (healthHandler !== undefined && requestUrl.pathname === HEALTH_API_ROUTE) {
+      healthHandler(request, response);
       return;
     }
 
@@ -69,14 +77,16 @@ function assertRoutes(routes) {
     throw new TypeError("routes must be a plain object.");
   }
   for (const field of Object.keys(routes)) {
-    if (field !== "queryHandler") {
+    if (field !== "queryHandler" && field !== "healthHandler") {
       throw new TypeError(`Unknown route option: ${field}.`);
     }
   }
-  if (routes.queryHandler !== undefined && typeof routes.queryHandler !== "function") {
-    throw new TypeError("queryHandler must be a function when provided.");
+  for (const field of ["queryHandler", "healthHandler"]) {
+    if (routes[field] !== undefined && typeof routes[field] !== "function") {
+      throw new TypeError(`${field} must be a function when provided.`);
+    }
   }
-  return routes.queryHandler;
+  return { queryHandler: routes.queryHandler, healthHandler: routes.healthHandler };
 }
 
 function assertServerConfig(config) {
