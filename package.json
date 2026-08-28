@@ -15,6 +15,7 @@
     "lint": "node scripts/check-boundaries.js",
     "ingest:validate": "node scripts/ingest.js validate",
     "ingest:build": "node scripts/ingest.js build",
+    "evaluate": "node scripts/evaluate.js",
     "check": "npm run check:syntax && npm run lint && npm test"
   }
 }
