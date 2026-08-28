@@ -58,7 +58,7 @@ export async function main(argv, streams = {}) {
       documentStore,
       logger,
     });
-    const { run, results, metrics } = await runEvaluation({
+    const { run, results, metrics, cases: caseSummary } = await runEvaluation({
       cases,
       answer: service.answer,
       logger,

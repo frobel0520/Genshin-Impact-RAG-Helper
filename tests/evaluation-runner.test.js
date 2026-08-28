@@ -191,7 +191,7 @@ test("recall is scored against the expected source URLs in the top five citation
 });
 
 test("prose judgements are left unscored rather than guessed", async () => {
-  const { results, metrics } = await runEvaluation({
+  const { results, metrics, cases } = await runEvaluation({
     cases: [answerable()],
     runId: "run:eval-not-scored",
     answer: async () => answerResponse(),
@@ -205,7 +205,8 @@ test("prose judgements are left unscored rather than guessed", async () => {
   for (const metric of SCORED_METRICS) {
     assert.notEqual(metrics[metric].score, undefined);
   }
-  assert.equal(metrics.cases.pending_human_review, 1);
+  assert.equal(cases.pending_human_review, 1);
+  assert.equal(metrics.cases, undefined, "the metric map holds metrics only");
 });
 
 test("the metric summary reports scores against their targets", async () => {
@@ -215,7 +216,7 @@ test("the metric summary reports scores against their targets", async () => {
     refusalCase(),
   ];
 
-  const { metrics } = await runEvaluation({
+  const { metrics, cases: caseSummary } = await runEvaluation({
     cases,
     runId: "run:eval-summary",
     answer: async (request) =>
@@ -227,7 +228,7 @@ test("the metric summary reports scores against their targets", async () => {
   assert.equal(metrics.citation_coverage.score, 1);
   assert.equal(metrics.citation_coverage.meets_target, true);
   assert.equal(metrics.correct_refusal.score, 1);
-  assert.equal(metrics.cases.declared, 3);
+  assert.equal(caseSummary.declared, 3);
   assert.equal(meetsAllTargets(metrics), true);
 });
 
