@@ -109,6 +109,7 @@ export async function runIngestBuild(request) {
     });
   }
 
+  const datasetVersion = hashCanonical(dataset);
   const errors = [];
   try {
     // The name dictionary is built before anything is written: two entities
@@ -116,7 +117,11 @@ export async function runIngestBuild(request) {
     // out after the store was replaced would leave a dataset nobody validated.
     buildEntityNameIndex(dataset.canonical_entities);
 
-    structuredStore.replaceData(pick(dataset, STRUCTURED_COLLECTIONS));
+    // Both stores are stamped with the same version, so a later reader can tell
+    // whether they came from one batch. A build that replaces one and fails on
+    // the other leaves versions that no longer agree, which is exactly what a
+    // health check has to be able to see.
+    structuredStore.replaceData(pick(dataset, STRUCTURED_COLLECTIONS), { datasetVersion });
     artifacts.push({
       path: structuredStorePath,
       content_hash: hashCanonical(pick(dataset, STRUCTURED_COLLECTIONS)),
@@ -127,6 +132,7 @@ export async function runIngestBuild(request) {
       store: documentStore,
       data: pick(dataset, INDEX_COLLECTIONS),
       embedDocuments,
+      datasetVersion,
     });
     artifacts.push({
       path: documentStorePath,
