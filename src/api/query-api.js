@@ -1,11 +1,17 @@
 import { randomUUID } from "node:crypto";
 
 import { ANSWER_STATUSES, ERROR_CODES, createDomainId } from "../domain/domain-contract.js";
+import { isRecord } from "../domain/contract-validation.js";
 import { classifyErrorCode } from "../domain/run-response-contract.js";
 import { formatAnswer } from "../policy/answer-formatter.js";
 import { applyConflictVersionPolicy } from "../policy/conflict-version-policy.js";
 import { evaluateRefusalScope } from "../policy/refusal-scope-policy.js";
+import { createOllamaEmbedder } from "../ingest/ollama-embedder.js";
+import { createDocumentRetriever } from "../query/document-retrieval.js";
+import { createQueryClassifier } from "../query/query-classifier.js";
+import { createQueryOrchestrator } from "../query/query-orchestrator.js";
 import { validateQueryRequest } from "../query/query-contract.js";
+import { createStructuredRetriever } from "../query/structured-retrieval.js";
 
 export const QUERY_API_ROUTE = "/api/v1/query";
 export const QUERY_API_MAX_BODY_BYTES = 16 * 1024;
@@ -82,6 +88,51 @@ export function createQueryService(options) {
   }
 
   return Object.freeze({ answer });
+}
+
+/**
+ * Assemble the query service that answers from a built dataset.
+ *
+ * Both the server and the evaluation runner need the same pipeline over the
+ * same stores; building it twice would risk evaluating something other than
+ * what the API serves.
+ *
+ * @param {{ config: object, structuredStore: object, documentStore: object }} options
+ * @returns {{ answer: (request: object) => Promise<object> }}
+ */
+export function createQueryServiceForStores(options) {
+  if (
+    !isRecord(options) ||
+    !isRecord(options.config) ||
+    typeof options.structuredStore?.listCanonicalEntities !== "function" ||
+    typeof options.documentStore?.getIndexManifest !== "function"
+  ) {
+    throw new TypeError("config, structuredStore, and documentStore are required.");
+  }
+  const { config, structuredStore, documentStore } = options;
+  const embedder = createOllamaEmbedder({
+    host: config.ollamaHost,
+    model: config.embeddingModel,
+  });
+
+  return createQueryService({
+    orchestrator: createQueryOrchestrator({
+      classifier: createQueryClassifier({
+        canonicalEntities: structuredStore.listCanonicalEntities(),
+      }),
+      structuredRetriever: createStructuredRetriever({ store: structuredStore }),
+      documentRetriever: createDocumentRetriever({
+        store: documentStore,
+        embedQuery: async (question) => {
+          const [vector] = await embedder.embedDocuments([question], {
+            model: config.embeddingModel,
+            dimensions: documentStore.getIndexManifest().embedding_dimensions,
+          });
+          return vector;
+        },
+      }),
+    }),
+  });
 }
 
 /**
