@@ -8,9 +8,14 @@ import {
 } from "../src/data/document-store.js";
 import { loadFixtureSourcePack } from "../src/data/fixture-source-pack.js";
 import { createStructuredStore } from "../src/data/structured-store.js";
-import { assertEvidenceBundle } from "../src/policy/evidence-answer-contract.js";
+import { createQueryService } from "../src/api/query-api.js";
+import {
+  assertAnswerResponse,
+  assertEvidenceBundle,
+} from "../src/policy/evidence-answer-contract.js";
 import { createDocumentRetriever } from "../src/query/document-retrieval.js";
 import { createQueryClassifier } from "../src/query/query-classifier.js";
+import { createQueryOrchestrator } from "../src/query/query-orchestrator.js";
 import { createStructuredRetriever } from "../src/query/structured-retrieval.js";
 
 /**
@@ -70,7 +75,16 @@ async function createPipeline(context) {
     embedQuery: embedText,
   });
 
-  return async function run(scenarioName) {
+  const service = createQueryService({
+    orchestrator: createQueryOrchestrator({
+      classifier,
+      structuredRetriever,
+      documentRetriever,
+    }),
+    generateTraceId: () => "trace-acceptance",
+  });
+
+  async function run(scenarioName) {
     const { question } = scenarios[scenarioName];
     const queryId = `qry:${scenarioName.replaceAll("_", "-")}`;
     const queryPlan = classifier.classify({ question });
@@ -80,8 +94,43 @@ async function createPipeline(context) {
     assert.equal(assertEvidenceBundle(structured), structured);
     assert.equal(assertEvidenceBundle(document), document);
     return { queryPlan, structured, document };
-  };
+  }
+
+  /** The same scenario as the player would ask it: question in, AnswerResponse out. */
+  run.answer = (scenarioName, overrides = {}) =>
+    service.answer({ question: scenarios[scenarioName].question, ...overrides });
+  return run;
 }
+
+/**
+ * What each acceptance scenario must end as. Retrieval assertions alone cannot
+ * catch a policy that quietly answers a refusal or refuses an answerable
+ * question, so every scenario is pinned to its final status here.
+ */
+const EXPECTED_ANSWERS = Object.freeze({
+  // A single-source structured fact with a known version.
+  answerable_character_query: { answer_status: "answered", citations: "some" },
+  // The weapon fact carries no game version, so the answer is scoped-unsure.
+  answerable_weapon_query: {
+    answer_status: "uncertain",
+    uncertainty_reason: "version_unknown",
+    citations: "some",
+  },
+  // Official HoYoLAB dominates the differing wiki claim, which is not cited.
+  conflict_query: { answer_status: "answered", citations: "some" },
+  version_range_query: { answer_status: "answered", citations: "some" },
+  // Entity-less lore retrieval spans chunks whose versions are not all known.
+  unclassified_lore_query: {
+    answer_status: "uncertain",
+    uncertainty_reason: "version_unknown",
+    citations: "some",
+  },
+  out_of_scope_query: {
+    answer_status: "refused",
+    uncertainty_reason: "out_of_scope",
+    citations: "none",
+  },
+});
 
 function resolvedEntityIds(queryPlan) {
   return queryPlan.normalized_entities
@@ -192,4 +241,47 @@ test("unclassified_lore_query returns the unclassified world-lore chunk", async 
   const scenario = scenarios.unclassified_lore_query;
 
   assert.ok(document.items.some((item) => item.chunk_id === scenario.target_chunk_id));
+});
+
+test("every acceptance scenario ends in the answer status it is meant to", async (context) => {
+  const run = await createPipeline(context);
+
+  for (const [name, expected] of Object.entries(EXPECTED_ANSWERS)) {
+    const response = await run.answer(name);
+
+    assert.equal(assertAnswerResponse(response), response, name);
+    assert.equal(response.answer_status, expected.answer_status, name);
+    assert.equal(response.uncertainty_reason, expected.uncertainty_reason, name);
+    assert.equal(response.citations.length > 0, expected.citations === "some", name);
+  }
+});
+
+test("the conflict scenario never cites the source whose claim was rejected", async (context) => {
+  const run = await createPipeline(context);
+  const scenario = scenarios.conflict_query;
+
+  const response = await run.answer("conflict_query");
+
+  const rejectedSourceId = fixturePack.claims.find(
+    (claim) => claim.claim_id === scenario.differing_claim_id,
+  ).source_id;
+  const rejectedSourceUrl = fixturePack.source_documents.find(
+    (source) => source.source_id === rejectedSourceId,
+  ).source_url;
+  assert.equal(
+    response.citations.some((citation) => citation.source_url === rejectedSourceUrl),
+    false,
+  );
+});
+
+test("a refused answer carries no spoiler notice, because it has no content", async (context) => {
+  const run = await createPipeline(context);
+
+  const refused = await run.answer("out_of_scope_query", { spoiler_level: "notice" });
+  const answered = await run.answer("answerable_character_query", { spoiler_level: "notice" });
+
+  assert.equal(refused.answer_status, "refused");
+  assert.equal(refused.spoiler_notice, undefined);
+  assert.equal(answered.answer_status, "answered");
+  assert.ok(answered.spoiler_notice.length > 0);
 });
