@@ -83,6 +83,7 @@ test("fixed index builds all fixture chunks with a verifiable manifest", async (
   });
   assert.deepEqual(data, before);
   assert.deepEqual(store.getStatus(), {
+    datasetVersion: null,
     isOpen: true,
     schemaVersion: DOCUMENT_STORE_SCHEMA_VERSION,
     counts: {

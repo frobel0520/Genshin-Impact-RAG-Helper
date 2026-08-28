@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -187,6 +187,110 @@ test("a server started without databases mounts no query route", async (context)
   assert.equal(health.status, "degraded");
   assert.equal(health.dataset.state, DATASET_STATES.MISSING);
   assert.equal(query.status, 404);
+});
+
+test("an empty structured store is not ready, however good the index looks", async (context) => {
+  const stores = await loadedStores(context);
+  const emptyStructured = createStructuredStore();
+  context.after(() => {
+    if (emptyStructured.getStatus().isOpen) emptyStructured.close();
+  });
+
+  const report = createHealthReporter({
+    config,
+    structuredStore: emptyStructured,
+    documentStore: stores.documentStore,
+  }).report();
+
+  // Every structured question would refuse for lack of an entity, so reporting
+  // ok here would be a promise the helper cannot keep.
+  assert.equal(report.status, "degraded");
+  assert.equal(report.dataset.state, DATASET_STATES.MISSING);
+});
+
+test("stores left holding different batches are reported as mismatched", async (context) => {
+  const structuredStore = createStructuredStore();
+  const documentStore = createDocumentStore();
+  context.after(() => {
+    if (structuredStore.getStatus().isOpen) structuredStore.close();
+    if (documentStore.getStatus().isOpen) documentStore.close();
+  });
+
+  // The state a build that replaced the structured store and then failed on the
+  // index leaves behind: new facts beside stale text.
+  await runIngestBuild({
+    dataset: structuredClone(fixturePack),
+    structuredStore,
+    documentStore,
+    embedDocuments: (texts) => texts.map((text) => embedText(text)),
+  });
+  const changed = structuredClone(fixturePack);
+  changed.structured_facts[0].value = "changed";
+  const partial = await runIngestBuild({
+    dataset: changed,
+    structuredStore,
+    documentStore,
+    embedDocuments: () => {
+      const error = new Error("ollama is down");
+      error.code = "ECONNREFUSED";
+      throw error;
+    },
+  });
+
+  const report = createHealthReporter({ config, structuredStore, documentStore }).report();
+
+  assert.equal(partial.status, "partial");
+  assert.equal(report.status, "degraded");
+  assert.equal(report.dataset.state, DATASET_STATES.MISMATCHED);
+  assert.notEqual(
+    report.dataset.structured.dataset_version,
+    report.dataset.index.dataset_version,
+  );
+});
+
+test("a matching pair of stores reports the dataset version they share", async (context) => {
+  const structuredStore = createStructuredStore();
+  const documentStore = createDocumentStore();
+  context.after(() => {
+    if (structuredStore.getStatus().isOpen) structuredStore.close();
+    if (documentStore.getStatus().isOpen) documentStore.close();
+  });
+  const run = await runIngestBuild({
+    dataset: structuredClone(fixturePack),
+    structuredStore,
+    documentStore,
+    embedDocuments: (texts) => texts.map((text) => embedText(text)),
+  });
+
+  const report = createHealthReporter({ config, structuredStore, documentStore }).report();
+
+  assert.equal(report.dataset.state, DATASET_STATES.READY);
+  assert.equal(report.dataset.structured.dataset_version, run.input_version);
+  assert.equal(report.dataset.index.dataset_version, run.input_version);
+});
+
+test("a database that cannot be opened is reported, not fatal", async (context) => {
+  const directory = mkdtempSync(join(tmpdir(), "health-unreadable-"));
+  const structuredDatabasePath = join(directory, "structured.db");
+  const documentDatabasePath = join(directory, "index.db");
+  writeFileSync(structuredDatabasePath, "this is not a database");
+  writeFileSync(documentDatabasePath, "neither is this");
+
+  const application = createApplication({
+    PORT: "0",
+    STRUCTURED_DB_PATH: structuredDatabasePath,
+    DOCUMENT_DB_PATH: documentDatabasePath,
+  });
+  context.after(() => {
+    application.close();
+    rmSync(directory, { recursive: true, force: true, maxRetries: 5, retryDelay: 50 });
+  });
+
+  const report = application.health.report();
+
+  assert.equal(report.status, "degraded");
+  assert.equal(report.dataset.state, DATASET_STATES.UNREADABLE);
+  assert.match(report.dataset.structured.reason, /could not be opened/);
 });
 
 test("the health reporter validates its wiring", () => {

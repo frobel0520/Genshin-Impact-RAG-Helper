@@ -6,10 +6,13 @@ import { DatabaseSync } from "node:sqlite";
 import test from "node:test";
 
 import { loadFixtureSourcePack } from "../src/data/fixture-source-pack.js";
-import { createStructuredStore } from "../src/data/structured-store.js";
+import {
+  STRUCTURED_STORE_SCHEMA_VERSION,
+  createStructuredStore,
+} from "../src/data/structured-store.js";
 
 const fixturePack = loadFixtureSourcePack();
-const STRUCTURED_STORE_SCHEMA_VERSION = 1;
+
 
 function createFixtureData() {
   return structuredClone({

@@ -11,25 +11,34 @@ import { createOllamaEmbedder } from "../src/ingest/ollama-embedder.js";
 
 const USAGE = `Usage:
   node scripts/ingest.js validate <dataset.json>
-  node scripts/ingest.js build <dataset.json> --structured-db <path> --index-db <path>
+  node scripts/ingest.js build <dataset.json> [--structured-db <path>] [--index-db <path>]
 
-The build command embeds every chunk with the fixed bge-m3 baseline through the
-Ollama host from the environment, so it needs Ollama running.`;
+Through npm, pass arguments after a double dash so npm does not consume the
+flags itself:
+  npm run ingest:build -- <dataset.json> --structured-db <path>
+
+Without flags the build writes to STRUCTURED_DB_PATH and DOCUMENT_DB_PATH, the
+same databases the server reads. It embeds every chunk with the fixed bge-m3
+baseline through the configured Ollama host, so it needs Ollama running.`;
 
 /**
  * Maintainer entry point. It prints one RunResponse as JSON and exits non-zero
  * unless the run passed, so a failed ingest can never look like a success to a
  * shell script or to CI.
  */
-export async function main(argv) {
+export async function main(argv, streams = {}) {
+  // The streams are injected so a test can read what the command printed
+  // without patching the process's own stdout, which the test runner also uses.
+  const out = streams.stdout ?? ((text) => process.stdout.write(text));
+  const err = streams.stderr ?? ((text) => process.stderr.write(text));
   const [command, datasetPath, ...rest] = argv;
 
   if (command !== "validate" && command !== "build") {
-    process.stderr.write(`${USAGE}\n`);
+    err(`${USAGE}\n`);
     return 2;
   }
   if (datasetPath === undefined) {
-    process.stderr.write(`${USAGE}\n`);
+    err(`${USAGE}\n`);
     return 2;
   }
 
@@ -39,14 +48,16 @@ export async function main(argv) {
       ? runIngestValidate({ dataset })
       : await build(dataset, parseFlags(rest));
 
-  process.stdout.write(`${JSON.stringify(response, null, 2)}\n`);
+  out(`${JSON.stringify(response, null, 2)}\n`);
   return response.status === "passed" ? 0 : 1;
 }
 
 async function build(dataset, flags) {
   const config = loadRuntimeConfig(process.env);
-  const structuredStorePath = flags["structured-db"] ?? ":memory:";
-  const documentStorePath = flags["index-db"] ?? ":memory:";
+  // Defaulting to an in-memory database would let a build report success while
+  // persisting nothing, so the default is the dataset the server actually reads.
+  const structuredStorePath = flags["structured-db"] ?? config.structuredDatabasePath;
+  const documentStorePath = flags["index-db"] ?? config.documentDatabasePath;
   const structuredStore = createStructuredStore({ databasePath: structuredStorePath });
   const documentStore = createDocumentStore({ databasePath: documentStorePath });
 
