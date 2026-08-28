@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 
 import { ANSWER_STATUSES, ERROR_CODES, createDomainId } from "../domain/domain-contract.js";
+import { classifyErrorCode } from "../domain/run-response-contract.js";
 import { formatAnswer } from "../policy/answer-formatter.js";
 import { applyConflictVersionPolicy } from "../policy/conflict-version-policy.js";
 import { evaluateRefusalScope } from "../policy/refusal-scope-policy.js";
@@ -144,7 +145,7 @@ export function createQueryRoute(options) {
     } catch (error) {
       // The player never sees an internal message: only a classifiable code.
       sendError(response, HTTP_STATUS.INTERNAL_SERVER_ERROR, {
-        code: classifyFailure(error),
+        code: classifyErrorCode(error),
         message: "The query could not be completed because of an internal failure.",
       });
     }
@@ -170,21 +171,6 @@ function validateServiceOptions(options) {
     orchestrator: options.orchestrator,
     generateTraceId: options.generateTraceId ?? (() => randomUUID()),
   };
-}
-
-/**
- * Map a thrown failure onto a stable error code without reading its message.
- * T24 does the same for the ingest adapters.
- */
-function classifyFailure(error) {
-  const code = error?.code;
-  if (typeof code === "string" && Object.values(ERROR_CODES).includes(code)) {
-    return code;
-  }
-  if (code === "ECONNREFUSED" || code === "ENOTFOUND" || code === "ETIMEDOUT") {
-    return ERROR_CODES.DEPENDENCY_UNAVAILABLE;
-  }
-  return ERROR_CODES.INTERNAL_ERROR;
 }
 
 function isJsonContentType(contentType) {
