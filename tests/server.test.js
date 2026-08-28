@@ -16,8 +16,12 @@ test("HTTP server rejects an invalid configuration boundary", () => {
   );
 });
 
-test("minimal server exposes a health route", async (t) => {
-  const { config, server } = createApplication({ PORT: "0" });
+test("the server reports its readiness on the health route", async (t) => {
+  const { config, server } = createApplication({
+    PORT: "0",
+    STRUCTURED_DB_PATH: "does-not-exist.db",
+    DOCUMENT_DB_PATH: "also-missing.db",
+  });
 
   await listen(server, config.port);
   t.after(() => closeServer(server));
@@ -26,6 +30,24 @@ test("minimal server exposes a health route", async (t) => {
   assert.ok(address && typeof address === "object");
 
   const response = await fetch(`http://${LOOPBACK_HOST}:${address.port}${HEALTH_PATH}`);
+  assert.equal(response.status, 200);
+
+  // Started without an ingested dataset, the server is live but not ready, and
+  // it says so rather than reporting a bare "ok".
+  const payload = await response.json();
+  assert.equal(payload.service, RUNTIME_DEFAULTS.serviceName);
+  assert.equal(payload.status, "degraded");
+  assert.equal(payload.dataset.state, "missing");
+});
+
+test("a server with no injected health route still answers a liveness check", async (t) => {
+  const server = createHttpServer({ serviceName: RUNTIME_DEFAULTS.serviceName });
+
+  await listen(server, 0);
+  t.after(() => closeServer(server));
+
+  const response = await fetch(`http://${LOOPBACK_HOST}:${server.address().port}${HEALTH_PATH}`);
+
   assert.equal(response.status, 200);
   assert.deepEqual(await response.json(), {
     service: RUNTIME_DEFAULTS.serviceName,
