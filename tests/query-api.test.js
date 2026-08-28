@@ -19,6 +19,7 @@ import { createDocumentRetriever } from "../src/query/document-retrieval.js";
 import { createQueryClassifier } from "../src/query/query-classifier.js";
 import { createQueryOrchestrator } from "../src/query/query-orchestrator.js";
 import { createStructuredRetriever } from "../src/query/structured-retrieval.js";
+import { createRunLogger } from "../src/observability/run-log-adapter.js";
 import { createApplication } from "../src/server.js";
 
 const LOOPBACK_HOST = "127.0.0.1";
@@ -179,9 +180,11 @@ test("a contract-invalid request is rejected with field-level codes", async (con
   const payload = await response.json();
 
   assert.equal(response.status, 400);
-  assert.equal(payload.answer_status, "error");
   assert.equal(payload.error.code, "invalid_request");
   assert.ok(payload.error.details.some((detail) => detail.field === "question"));
+  // A malformed request is not a broken helper, so it is not an error status.
+  assert.equal(payload.answer_status, undefined);
+  assert.ok(payload.trace_id.length > 0);
 });
 
 test("malformed JSON, wrong media type, and wrong method are refused separately", async (context) => {
@@ -196,8 +199,9 @@ test("malformed JSON, wrong media type, and wrong method are refused separately"
   assert.equal(wrongMethod.status, 405);
   for (const response of [malformed, wrongMedia, wrongMethod]) {
     const payload = await response.json();
-    assert.equal(payload.answer_status, "error");
     assert.equal(payload.error.code, "invalid_request");
+    assert.equal(payload.answer_status, undefined);
+    assert.ok(payload.trace_id.length > 0);
   }
 });
 
@@ -226,8 +230,10 @@ test("an internal failure becomes a classified error without leaking its message
   assert.equal(response.status, 500);
   assert.equal(body.includes("bge-m3"), false);
   const payload = JSON.parse(body);
+  // A system failure keeps the error status, and stays traceable.
   assert.equal(payload.answer_status, "error");
   assert.equal(payload.error.code, "internal_error");
+  assert.ok(payload.trace_id.length > 0);
 });
 
 test("an unavailable dependency is classified by its error code", async (context) => {
@@ -244,6 +250,58 @@ test("an unavailable dependency is classified by its error code", async (context
 
   assert.equal(response.status, 500);
   assert.equal((await response.json()).error.code, "dependency_unavailable");
+});
+
+test("a failure is logged and answers with the trace it failed under", async (context) => {
+  const records = [];
+  const failing = {
+    answer() {
+      const error = new Error("bge-m3 socket blew up");
+      error.traceId = "trace:failed-run";
+      throw error;
+    },
+  };
+  const { config, server } = createApplication(
+    { PORT: "0" },
+    {
+      queryHandler: createQueryRoute({
+        service: failing,
+        logger: createRunLogger({ write: (record) => records.push(record) }),
+      }),
+    },
+  );
+  await new Promise((resolve, reject) => {
+    server.once("error", reject);
+    server.listen(config.port, LOOPBACK_HOST, resolve);
+  });
+  context.after(
+    () =>
+      new Promise((resolve, reject) => {
+        server.closeAllConnections();
+        server.close((error) => (error ? reject(error) : resolve()));
+      }),
+  );
+  const url = `http://${LOOPBACK_HOST}:${server.address().port}${QUERY_API_ROUTE}`;
+
+  const failure = await postJson(url, { question: "雷電將軍的元素屬性是什麼？" });
+  const rejected = await postJson(url, { question: "   " });
+  const failurePayload = await failure.json();
+  const rejectedPayload = await rejected.json();
+
+  // The answer that never came back is still findable: the response carries the
+  // same trace the log record was written under.
+  assert.equal(failurePayload.trace_id, "trace:failed-run");
+  assert.deepEqual(
+    records.map((record) => [record.event, record.trace_id]),
+    [
+      ["failure", "trace:failed-run"],
+      ["request_rejected", rejectedPayload.trace_id],
+    ],
+  );
+  // The internal message is kept in the log and never sent to the player.
+  assert.equal(records[0].message, "bge-m3 socket blew up");
+  assert.equal(failurePayload.error.message.includes("socket"), false);
+  assert.equal(records[1].status_code, 400);
 });
 
 test("the query route is not mounted when no handler is injected", async (context) => {

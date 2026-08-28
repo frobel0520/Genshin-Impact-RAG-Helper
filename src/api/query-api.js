@@ -62,8 +62,8 @@ const SERVICE_OPTION_FIELDS = new Set(["orchestrator", "generateTraceId", "logge
 export function createQueryService(options) {
   const { orchestrator, generateTraceId, logger } = validateServiceOptions(options);
 
-  async function answer(request) {
-    const traceId = generateTraceId();
+  async function answer(request, providedTraceId) {
+    const traceId = providedTraceId ?? generateTraceId();
     const queryId = createDomainId("query", traceId);
 
     const {
@@ -92,7 +92,23 @@ export function createQueryService(options) {
     return response;
   }
 
-  return Object.freeze({ answer });
+  /**
+   * A failure carries the trace it failed under, so the answer that never came
+   * back can still be looked up beside the records the run did write.
+   */
+  async function answerWithTrace(request) {
+    const traceId = generateTraceId();
+    try {
+      return await answer(request, traceId);
+    } catch (error) {
+      if (error !== null && typeof error === "object" && error.traceId === undefined) {
+        error.traceId = traceId;
+      }
+      throw error;
+    }
+  }
+
+  return Object.freeze({ answer: answerWithTrace });
 }
 
 /**
@@ -144,7 +160,11 @@ export function createQueryServiceForStores(options) {
 /**
  * Create the `POST /api/v1/query` handler.
  *
- * @param {{ service: { answer: (request: object) => Promise<object> } }} options
+ * @param {{
+ *   service: { answer: (request: object) => Promise<object> },
+ *   logger?: object,
+ *   generateTraceId?: () => string,
+ * }} options
  * @returns {(request: import("node:http").IncomingMessage, response: import("node:http").ServerResponse) => Promise<void>}
  */
 export function createQueryRoute(options) {
@@ -155,18 +175,32 @@ export function createQueryRoute(options) {
   ) {
     throw new TypeError("service must expose answer().");
   }
-  const { service } = options;
+  const { service, logger } = options;
+  const generateTraceId = options.generateTraceId ?? (() => randomUUID());
 
   return async function handleQuery(request, response) {
+    // Every request gets a trace before anything can go wrong with it, so a
+    // rejection is as traceable as an answer.
+    const requestTraceId = generateTraceId();
+    const reject = (statusCode, error) => {
+      logger?.logRequestRejected({
+        traceId: requestTraceId,
+        statusCode,
+        code: error.code,
+        message: error.message,
+      });
+      sendError(response, statusCode, { ...error, traceId: requestTraceId });
+    };
+
     if (request.method !== QUERY_API_RULES.method) {
-      sendError(response, HTTP_STATUS.METHOD_NOT_ALLOWED, {
+      reject(HTTP_STATUS.METHOD_NOT_ALLOWED, {
         code: ERROR_CODES.INVALID_REQUEST,
         message: `${QUERY_API_ROUTE} accepts POST only.`,
       });
       return;
     }
     if (!isJsonContentType(request.headers["content-type"])) {
-      sendError(response, HTTP_STATUS.UNSUPPORTED_MEDIA_TYPE, {
+      reject(HTTP_STATUS.UNSUPPORTED_MEDIA_TYPE, {
         code: ERROR_CODES.INVALID_REQUEST,
         message: "Content-Type must be application/json.",
       });
@@ -177,7 +211,7 @@ export function createQueryRoute(options) {
     try {
       body = await readJsonBody(request);
     } catch (error) {
-      sendError(response, error.statusCode ?? HTTP_STATUS.BAD_REQUEST, {
+      reject(error.statusCode ?? HTTP_STATUS.BAD_REQUEST, {
         code: ERROR_CODES.INVALID_REQUEST,
         message: error.publicMessage ?? "The request body could not be read as JSON.",
       });
@@ -186,7 +220,7 @@ export function createQueryRoute(options) {
 
     const validation = validateQueryRequest(body);
     if (!validation.ok) {
-      sendError(response, HTTP_STATUS.BAD_REQUEST, {
+      reject(HTTP_STATUS.BAD_REQUEST, {
         code: ERROR_CODES.INVALID_REQUEST,
         message: "The request does not satisfy the QueryRequest contract.",
         details: validation.errors.map((error) => ({
@@ -200,10 +234,20 @@ export function createQueryRoute(options) {
     try {
       sendJson(response, HTTP_STATUS.OK, await service.answer(body));
     } catch (error) {
-      // The player never sees an internal message: only a classifiable code.
+      // The player never sees an internal message: only a classifiable code and
+      // the trace the failure happened under.
+      const traceId = error?.traceId ?? requestTraceId;
+      const code = classifyErrorCode(error);
+      logger?.logFailure({
+        traceId,
+        code,
+        message: error instanceof Error ? error.message : "unknown failure",
+      });
       sendError(response, HTTP_STATUS.INTERNAL_SERVER_ERROR, {
-        code: classifyErrorCode(error),
+        code,
         message: "The query could not be completed because of an internal failure.",
+        traceId,
+        systemFailure: true,
       });
     }
   };
@@ -290,10 +334,16 @@ function createTransportError(statusCode, publicMessage) {
   return error;
 }
 
-function sendError(response, statusCode, { code, message, details }) {
+/**
+ * `answer_status: "error"` marks a system failure only. A malformed request is
+ * not a broken helper, so a 4xx says what was wrong with the request without
+ * claiming the system failed. Both carry the trace they happened under.
+ */
+function sendError(response, statusCode, { code, message, details, traceId, systemFailure }) {
   sendJson(response, statusCode, {
-    answer_status: ANSWER_STATUSES.ERROR,
+    ...(systemFailure === true ? { answer_status: ANSWER_STATUSES.ERROR } : {}),
     error: { code, message, ...(details === undefined ? {} : { details }) },
+    trace_id: traceId,
   });
 }
 

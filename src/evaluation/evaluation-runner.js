@@ -88,7 +88,7 @@ export async function runEvaluation(request) {
     }
   }
 
-  const metrics = summarizeMetrics(cases, results);
+  const { metrics, cases: caseSummary } = summarizeRun(cases, results);
   const artifacts =
     reportPath === undefined
       ? []
@@ -110,7 +110,7 @@ export async function runEvaluation(request) {
     artifacts,
   });
 
-  return { run, results, metrics };
+  return { run, results, metrics, cases: caseSummary };
 }
 
 /**
@@ -200,7 +200,11 @@ function expectedSourceUrls(evalCase) {
     .filter((url) => typeof url === "string");
 }
 
-function summarizeMetrics(cases, results) {
+/**
+ * Metrics stay a map of metrics. The case counts are their own thing: mixing a
+ * tally into the metric map makes every consumer special-case one key.
+ */
+function summarizeRun(cases, results) {
   const summary = {};
 
   for (const key of EVAL_METRIC_KEYS) {
@@ -224,12 +228,14 @@ function summarizeMetrics(cases, results) {
     };
   }
 
-  summary.cases = {
-    declared: cases.length,
-    evaluated: results.length,
-    pending_human_review: results.length,
+  return {
+    metrics: summary,
+    cases: {
+      declared: cases.length,
+      evaluated: results.length,
+      pending_human_review: results.length,
+    },
   };
-  return summary;
 }
 
 function resolveStatus(errors, results) {

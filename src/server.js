@@ -106,15 +106,16 @@ function createQueryHandler(config, { structuredStore, documentStore }, reporter
     return undefined;
   }
 
+  // One JSON object per line on stdout: greppable by trace_id, and nothing to
+  // rotate or clean up beyond what the operator already redirects.
+  const logger = createJsonLineLogger({ write: (line) => process.stdout.write(line) });
   const service = createQueryServiceForStores({
     config,
     structuredStore,
     documentStore,
-    // One JSON object per line on stdout: greppable by trace_id, and nothing to
-    // rotate or clean up beyond what the operator already redirects.
-    logger: createJsonLineLogger({ write: (line) => process.stdout.write(line) }),
+    logger,
   });
-  return { queryHandler: createQueryRoute({ service }) };
+  return { queryHandler: createQueryRoute({ service, logger }) };
 }
 
 function closeStores({ structuredStore, documentStore }) {
