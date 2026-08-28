@@ -33,8 +33,17 @@ jobs:
       - name: Lint module boundaries
         run: npm run lint
 
+      # The contract gate runs first and on its own: schema, policy, API and
+      # evaluation contracts must hold with no model and no live source, so a
+      # failure here says the contracts broke, not that a dependency was down.
+      - name: Contract tests (no model, no live source)
+        run: npm run test:contract
+
       - name: Run tests
         run: npm test
+
+      - name: Ingest validate runs offline
+        run: npm run ingest:validate fixtures/fixture-source-pack.json
 
       - name: Verify project contracts
         shell: bash
