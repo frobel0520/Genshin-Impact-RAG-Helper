@@ -4,6 +4,8 @@ export const RUNTIME_DEFAULTS = Object.freeze({
   ollamaHost: "http://127.0.0.1:11434",
   generationModel: "qwen2.5-coder:14b",
   embeddingModel: "bge-m3:latest",
+  structuredDatabasePath: "artifacts/structured.db",
+  documentDatabasePath: "artifacts/index.db",
 });
 
 const MIN_PORT = 0;
@@ -26,12 +28,30 @@ export function loadRuntimeConfig(environment = process.env) {
   const ollamaHost = parseOllamaHost(
     environment.OLLAMA_HOST ?? RUNTIME_DEFAULTS.ollamaHost,
   );
+  const structuredDatabasePath = parseDatabasePath(
+    environment.STRUCTURED_DB_PATH ?? RUNTIME_DEFAULTS.structuredDatabasePath,
+    "STRUCTURED_DB_PATH",
+  );
+  const documentDatabasePath = parseDatabasePath(
+    environment.DOCUMENT_DB_PATH ?? RUNTIME_DEFAULTS.documentDatabasePath,
+    "DOCUMENT_DB_PATH",
+  );
 
   return Object.freeze({
     ...RUNTIME_DEFAULTS,
     port,
     ollamaHost,
+    structuredDatabasePath,
+    documentDatabasePath,
   });
+}
+
+function parseDatabasePath(rawPath, variableName) {
+  const value = String(rawPath).trim();
+  if (value.length === 0) {
+    throw new Error(`${variableName} must be a non-empty path.`);
+  }
+  return value;
 }
 
 function parsePort(rawPort) {
