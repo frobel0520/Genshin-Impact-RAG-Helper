@@ -322,3 +322,39 @@ test("invalid orchestrator wiring and run requests fail fast", async (context) =
     /Unknown query orchestrator run request field/,
   );
 });
+
+test("a question that names a version is answerable without the caller repeating it", async (context) => {
+  const orchestrator = await createOrchestrator(context);
+
+  const result = await orchestrator.run({
+    queryId: "qry:orchestrator-version-in-question",
+    request: { question: "5.0版本更新了哪些內容？" },
+  });
+
+  // The classifier reads the version out of the question, so the policy stage
+  // that follows has a version to filter on. Before the plan carried one, this
+  // question failed outright: an exact constraint with nothing to resolve.
+  assert.equal(result.query_plan.version_constraint, "exact");
+  assert.equal(result.query_plan.game_version, "5.0");
+  assert.equal(result.game_version, "5.0");
+  assert.equal(
+    applyConflictVersionPolicy({
+      bundle: result.bundle,
+      versionConstraint: result.query_plan.version_constraint,
+      gameVersion: result.game_version,
+    }).version_scope,
+    "5.0",
+  );
+});
+
+test("an explicit request version outranks the one written in the question", async (context) => {
+  const orchestrator = await createOrchestrator(context);
+
+  const result = await orchestrator.run({
+    queryId: "qry:orchestrator-version-request-wins",
+    request: { question: "5.0版本更新了哪些內容？", game_version: "2.1" },
+  });
+
+  assert.equal(result.query_plan.game_version, "2.1");
+  assert.equal(result.game_version, "2.1");
+});
