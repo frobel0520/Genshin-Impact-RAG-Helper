@@ -43,7 +43,14 @@ export const SCORED_METRICS = Object.freeze([
 
 export const HUMAN_JUDGED_METRICS = Object.freeze(["answer_correctness", "groundedness"]);
 
-const RUN_REQUEST_FIELDS = new Set(["cases", "answer", "runId", "now", "reportPath"]);
+const RUN_REQUEST_FIELDS = new Set([
+  "cases",
+  "answer",
+  "runId",
+  "now",
+  "reportPath",
+  "logger",
+]);
 
 /**
  * Run every EvalCase through the query contract and score what can be scored.
@@ -62,14 +69,16 @@ const RUN_REQUEST_FIELDS = new Set(["cases", "answer", "runId", "now", "reportPa
  * @returns {Promise<{ run: object, results: object[], metrics: object }>}
  */
 export async function runEvaluation(request) {
-  const { cases, answer, runId, now, reportPath } = validateRequest(request);
+  const { cases, answer, runId, now, reportPath, logger } = validateRequest(request);
   const startedAt = now();
   const results = [];
   const errors = [];
 
   for (const evalCase of cases) {
     try {
-      results.push(await evaluateCase(evalCase, answer, runId));
+      const result = await evaluateCase(evalCase, answer, runId);
+      results.push(result);
+      logger?.logEvalResult({ runId, result });
     } catch (error) {
       errors.push({
         code: classifyErrorCode(error),
@@ -255,6 +264,9 @@ function validateRequest(request) {
   if (request.reportPath !== undefined && typeof request.reportPath !== "string") {
     throw new TypeError("reportPath must be a string when provided.");
   }
+  if (request.logger !== undefined && typeof request.logger.logEvalResult !== "function") {
+    throw new TypeError("logger must be a run logger when provided.");
+  }
 
   return {
     cases: request.cases,
@@ -262,6 +274,7 @@ function validateRequest(request) {
     runId: request.runId ?? createDomainId("run", `eval-${Date.now()}`),
     now: request.now ?? (() => new Date()),
     reportPath: request.reportPath,
+    logger: request.logger,
   };
 }
 

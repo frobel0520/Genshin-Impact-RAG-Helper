@@ -6,6 +6,7 @@ import { createHealthReporter, createHealthRoute } from "./api/health-api.js";
 import { createHttpServer } from "./api/http-server.js";
 import { createQueryRoute, createQueryServiceForStores } from "./api/query-api.js";
 import { createStaticRoute } from "./api/static-assets.js";
+import { createJsonLineLogger } from "./observability/run-log-adapter.js";
 import { loadRuntimeConfig } from "./config/runtime-config.js";
 import { createDocumentStore } from "./data/document-store.js";
 import { createStructuredStore } from "./data/structured-store.js";
@@ -84,7 +85,14 @@ function createQueryHandler(config, { structuredStore, documentStore }, reporter
     return undefined;
   }
 
-  const service = createQueryServiceForStores({ config, structuredStore, documentStore });
+  const service = createQueryServiceForStores({
+    config,
+    structuredStore,
+    documentStore,
+    // One JSON object per line on stdout: greppable by trace_id, and nothing to
+    // rotate or clean up beyond what the operator already redirects.
+    logger: createJsonLineLogger({ write: (line) => process.stdout.write(line) }),
+  });
   return { queryHandler: createQueryRoute({ service }) };
 }
 
