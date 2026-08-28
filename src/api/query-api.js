@@ -43,7 +43,7 @@ export const QUERY_API_RULES = Object.freeze({
   maxBodyBytes: QUERY_API_MAX_BODY_BYTES,
 });
 
-const SERVICE_OPTION_FIELDS = new Set(["orchestrator", "generateTraceId"]);
+const SERVICE_OPTION_FIELDS = new Set(["orchestrator", "generateTraceId", "logger"]);
 
 /**
  * Assemble the query pipeline: T21 orchestration, then the T18 version and
@@ -60,7 +60,7 @@ const SERVICE_OPTION_FIELDS = new Set(["orchestrator", "generateTraceId"]);
  * @returns {{ answer: (request: object) => Promise<object> }}
  */
 export function createQueryService(options) {
-  const { orchestrator, generateTraceId } = validateServiceOptions(options);
+  const { orchestrator, generateTraceId, logger } = validateServiceOptions(options);
 
   async function answer(request) {
     const traceId = generateTraceId();
@@ -71,20 +71,25 @@ export function createQueryService(options) {
       bundle,
       game_version: gameVersion,
     } = await orchestrator.run({ queryId, request });
+    logger?.logQueryRun({ traceId, queryId, request, queryPlan });
+
     const policyDecision = applyConflictVersionPolicy({
       bundle,
       versionConstraint: queryPlan.version_constraint,
       ...(gameVersion === undefined ? {} : { gameVersion }),
     });
     const refusalDecision = evaluateRefusalScope({ queryPlan, bundle, policyDecision });
+    logger?.logEvidence({ traceId, queryId, bundle, policyDecision });
 
-    return formatAnswer({
+    const response = formatAnswer({
       queryPlan,
       bundle,
       policyDecision,
       refusalDecision,
       traceId,
     });
+    logger?.logAnswerRun({ traceId, queryId, answer: response, refusalDecision });
+    return response;
   }
 
   return Object.freeze({ answer });
@@ -97,7 +102,7 @@ export function createQueryService(options) {
  * same stores; building it twice would risk evaluating something other than
  * what the API serves.
  *
- * @param {{ config: object, structuredStore: object, documentStore: object }} options
+ * @param {{ config: object, structuredStore: object, documentStore: object, logger?: object }} options
  * @returns {{ answer: (request: object) => Promise<object> }}
  */
 export function createQueryServiceForStores(options) {
@@ -109,13 +114,14 @@ export function createQueryServiceForStores(options) {
   ) {
     throw new TypeError("config, structuredStore, and documentStore are required.");
   }
-  const { config, structuredStore, documentStore } = options;
+  const { config, structuredStore, documentStore, logger } = options;
   const embedder = createOllamaEmbedder({
     host: config.ollamaHost,
     model: config.embeddingModel,
   });
 
   return createQueryService({
+    ...(logger === undefined ? {} : { logger }),
     orchestrator: createQueryOrchestrator({
       classifier: createQueryClassifier({
         canonicalEntities: structuredStore.listCanonicalEntities(),
@@ -218,9 +224,13 @@ function validateServiceOptions(options) {
   if (options.generateTraceId !== undefined && typeof options.generateTraceId !== "function") {
     throw new TypeError("generateTraceId must be a function when provided.");
   }
+  if (options.logger !== undefined && typeof options.logger.logAnswerRun !== "function") {
+    throw new TypeError("logger must be a run logger when provided.");
+  }
   return {
     orchestrator: options.orchestrator,
     generateTraceId: options.generateTraceId ?? (() => randomUUID()),
+    logger: options.logger,
   };
 }
 
