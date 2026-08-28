@@ -208,25 +208,42 @@ test("unknown version scope answers with uncertainty instead of assuming the cur
   const decision = applyConflictVersionPolicy({
     bundle: bundle([
       claimItem({ evidence_id: "evd:unknown-a", claim_id: "claim:unknown-a", game_version: "unknown" }),
+    ]),
+    versionConstraint: "current-unspecified",
+  });
+
+  assert.equal(decision.version_scope, "unknown");
+  assert.equal(decision.answer_status, "uncertain");
+  assert.equal(decision.uncertainty_reason, "version_unknown");
+});
+
+test("one citation with an unknown version makes the whole scope unknown", () => {
+  const decision = applyConflictVersionPolicy({
+    bundle: bundle([
+      claimItem({ evidence_id: "evd:unknown-a", claim_id: "claim:unknown-a", game_version: "unknown" }),
       claimItem({ evidence_id: "evd:known-b", claim_id: "claim:known-b", game_version: "5.0", rank: 2 }),
     ]),
     versionConstraint: "current-unspecified",
   });
 
-  assert.equal(decision.version_scope, "5.0");
-  assert.equal(decision.answer_status, "answered");
+  assert.equal(decision.version_scope, "unknown");
+  assert.equal(decision.answer_status, "uncertain");
+  assert.equal(decision.uncertainty_reason, "version_unknown");
+});
 
-  const mixed = applyConflictVersionPolicy({
+test("evidence spanning known versions reports the span instead of unknown", () => {
+  const decision = applyConflictVersionPolicy({
     bundle: bundle([
       claimItem({ evidence_id: "evd:v1", claim_id: "claim:v1", game_version: "5.0" }),
       claimItem({ evidence_id: "evd:v2", claim_id: "claim:v2", game_version: "4.8", rank: 2 }),
+      claimItem({ evidence_id: "evd:v3", claim_id: "claim:v3", game_version: "3.0-3.8", rank: 3 }),
     ]),
     versionConstraint: "current-unspecified",
   });
 
-  assert.equal(mixed.version_scope, "unknown");
-  assert.equal(mixed.answer_status, "uncertain");
-  assert.equal(mixed.uncertainty_reason, "version_unknown");
+  assert.equal(decision.version_scope, "3.0-5.0");
+  assert.equal(decision.answer_status, "answered");
+  assert.equal(decision.uncertainty_reason, undefined);
 });
 
 test("evidence is ordered by authority, then recency, then evidence_id", () => {
@@ -272,6 +289,57 @@ test("evidence is ordered by authority, then recency, then evidence_id", () => {
     "evd:fandom",
   ]);
   assert.deepEqual(evidenceBundle, before);
+});
+
+test("applicable items are renumbered to match the order the policy decided", () => {
+  const decision = applyConflictVersionPolicy({
+    bundle: bundle([
+      claimItem({
+        evidence_id: "evd:low",
+        claim_id: "claim:low",
+        source_kind: "fandom",
+        source_url: "https://example.test/wiki",
+        rank: 1,
+      }),
+      claimItem({
+        evidence_id: "evd:high",
+        claim_id: "claim:high",
+        source_kind: "hoyolab",
+        source_url: "https://example.test/notice",
+        rank: 2,
+      }),
+    ]),
+    versionConstraint: "current-unspecified",
+  });
+
+  assert.deepEqual(
+    decision.applicable_items.map((item) => [item.evidence_id, item.rank]),
+    [
+      ["evd:high", 1],
+      ["evd:low", 2],
+    ],
+  );
+});
+
+test("a conflict group missing a claim stays unresolved when no version filter ran", () => {
+  const decision = applyConflictVersionPolicy({
+    bundle: bundle(
+      [claimItem({ evidence_id: "evd:present", claim_id: "claim:present" })],
+      [
+        {
+          conflict_group_id: "conflict:partial",
+          claim_ids: ["claim:present", "claim:never-retrieved"],
+        },
+      ],
+    ),
+    versionConstraint: "current-unspecified",
+  });
+
+  const [resolution] = decision.conflict_resolutions;
+  assert.equal(resolution.resolution, CONFLICT_RESOLUTIONS.UNRESOLVED);
+  assert.equal(resolution.winning_claim_id, undefined);
+  assert.equal(decision.answer_status, "refused");
+  assert.equal(decision.uncertainty_reason, "source_conflict");
 });
 
 test("a conflict group emptied by the version filter stays unresolved", () => {
