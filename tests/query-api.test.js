@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
 import {
   QUERY_API_MAX_BODY_BYTES,
@@ -305,7 +308,16 @@ test("a failure is logged and answers with the trace it failed under", async (co
 });
 
 test("the query route is not mounted when no handler is injected", async (context) => {
-  const { config, server } = createApplication({ PORT: "0" });
+  // The databases are pointed at a directory that has none, so the route is
+  // absent because there is no dataset — not because the machine running the
+  // suite happens to have no artifacts/ of its own.
+  const directory = mkdtempSync(join(tmpdir(), "query-api-no-dataset-"));
+  context.after(() => rmSync(directory, { recursive: true, force: true, maxRetries: 5 }));
+  const { config, server } = createApplication({
+    PORT: "0",
+    STRUCTURED_DB_PATH: join(directory, "structured.db"),
+    DOCUMENT_DB_PATH: join(directory, "index.db"),
+  });
   await new Promise((resolve, reject) => {
     server.once("error", reject);
     server.listen(config.port, LOOPBACK_HOST, resolve);

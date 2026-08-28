@@ -13,6 +13,7 @@ import {
   QUERY_CONTRACT_SCHEMA_VERSION,
   QUERY_CONTRACT_VALIDATION_CODES,
   QUERY_PLAN_FIELDS,
+  QUERY_PLAN_OPTIONAL_FIELDS,
   QUERY_PLAN_REQUIRED_FIELDS,
   QUERY_REQUEST_FIELDS,
   QUERY_REQUEST_OPTIONAL_FIELDS,
@@ -66,11 +67,15 @@ test("query contract schema documents required, optional, and default fields", (
     ...NORMALIZED_ENTITY_OPTIONAL_FIELDS,
   ]);
   assert.deepEqual(QUERY_CONTRACT_SCHEMA.queryPlan.required, QUERY_PLAN_REQUIRED_FIELDS);
+  assert.deepEqual(QUERY_CONTRACT_SCHEMA.queryPlan.optional, QUERY_PLAN_OPTIONAL_FIELDS);
   assert.deepEqual(QUERY_REQUEST_FIELDS, [
     ...QUERY_REQUEST_REQUIRED_FIELDS,
     ...QUERY_REQUEST_OPTIONAL_FIELDS,
   ]);
-  assert.deepEqual(QUERY_PLAN_FIELDS, QUERY_PLAN_REQUIRED_FIELDS);
+  assert.deepEqual(QUERY_PLAN_FIELDS, [
+    ...QUERY_PLAN_REQUIRED_FIELDS,
+    ...QUERY_PLAN_OPTIONAL_FIELDS,
+  ]);
 });
 
 test("QueryRequest accepts null version inference and applies only the documented locale default", () => {

@@ -30,7 +30,9 @@
           "text": "雷電將軍",
           "entity_type": "character",
           "resolution_status": "resolved",
-          "aliases_used": ["雷神"]
+          "aliases_used": [
+            "雷神"
+          ]
         }
       ],
       "version_constraint": "current-unspecified",
@@ -49,6 +51,7 @@
         }
       ],
       "version_constraint": "exact",
+      "game_version": "5.0",
       "retrieval_mode": "document",
       "spoiler_level": "explicit"
     },

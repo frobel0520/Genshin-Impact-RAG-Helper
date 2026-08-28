@@ -57,7 +57,12 @@ export const QUERY_PLAN_REQUIRED_FIELDS = Object.freeze([
   "spoiler_level",
 ]);
 
-export const QUERY_PLAN_FIELDS = QUERY_PLAN_REQUIRED_FIELDS;
+export const QUERY_PLAN_OPTIONAL_FIELDS = Object.freeze(["game_version"]);
+
+export const QUERY_PLAN_FIELDS = Object.freeze([
+  ...QUERY_PLAN_REQUIRED_FIELDS,
+  ...QUERY_PLAN_OPTIONAL_FIELDS,
+]);
 
 export const QUERY_CONTRACT_VALIDATION_CODES = Object.freeze({
   INVALID_DOCUMENT: "invalid_document",
@@ -83,6 +88,8 @@ export const QUERY_CONTRACT_VALIDATION_CODES = Object.freeze({
   DUPLICATE_ALIAS: "duplicate_alias",
   INVALID_VERSION_CONSTRAINT: "invalid_version_constraint",
   INVALID_RETRIEVAL_MODE: "invalid_retrieval_mode",
+  INVALID_PLAN_GAME_VERSION: "invalid_plan_game_version",
+  UNEXPECTED_PLAN_GAME_VERSION: "unexpected_plan_game_version",
   INVALID_PLAN_SPOILER_LEVEL: "invalid_plan_spoiler_level",
 });
 
@@ -101,6 +108,8 @@ export const QUERY_CONTRACT_SCHEMA = Object.freeze({
   }),
   queryPlan: Object.freeze({
     required: QUERY_PLAN_REQUIRED_FIELDS,
+    optional: QUERY_PLAN_OPTIONAL_FIELDS,
+    gameVersion: "the single version an exact constraint was built for",
   }),
 });
 
@@ -401,7 +410,38 @@ export function validateQueryPlan(plan) {
     );
   }
 
+  errors.push(...validatePlanGameVersion(plan));
+
   return errors.length === 0 ? { ok: true, value: plan } : { ok: false, errors };
+}
+
+// A plan carries the version it was built for so a later stage never has to
+// re-parse the question to learn it. Only an exact constraint names a single
+// version: any other constraint with a version attached would let a reader
+// filter on a version nobody asked for.
+function validatePlanGameVersion(plan) {
+  if (plan.game_version === undefined) {
+    return [];
+  }
+  if (!isStableString(plan.game_version)) {
+    return [
+      createError(
+        QUERY_CONTRACT_VALIDATION_CODES.INVALID_PLAN_GAME_VERSION,
+        "game_version",
+        "game_version must be a non-empty string without surrounding whitespace.",
+      ),
+    ];
+  }
+  if (plan.version_constraint === VERSION_CONSTRAINTS.EXACT) {
+    return [];
+  }
+  return [
+    createError(
+      QUERY_CONTRACT_VALIDATION_CODES.UNEXPECTED_PLAN_GAME_VERSION,
+      "game_version",
+      `game_version is only allowed with the ${VERSION_CONSTRAINTS.EXACT} version constraint.`,
+    ),
+  ];
 }
 
 /**

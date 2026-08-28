@@ -48,9 +48,14 @@ export function createQueryOrchestrator(options) {
     const { queryId, request } = validateRunRequest(runRequest);
 
     const queryPlan = classifier.classify(request);
+    // A question that names a version ("5.0版本更新了哪些內容？") produces an
+    // exact constraint without the caller ever setting game_version, so the
+    // version the classifier read out of the question is used when the request
+    // states none. Without it the policy stage has a constraint it cannot
+    // resolve and the whole query fails.
     const gameVersion =
       queryPlan.version_constraint === VERSION_CONSTRAINTS.EXACT
-        ? request.game_version
+        ? (request.game_version ?? queryPlan.game_version)
         : undefined;
     const retrievalArguments = {
       queryId,

@@ -1,0 +1,23 @@
+{
+  "key": "hoyolab-version-5-0",
+  "source_kind": "hoyolab",
+  "source_url": "https://www.hoyolab.com/article/32547672",
+  "title": "「榮花與炎日之途」5.0版本更新說明",
+  "game_version": "5.0",
+  "sections": [
+    {
+      "id": "update-time",
+      "text": "〓更新時間〓\n\n2024/08/28 06:00 (UTC+8)開始，預計5個小時完成。"
+    },
+    {
+      "id": "new-region-natlan",
+      "text": "一、全新地區\n\n開放全新區域——「納塔」\n\n◇新增區域：在5.0版本中，納塔地區將開放「堅岩隘谷」、「踞石山」、「湧流地」和「萬火之甌」。",
+      "entity_ids": ["ent:natlan"]
+    },
+    {
+      "id": "new-characters",
+      "text": "二、全新角色\n\n「嘩啦啦逐浪客·瑪拉妮(水)」（五星）\n◇神之眼：水\n◇武器：法器\n\n「回火之狩·基尼奇(草)」（五星）\n◇神之眼：草\n◇武器：雙手劍\n\n「斑金礦樸·卡齊娜(岩)」（四星）\n◇神之眼：岩\n◇武器：長柄武器",
+      "entity_ids": ["ent:mualani", "ent:kinich", "ent:kachina"]
+    }
+  ]
+}
