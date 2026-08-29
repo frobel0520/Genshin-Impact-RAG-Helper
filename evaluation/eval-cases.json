@@ -1,0 +1,1027 @@
+{
+  "schema_version": 1,
+  "dataset_version": "d77cb0824026585ca97325ec5fe60f6dbe38f67d2ae9955a3b2c6fc748a58631",
+  "target_counts": {
+    "total": 50,
+    "answerable": 40,
+    "refuse": 10
+  },
+  "cases": [
+    {
+      "case_id": "case:mualani-element",
+      "question_zh_tw": "瑪拉妮是什麼元素？",
+      "category": "character",
+      "query_type": "structured",
+      "answerability": "answerable",
+      "expected_answer": "瑪拉妮是水元素角色。",
+      "required_facts": [
+        {
+          "key": "element",
+          "expected_value": "Hydro"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "hoyolab",
+          "source_url": "https://www.hoyolab.com/article/32547672"
+        }
+      ],
+      "game_version": "5.0",
+      "spoiler_level": "none"
+    },
+    {
+      "case_id": "case:mualani-weapon-type",
+      "question_zh_tw": "瑪拉妮使用什麼武器類型？",
+      "category": "character",
+      "query_type": "structured",
+      "answerability": "answerable",
+      "expected_answer": "瑪拉妮使用法器。",
+      "required_facts": [
+        {
+          "key": "weapon_type",
+          "expected_value": "Catalyst"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "hoyolab",
+          "source_url": "https://www.hoyolab.com/article/32547672"
+        }
+      ],
+      "game_version": "5.0",
+      "spoiler_level": "none"
+    },
+    {
+      "case_id": "case:mualani-rarity",
+      "question_zh_tw": "瑪拉妮的星級是多少？",
+      "category": "character",
+      "query_type": "structured",
+      "answerability": "answerable",
+      "expected_answer": "瑪拉妮是5星角色。",
+      "required_facts": [
+        {
+          "key": "rarity",
+          "expected_value": 5,
+          "unit": "stars"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "hoyolab",
+          "source_url": "https://www.hoyolab.com/article/32547672"
+        }
+      ],
+      "game_version": "5.0",
+      "spoiler_level": "none"
+    },
+    {
+      "case_id": "case:kinich-element",
+      "question_zh_tw": "基尼奇是什麼元素？",
+      "category": "character",
+      "query_type": "structured",
+      "answerability": "answerable",
+      "expected_answer": "基尼奇是草元素角色。",
+      "required_facts": [
+        {
+          "key": "element",
+          "expected_value": "Dendro"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "hoyolab",
+          "source_url": "https://www.hoyolab.com/article/32547672"
+        }
+      ],
+      "game_version": "5.0",
+      "spoiler_level": "none"
+    },
+    {
+      "case_id": "case:kinich-weapon-type",
+      "question_zh_tw": "基尼奇使用什麼武器類型？",
+      "category": "character",
+      "query_type": "structured",
+      "answerability": "answerable",
+      "expected_answer": "基尼奇使用雙手劍。",
+      "required_facts": [
+        {
+          "key": "weapon_type",
+          "expected_value": "Claymore"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "hoyolab",
+          "source_url": "https://www.hoyolab.com/article/32547672"
+        }
+      ],
+      "game_version": "5.0",
+      "spoiler_level": "none"
+    },
+    {
+      "case_id": "case:kinich-rarity",
+      "question_zh_tw": "基尼奇的星級是多少？",
+      "category": "character",
+      "query_type": "structured",
+      "answerability": "answerable",
+      "expected_answer": "基尼奇是5星角色。",
+      "required_facts": [
+        {
+          "key": "rarity",
+          "expected_value": 5,
+          "unit": "stars"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "hoyolab",
+          "source_url": "https://www.hoyolab.com/article/32547672"
+        }
+      ],
+      "game_version": "5.0",
+      "spoiler_level": "none"
+    },
+    {
+      "case_id": "case:kachina-element",
+      "question_zh_tw": "卡齊娜是什麼元素？",
+      "category": "character",
+      "query_type": "structured",
+      "answerability": "answerable",
+      "expected_answer": "卡齊娜是岩元素角色。",
+      "required_facts": [
+        {
+          "key": "element",
+          "expected_value": "Geo"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "hoyolab",
+          "source_url": "https://www.hoyolab.com/article/32547672"
+        }
+      ],
+      "game_version": "5.0",
+      "spoiler_level": "none"
+    },
+    {
+      "case_id": "case:kachina-weapon-type",
+      "question_zh_tw": "卡齊娜使用什麼武器類型？",
+      "category": "character",
+      "query_type": "structured",
+      "answerability": "answerable",
+      "expected_answer": "卡齊娜使用長柄武器。",
+      "required_facts": [
+        {
+          "key": "weapon_type",
+          "expected_value": "Polearm"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "hoyolab",
+          "source_url": "https://www.hoyolab.com/article/32547672"
+        }
+      ],
+      "game_version": "5.0",
+      "spoiler_level": "none"
+    },
+    {
+      "case_id": "case:kachina-rarity",
+      "question_zh_tw": "卡齊娜的星級是多少？",
+      "category": "character",
+      "query_type": "structured",
+      "answerability": "answerable",
+      "expected_answer": "卡齊娜是4星角色。",
+      "required_facts": [
+        {
+          "key": "rarity",
+          "expected_value": 4,
+          "unit": "stars"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "hoyolab",
+          "source_url": "https://www.hoyolab.com/article/32547672"
+        }
+      ],
+      "game_version": "5.0",
+      "spoiler_level": "none"
+    },
+    {
+      "case_id": "case:raiden-shogun-element",
+      "question_zh_tw": "雷電將軍是什麼元素？",
+      "category": "character",
+      "query_type": "structured",
+      "answerability": "answerable",
+      "expected_answer": "雷電將軍是雷元素角色。",
+      "required_facts": [
+        {
+          "key": "element",
+          "expected_value": "Electro"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "hoyolab",
+          "source_url": "https://www.hoyolab.com/article/791486"
+        }
+      ],
+      "game_version": "2.1",
+      "spoiler_level": "none"
+    },
+    {
+      "case_id": "case:raiden-shogun-weapon-type",
+      "question_zh_tw": "雷電將軍使用什麼武器類型？",
+      "category": "character",
+      "query_type": "structured",
+      "answerability": "answerable",
+      "expected_answer": "雷電將軍使用長柄武器。",
+      "required_facts": [
+        {
+          "key": "weapon_type",
+          "expected_value": "Polearm"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "hoyolab",
+          "source_url": "https://www.hoyolab.com/article/791486"
+        }
+      ],
+      "game_version": "2.1",
+      "spoiler_level": "none"
+    },
+    {
+      "case_id": "case:raiden-shogun-rarity",
+      "question_zh_tw": "雷電將軍的星級是多少？",
+      "category": "character",
+      "query_type": "structured",
+      "answerability": "answerable",
+      "expected_answer": "雷電將軍是5星角色。",
+      "required_facts": [
+        {
+          "key": "rarity",
+          "expected_value": 5,
+          "unit": "stars"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "hoyolab",
+          "source_url": "https://www.hoyolab.com/article/791486"
+        }
+      ],
+      "game_version": "2.1",
+      "spoiler_level": "none"
+    },
+    {
+      "case_id": "case:kujou-sara-element",
+      "question_zh_tw": "九條裟羅是什麼元素？",
+      "category": "character",
+      "query_type": "structured",
+      "answerability": "answerable",
+      "expected_answer": "九條裟羅是雷元素角色。",
+      "required_facts": [
+        {
+          "key": "element",
+          "expected_value": "Electro"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "hoyolab",
+          "source_url": "https://www.hoyolab.com/article/791486"
+        }
+      ],
+      "game_version": "2.1",
+      "spoiler_level": "none"
+    },
+    {
+      "case_id": "case:kujou-sara-weapon-type",
+      "question_zh_tw": "九條裟羅使用什麼武器類型？",
+      "category": "character",
+      "query_type": "structured",
+      "answerability": "answerable",
+      "expected_answer": "九條裟羅使用弓。",
+      "required_facts": [
+        {
+          "key": "weapon_type",
+          "expected_value": "Bow"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "hoyolab",
+          "source_url": "https://www.hoyolab.com/article/791486"
+        }
+      ],
+      "game_version": "2.1",
+      "spoiler_level": "none"
+    },
+    {
+      "case_id": "case:kujou-sara-rarity",
+      "question_zh_tw": "九條裟羅的星級是多少？",
+      "category": "character",
+      "query_type": "structured",
+      "answerability": "answerable",
+      "expected_answer": "九條裟羅是4星角色。",
+      "required_facts": [
+        {
+          "key": "rarity",
+          "expected_value": 4,
+          "unit": "stars"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "hoyolab",
+          "source_url": "https://www.hoyolab.com/article/791486"
+        }
+      ],
+      "game_version": "2.1",
+      "spoiler_level": "none"
+    },
+    {
+      "case_id": "case:sangonomiya-kokomi-element",
+      "question_zh_tw": "珊瑚宮心海是什麼元素？",
+      "category": "character",
+      "query_type": "structured",
+      "answerability": "answerable",
+      "expected_answer": "珊瑚宮心海是水元素角色。",
+      "required_facts": [
+        {
+          "key": "element",
+          "expected_value": "Hydro"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "hoyolab",
+          "source_url": "https://www.hoyolab.com/article/791486"
+        }
+      ],
+      "game_version": "2.1",
+      "spoiler_level": "none"
+    },
+    {
+      "case_id": "case:sangonomiya-kokomi-weapon-type",
+      "question_zh_tw": "珊瑚宮心海使用什麼武器類型？",
+      "category": "character",
+      "query_type": "structured",
+      "answerability": "answerable",
+      "expected_answer": "珊瑚宮心海使用法器。",
+      "required_facts": [
+        {
+          "key": "weapon_type",
+          "expected_value": "Catalyst"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "hoyolab",
+          "source_url": "https://www.hoyolab.com/article/791486"
+        }
+      ],
+      "game_version": "2.1",
+      "spoiler_level": "none"
+    },
+    {
+      "case_id": "case:sangonomiya-kokomi-rarity",
+      "question_zh_tw": "珊瑚宮心海的星級是多少？",
+      "category": "character",
+      "query_type": "structured",
+      "answerability": "answerable",
+      "expected_answer": "珊瑚宮心海是5星角色。",
+      "required_facts": [
+        {
+          "key": "rarity",
+          "expected_value": 5,
+          "unit": "stars"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "hoyolab",
+          "source_url": "https://www.hoyolab.com/article/791486"
+        }
+      ],
+      "game_version": "2.1",
+      "spoiler_level": "none"
+    },
+    {
+      "case_id": "case:aloy-element",
+      "question_zh_tw": "亞蘿伊是什麼元素？",
+      "category": "character",
+      "query_type": "structured",
+      "answerability": "answerable",
+      "expected_answer": "亞蘿伊是冰元素角色。",
+      "required_facts": [
+        {
+          "key": "element",
+          "expected_value": "Cryo"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "hoyolab",
+          "source_url": "https://www.hoyolab.com/article/791486"
+        }
+      ],
+      "game_version": "2.1",
+      "spoiler_level": "none"
+    },
+    {
+      "case_id": "case:aloy-weapon-type",
+      "question_zh_tw": "亞蘿伊使用什麼武器類型？",
+      "category": "character",
+      "query_type": "structured",
+      "answerability": "answerable",
+      "expected_answer": "亞蘿伊使用弓。",
+      "required_facts": [
+        {
+          "key": "weapon_type",
+          "expected_value": "Bow"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "hoyolab",
+          "source_url": "https://www.hoyolab.com/article/791486"
+        }
+      ],
+      "game_version": "2.1",
+      "spoiler_level": "none"
+    },
+    {
+      "case_id": "case:aloy-rarity",
+      "question_zh_tw": "亞蘿伊的星級是多少？",
+      "category": "character",
+      "query_type": "structured",
+      "answerability": "answerable",
+      "expected_answer": "亞蘿伊是5星角色。",
+      "required_facts": [
+        {
+          "key": "rarity",
+          "expected_value": 5,
+          "unit": "stars"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "hoyolab",
+          "source_url": "https://www.hoyolab.com/article/791486"
+        }
+      ],
+      "game_version": "2.1",
+      "spoiler_level": "none"
+    },
+    {
+      "case_id": "case:surfs-up-weapon-type",
+      "question_zh_tw": "「衝浪時光」是什麼武器類型？",
+      "category": "weapon",
+      "query_type": "structured",
+      "answerability": "answerable",
+      "expected_answer": "「衝浪時光」是法器。",
+      "required_facts": [
+        {
+          "key": "weapon_type",
+          "expected_value": "Catalyst"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "hoyolab",
+          "source_url": "https://www.hoyolab.com/article/32547672"
+        }
+      ],
+      "game_version": "5.0",
+      "spoiler_level": "none"
+    },
+    {
+      "case_id": "case:surfs-up-rarity",
+      "question_zh_tw": "「衝浪時光」的星級是多少？",
+      "category": "weapon",
+      "query_type": "structured",
+      "answerability": "answerable",
+      "expected_answer": "「衝浪時光」是5星武器。",
+      "required_facts": [
+        {
+          "key": "rarity",
+          "expected_value": 5,
+          "unit": "stars"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "hoyolab",
+          "source_url": "https://www.hoyolab.com/article/32547672"
+        }
+      ],
+      "game_version": "5.0",
+      "spoiler_level": "none"
+    },
+    {
+      "case_id": "case:fang-of-the-mountain-king-weapon-type",
+      "question_zh_tw": "「山王長牙」是什麼武器類型？",
+      "category": "weapon",
+      "query_type": "structured",
+      "answerability": "answerable",
+      "expected_answer": "「山王長牙」是雙手劍。",
+      "required_facts": [
+        {
+          "key": "weapon_type",
+          "expected_value": "Claymore"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "hoyolab",
+          "source_url": "https://www.hoyolab.com/article/32547672"
+        }
+      ],
+      "game_version": "5.0",
+      "spoiler_level": "none"
+    },
+    {
+      "case_id": "case:fang-of-the-mountain-king-rarity",
+      "question_zh_tw": "「山王長牙」的星級是多少？",
+      "category": "weapon",
+      "query_type": "structured",
+      "answerability": "answerable",
+      "expected_answer": "「山王長牙」是5星武器。",
+      "required_facts": [
+        {
+          "key": "rarity",
+          "expected_value": 5,
+          "unit": "stars"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "hoyolab",
+          "source_url": "https://www.hoyolab.com/article/32547672"
+        }
+      ],
+      "game_version": "5.0",
+      "spoiler_level": "none"
+    },
+    {
+      "case_id": "case:ash-graven-drinking-horn-weapon-type",
+      "question_zh_tw": "「蒼紋角杯」是什麼武器類型？",
+      "category": "weapon",
+      "query_type": "structured",
+      "answerability": "answerable",
+      "expected_answer": "「蒼紋角杯」是法器。",
+      "required_facts": [
+        {
+          "key": "weapon_type",
+          "expected_value": "Catalyst"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "hoyolab",
+          "source_url": "https://www.hoyolab.com/article/32547672"
+        }
+      ],
+      "game_version": "5.0",
+      "spoiler_level": "none"
+    },
+    {
+      "case_id": "case:ash-graven-drinking-horn-rarity",
+      "question_zh_tw": "「蒼紋角杯」的星級是多少？",
+      "category": "weapon",
+      "query_type": "structured",
+      "answerability": "answerable",
+      "expected_answer": "「蒼紋角杯」是4星武器。",
+      "required_facts": [
+        {
+          "key": "rarity",
+          "expected_value": 4,
+          "unit": "stars"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "hoyolab",
+          "source_url": "https://www.hoyolab.com/article/32547672"
+        }
+      ],
+      "game_version": "5.0",
+      "spoiler_level": "none"
+    },
+    {
+      "case_id": "case:engulfing-lightning-weapon-type",
+      "question_zh_tw": "「薙草之稻光」是什麼武器類型？",
+      "category": "weapon",
+      "query_type": "structured",
+      "answerability": "answerable",
+      "expected_answer": "「薙草之稻光」是長柄武器。",
+      "required_facts": [
+        {
+          "key": "weapon_type",
+          "expected_value": "Polearm"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "hoyolab",
+          "source_url": "https://www.hoyolab.com/article/791486"
+        }
+      ],
+      "game_version": "2.1",
+      "spoiler_level": "none"
+    },
+    {
+      "case_id": "case:engulfing-lightning-rarity",
+      "question_zh_tw": "「薙草之稻光」的星級是多少？",
+      "category": "weapon",
+      "query_type": "structured",
+      "answerability": "answerable",
+      "expected_answer": "「薙草之稻光」是5星武器。",
+      "required_facts": [
+        {
+          "key": "rarity",
+          "expected_value": 5,
+          "unit": "stars"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "hoyolab",
+          "source_url": "https://www.hoyolab.com/article/791486"
+        }
+      ],
+      "game_version": "2.1",
+      "spoiler_level": "none"
+    },
+    {
+      "case_id": "case:everlasting-moonglow-weapon-type",
+      "question_zh_tw": "「不滅月華」是什麼武器類型？",
+      "category": "weapon",
+      "query_type": "structured",
+      "answerability": "answerable",
+      "expected_answer": "「不滅月華」是法器。",
+      "required_facts": [
+        {
+          "key": "weapon_type",
+          "expected_value": "Catalyst"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "hoyolab",
+          "source_url": "https://www.hoyolab.com/article/791486"
+        }
+      ],
+      "game_version": "2.1",
+      "spoiler_level": "none"
+    },
+    {
+      "case_id": "case:everlasting-moonglow-rarity",
+      "question_zh_tw": "「不滅月華」的星級是多少？",
+      "category": "weapon",
+      "query_type": "structured",
+      "answerability": "answerable",
+      "expected_answer": "「不滅月華」是5星武器。",
+      "required_facts": [
+        {
+          "key": "rarity",
+          "expected_value": 5,
+          "unit": "stars"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "hoyolab",
+          "source_url": "https://www.hoyolab.com/article/791486"
+        }
+      ],
+      "game_version": "2.1",
+      "spoiler_level": "none"
+    },
+    {
+      "case_id": "case:luxurious-sea-lord-weapon-type",
+      "question_zh_tw": "「銜珠海皇」是什麼武器類型？",
+      "category": "weapon",
+      "query_type": "structured",
+      "answerability": "answerable",
+      "expected_answer": "「銜珠海皇」是雙手劍。",
+      "required_facts": [
+        {
+          "key": "weapon_type",
+          "expected_value": "Claymore"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "hoyolab",
+          "source_url": "https://www.hoyolab.com/article/791486"
+        }
+      ],
+      "game_version": "2.1",
+      "spoiler_level": "none"
+    },
+    {
+      "case_id": "case:luxurious-sea-lord-rarity",
+      "question_zh_tw": "「銜珠海皇」的星級是多少？",
+      "category": "weapon",
+      "query_type": "structured",
+      "answerability": "answerable",
+      "expected_answer": "「銜珠海皇」是4星武器。",
+      "required_facts": [
+        {
+          "key": "rarity",
+          "expected_value": 4,
+          "unit": "stars"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "hoyolab",
+          "source_url": "https://www.hoyolab.com/article/791486"
+        }
+      ],
+      "game_version": "2.1",
+      "spoiler_level": "none"
+    },
+    {
+      "case_id": "case:the-catch-weapon-type",
+      "question_zh_tw": "「漁獲」是什麼武器類型？",
+      "category": "weapon",
+      "query_type": "structured",
+      "answerability": "answerable",
+      "expected_answer": "「漁獲」是長柄武器。",
+      "required_facts": [
+        {
+          "key": "weapon_type",
+          "expected_value": "Polearm"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "hoyolab",
+          "source_url": "https://www.hoyolab.com/article/791486"
+        }
+      ],
+      "game_version": "2.1",
+      "spoiler_level": "none"
+    },
+    {
+      "case_id": "case:the-catch-rarity",
+      "question_zh_tw": "「漁獲」的星級是多少？",
+      "category": "weapon",
+      "query_type": "structured",
+      "answerability": "answerable",
+      "expected_answer": "「漁獲」是4星武器。",
+      "required_facts": [
+        {
+          "key": "rarity",
+          "expected_value": 4,
+          "unit": "stars"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "hoyolab",
+          "source_url": "https://www.hoyolab.com/article/791486"
+        }
+      ],
+      "game_version": "2.1",
+      "spoiler_level": "none"
+    },
+    {
+      "case_id": "case:version-5-0-changes",
+      "question_zh_tw": "5.0版本更新了哪些內容？",
+      "category": "version",
+      "query_type": "version",
+      "answerability": "answerable",
+      "expected_answer": "5.0「榮花與炎日之途」開放納塔地區，新增瑪拉妮、基尼奇、卡齊娜三名角色，並於2024/08/28 06:00 (UTC+8) 開始更新。",
+      "required_facts": [
+        {
+          "key": "release_version",
+          "expected_value": "5.0"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "hoyolab",
+          "source_url": "https://www.hoyolab.com/article/32547672"
+        }
+      ],
+      "game_version": "5.0",
+      "spoiler_level": "none",
+      "notes": "版本題；問題本身寫明版本號，涵蓋 exact 約束路徑。"
+    },
+    {
+      "case_id": "case:version-2-1-changes",
+      "question_zh_tw": "2.1版本更新了哪些內容？",
+      "category": "version",
+      "query_type": "version",
+      "answerability": "answerable",
+      "expected_answer": "2.1「韶光撫月，天下人間」開放清籟島與海祇島，新增雷電將軍、九條裟羅、珊瑚宮心海、亞蘿伊，並新增釣魚系統。",
+      "required_facts": [
+        {
+          "key": "version_update_start",
+          "expected_value": "2021-09-01T06:00:00+08:00"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "hoyolab",
+          "source_url": "https://www.hoyolab.com/article/791486"
+        }
+      ],
+      "game_version": "2.1",
+      "spoiler_level": "none"
+    },
+    {
+      "case_id": "case:natlan-sub-regions",
+      "question_zh_tw": "納塔在5.0版本開放了哪些區域？",
+      "category": "region",
+      "query_type": "narrative",
+      "answerability": "answerable",
+      "expected_answer": "納塔開放「堅岩隘谷」、「踞石山」、「湧流地」和「萬火之甌」。",
+      "required_facts": [
+        {
+          "key": "release_version",
+          "expected_value": "5.0"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "hoyolab",
+          "source_url": "https://www.hoyolab.com/article/32547672"
+        }
+      ],
+      "game_version": "5.0",
+      "spoiler_level": "none"
+    },
+    {
+      "case_id": "case:inazuma-new-islands",
+      "question_zh_tw": "稻妻在2.1版本新增了哪些島嶼？",
+      "category": "region",
+      "query_type": "narrative",
+      "answerability": "answerable",
+      "expected_answer": "稻妻開放「清籟島」與「海祇島」兩個島嶼。",
+      "required_facts": [
+        {
+          "key": "version_update_start",
+          "expected_value": "2021-09-01T06:00:00+08:00"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "hoyolab",
+          "source_url": "https://www.hoyolab.com/article/791486"
+        }
+      ],
+      "game_version": "2.1",
+      "spoiler_level": "none"
+    },
+    {
+      "case_id": "case:raiden-shogun-burst-name",
+      "question_zh_tw": "雷電將軍的元素爆發叫什麼名稱？",
+      "category": "character",
+      "query_type": "structured",
+      "answerability": "answerable",
+      "expected_answer": "雷電將軍的元素爆發是「奧義·夢想真說」。",
+      "required_facts": [
+        {
+          "key": "elemental_burst_name",
+          "expected_value": "奧義·夢想真說"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "hoyolab",
+          "source_url": "https://www.hoyolab.com/article/791486"
+        }
+      ],
+      "game_version": "2.1",
+      "spoiler_level": "notice",
+      "notes": "這筆事實只存在於 claim 與逐字 chunk，不在 structured_facts；用來檢查技能名稱問題是否走得到 document 證據。"
+    },
+    {
+      "case_id": "case:team-building",
+      "question_zh_tw": "雷電將軍該配什麼隊伍？",
+      "category": "out_of_scope",
+      "query_type": "out_of_scope",
+      "answerability": "refuse",
+      "required_facts": [],
+      "game_version": "unknown",
+      "spoiler_level": "none",
+      "refusal_reason": "out_of_scope",
+      "notes": "範疇外請求，助手只回答可追溯的事實性問題。"
+    },
+    {
+      "case_id": "case:pull-advice",
+      "question_zh_tw": "瑪拉妮值得抽嗎？",
+      "category": "out_of_scope",
+      "query_type": "out_of_scope",
+      "answerability": "refuse",
+      "required_facts": [],
+      "game_version": "unknown",
+      "spoiler_level": "none",
+      "refusal_reason": "out_of_scope",
+      "notes": "範疇外請求，助手只回答可追溯的事實性問題。"
+    },
+    {
+      "case_id": "case:artifact-advice",
+      "question_zh_tw": "珊瑚宮心海的聖遺物詞條推薦？",
+      "category": "out_of_scope",
+      "query_type": "out_of_scope",
+      "answerability": "refuse",
+      "required_facts": [],
+      "game_version": "unknown",
+      "spoiler_level": "none",
+      "refusal_reason": "out_of_scope",
+      "notes": "範疇外請求，助手只回答可追溯的事實性問題。"
+    },
+    {
+      "case_id": "case:beta-leak",
+      "question_zh_tw": "測試服有哪些新角色洩漏？",
+      "category": "out_of_scope",
+      "query_type": "out_of_scope",
+      "answerability": "refuse",
+      "required_facts": [],
+      "game_version": "unknown",
+      "spoiler_level": "none",
+      "refusal_reason": "out_of_scope",
+      "notes": "範疇外請求，助手只回答可追溯的事實性問題。"
+    },
+    {
+      "case_id": "case:account-trade",
+      "question_zh_tw": "哪裡可以帳號交易？",
+      "category": "out_of_scope",
+      "query_type": "out_of_scope",
+      "answerability": "refuse",
+      "required_facts": [],
+      "game_version": "unknown",
+      "spoiler_level": "none",
+      "refusal_reason": "out_of_scope",
+      "notes": "範疇外請求，助手只回答可追溯的事實性問題。"
+    },
+    {
+      "case_id": "case:farming-route",
+      "question_zh_tw": "納塔的特產採集路線怎麼跑？",
+      "category": "out_of_scope",
+      "query_type": "out_of_scope",
+      "answerability": "refuse",
+      "required_facts": [],
+      "game_version": "unknown",
+      "spoiler_level": "none",
+      "refusal_reason": "out_of_scope",
+      "notes": "範疇外請求，助手只回答可追溯的事實性問題。"
+    },
+    {
+      "case_id": "case:unknown-entity-nahida",
+      "question_zh_tw": "納西妲是什麼元素？",
+      "category": "character",
+      "query_type": "structured",
+      "answerability": "refuse",
+      "required_facts": [],
+      "game_version": "unknown",
+      "spoiler_level": "none",
+      "refusal_reason": "insufficient_evidence",
+      "notes": "庫內沒有納西妲。分類器的規則是明確別名比對（fuzzyMatching: false），不會把未知的專有名詞認成「未解析實體」，因此 entity_unknown 這個理由目前產不出來；insufficient_evidence 才是這套規則下正確且誠實的理由。"
+    },
+    {
+      "case_id": "case:unknown-region-fontaine",
+      "question_zh_tw": "楓丹的水神是誰？",
+      "category": "region",
+      "query_type": "narrative",
+      "answerability": "refuse",
+      "required_facts": [],
+      "game_version": "unknown",
+      "spoiler_level": "none",
+      "refusal_reason": "out_of_scope",
+      "notes": "庫內沒有楓丹來源。「楓丹的水神是誰？」沒有任何可辨識的意圖詞、也沒有已知實體，確定性分類器無法把它跟雜訊區分，因此落到 out_of_scope。要改成 insufficient_evidence 必須先為 entity-less 檢索設相似度門檻（已知待辦），否則把「是誰」路由到文件檢索會回傳不相關的 chunk 並附上引用。"
+    },
+    {
+      "case_id": "case:unknown-version-6-0",
+      "question_zh_tw": "6.0版本更新了哪些內容？",
+      "category": "version",
+      "query_type": "version",
+      "answerability": "refuse",
+      "required_facts": [],
+      "game_version": "unknown",
+      "spoiler_level": "none",
+      "refusal_reason": "insufficient_evidence",
+      "notes": "庫內只有 5.0 與 2.1；期望拒答而非用別版內容作答。"
+    },
+    {
+      "case_id": "case:unknown-version-8-0",
+      "question_zh_tw": "8.0版本有哪些新角色？",
+      "category": "version",
+      "query_type": "version",
+      "answerability": "refuse",
+      "required_facts": [],
+      "game_version": "unknown",
+      "spoiler_level": "none",
+      "refusal_reason": "insufficient_evidence",
+      "notes": "版本不存在於庫內；期望拒答。"
+    }
+  ]
+}
