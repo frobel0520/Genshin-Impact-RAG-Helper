@@ -12,12 +12,41 @@
     {
       "id": "new-region-natlan",
       "text": "一、全新地區\n\n開放全新區域——「納塔」\n\n◇新增區域：在5.0版本中，納塔地區將開放「堅岩隘谷」、「踞石山」、「湧流地」和「萬火之甌」。",
-      "entity_ids": ["ent:natlan"]
+      "entity_ids": [
+        "ent:natlan"
+      ]
     },
     {
       "id": "new-characters",
       "text": "二、全新角色\n\n「嘩啦啦逐浪客·瑪拉妮(水)」（五星）\n◇神之眼：水\n◇武器：法器\n\n「回火之狩·基尼奇(草)」（五星）\n◇神之眼：草\n◇武器：雙手劍\n\n「斑金礦樸·卡齊娜(岩)」（四星）\n◇神之眼：岩\n◇武器：長柄武器",
-      "entity_ids": ["ent:mualani", "ent:kinich", "ent:kachina"]
+      "entity_ids": [
+        "ent:mualani",
+        "ent:kinich",
+        "ent:kachina"
+      ]
+    },
+    {
+      "id": "new-domains",
+      "text": "三、全新秘境\n\n煉武秘境「深古瞭望所」\n\n◆挑戰秘境可獲得武器突破素材。\n\n精通秘境「蘊火的幽墟」\n\n◆挑戰秘境可獲得角色天賦素材。\n\n祝聖秘境「虹靈的淨土」\n\n◆挑戰秘境可獲得：「燼城勇者繪卷」、「黑曜秘典」等聖遺物。",
+      "entity_ids": [
+        "ent:natlan"
+      ]
+    },
+    {
+      "id": "new-weapons",
+      "text": "四、全新裝備\n\n1.全新武器（以精煉1階為例）\n\n「法器·衝浪時光」（五星）\n\n「雙手劍·山王長牙」（五星）\n\n「法器·蒼紋角杯」（四星）",
+      "entity_ids": [
+        "ent:surfs-up",
+        "ent:fang-of-the-mountain-king",
+        "ent:ash-graven-drinking-horn"
+      ]
+    },
+    {
+      "id": "new-quest",
+      "text": "五、全新劇情\n\n1.全新魔神任務\n\n魔神任務第五章·第一幕「榮花與炎日之途」\n\n5.0版本更新後永久開放\n\n◆任務開啟條件：\n\n•冒險等階≥40級\n\n•完成魔神任務第四章·第六幕 「睡前故事」",
+      "entity_ids": [
+        "ent:natlan"
+      ]
     }
   ]
 }

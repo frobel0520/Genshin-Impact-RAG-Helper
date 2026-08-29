@@ -7,63 +7,154 @@
       "entity_id": "ent:natlan",
       "entity_type": "region",
       "canonical_name": "納塔",
-      "aliases": ["Natlan", "彩石與焰泉之國"],
+      "aliases": [
+        "Natlan",
+        "彩石與焰泉之國"
+      ],
       "locale": "zh-TW"
     },
     {
       "entity_id": "ent:mualani",
       "entity_type": "character",
       "canonical_name": "瑪拉妮",
-      "aliases": ["嘩啦啦逐浪客", "Mualani"],
+      "aliases": [
+        "嘩啦啦逐浪客",
+        "Mualani"
+      ],
       "locale": "zh-TW"
     },
     {
       "entity_id": "ent:kinich",
       "entity_type": "character",
       "canonical_name": "基尼奇",
-      "aliases": ["回火之狩", "Kinich"],
+      "aliases": [
+        "回火之狩",
+        "Kinich"
+      ],
       "locale": "zh-TW"
     },
     {
       "entity_id": "ent:kachina",
       "entity_type": "character",
       "canonical_name": "卡齊娜",
-      "aliases": ["斑金礦樸", "Kachina"],
+      "aliases": [
+        "斑金礦樸",
+        "Kachina"
+      ],
       "locale": "zh-TW"
     },
     {
       "entity_id": "ent:inazuma",
       "entity_type": "region",
       "canonical_name": "稻妻",
-      "aliases": ["Inazuma"],
+      "aliases": [
+        "Inazuma"
+      ],
       "locale": "zh-TW"
     },
     {
       "entity_id": "ent:raiden-shogun",
       "entity_type": "character",
       "canonical_name": "雷電將軍",
-      "aliases": ["一心淨土", "雷神", "Raiden Shogun"],
+      "aliases": [
+        "一心淨土",
+        "雷神",
+        "Raiden Shogun"
+      ],
       "locale": "zh-TW"
     },
     {
       "entity_id": "ent:kujou-sara",
       "entity_type": "character",
       "canonical_name": "九條裟羅",
-      "aliases": ["黑羽鳴鏑", "Kujou Sara"],
+      "aliases": [
+        "黑羽鳴鏑",
+        "Kujou Sara"
+      ],
       "locale": "zh-TW"
     },
     {
       "entity_id": "ent:sangonomiya-kokomi",
       "entity_type": "character",
       "canonical_name": "珊瑚宮心海",
-      "aliases": ["真珠之智", "Sangonomiya Kokomi"],
+      "aliases": [
+        "真珠之智",
+        "Sangonomiya Kokomi"
+      ],
       "locale": "zh-TW"
     },
     {
       "entity_id": "ent:aloy",
       "entity_type": "character",
       "canonical_name": "亞蘿伊",
-      "aliases": ["異界的救世主", "Aloy"],
+      "aliases": [
+        "異界的救世主",
+        "Aloy"
+      ],
+      "locale": "zh-TW"
+    },
+    {
+      "entity_id": "ent:surfs-up",
+      "entity_type": "weapon",
+      "canonical_name": "衝浪時光",
+      "aliases": [
+        "法器·衝浪時光"
+      ],
+      "locale": "zh-TW"
+    },
+    {
+      "entity_id": "ent:fang-of-the-mountain-king",
+      "entity_type": "weapon",
+      "canonical_name": "山王長牙",
+      "aliases": [
+        "雙手劍·山王長牙"
+      ],
+      "locale": "zh-TW"
+    },
+    {
+      "entity_id": "ent:ash-graven-drinking-horn",
+      "entity_type": "weapon",
+      "canonical_name": "蒼紋角杯",
+      "aliases": [
+        "法器·蒼紋角杯"
+      ],
+      "locale": "zh-TW"
+    },
+    {
+      "entity_id": "ent:engulfing-lightning",
+      "entity_type": "weapon",
+      "canonical_name": "薙草之稻光",
+      "aliases": [
+        "長柄武器·薙草之稻光"
+      ],
+      "locale": "zh-TW"
+    },
+    {
+      "entity_id": "ent:everlasting-moonglow",
+      "entity_type": "weapon",
+      "canonical_name": "不滅月華",
+      "aliases": [
+        "法器·不滅月華"
+      ],
+      "locale": "zh-TW"
+    },
+    {
+      "entity_id": "ent:luxurious-sea-lord",
+      "entity_type": "weapon",
+      "canonical_name": "銜珠海皇",
+      "aliases": [
+        "雙手劍·銜珠海皇"
+      ],
+      "locale": "zh-TW"
+    },
+    {
+      "entity_id": "ent:the-catch",
+      "entity_type": "weapon",
+      "canonical_name": "漁獲",
+      "aliases": [
+        "「漁獲」",
+        "長柄武器·『漁獲』"
+      ],
       "locale": "zh-TW"
     }
   ],
@@ -307,6 +398,146 @@
       "game_version": "2.1",
       "source_id": "src:hoyolab-version-2-1",
       "validity": "active"
+    },
+    {
+      "fact_id": "fact:surfs-up-weapon-type",
+      "entity_id": "ent:surfs-up",
+      "field_key": "weapon_type",
+      "value": "Catalyst",
+      "unit": null,
+      "game_version": "5.0",
+      "source_id": "src:hoyolab-version-5-0",
+      "validity": "active"
+    },
+    {
+      "fact_id": "fact:surfs-up-rarity",
+      "entity_id": "ent:surfs-up",
+      "field_key": "rarity",
+      "value": 5,
+      "unit": "stars",
+      "game_version": "5.0",
+      "source_id": "src:hoyolab-version-5-0",
+      "validity": "active"
+    },
+    {
+      "fact_id": "fact:fang-of-the-mountain-king-weapon-type",
+      "entity_id": "ent:fang-of-the-mountain-king",
+      "field_key": "weapon_type",
+      "value": "Claymore",
+      "unit": null,
+      "game_version": "5.0",
+      "source_id": "src:hoyolab-version-5-0",
+      "validity": "active"
+    },
+    {
+      "fact_id": "fact:fang-of-the-mountain-king-rarity",
+      "entity_id": "ent:fang-of-the-mountain-king",
+      "field_key": "rarity",
+      "value": 5,
+      "unit": "stars",
+      "game_version": "5.0",
+      "source_id": "src:hoyolab-version-5-0",
+      "validity": "active"
+    },
+    {
+      "fact_id": "fact:ash-graven-drinking-horn-weapon-type",
+      "entity_id": "ent:ash-graven-drinking-horn",
+      "field_key": "weapon_type",
+      "value": "Catalyst",
+      "unit": null,
+      "game_version": "5.0",
+      "source_id": "src:hoyolab-version-5-0",
+      "validity": "active"
+    },
+    {
+      "fact_id": "fact:ash-graven-drinking-horn-rarity",
+      "entity_id": "ent:ash-graven-drinking-horn",
+      "field_key": "rarity",
+      "value": 4,
+      "unit": "stars",
+      "game_version": "5.0",
+      "source_id": "src:hoyolab-version-5-0",
+      "validity": "active"
+    },
+    {
+      "fact_id": "fact:engulfing-lightning-weapon-type",
+      "entity_id": "ent:engulfing-lightning",
+      "field_key": "weapon_type",
+      "value": "Polearm",
+      "unit": null,
+      "game_version": "2.1",
+      "source_id": "src:hoyolab-version-2-1",
+      "validity": "active"
+    },
+    {
+      "fact_id": "fact:engulfing-lightning-rarity",
+      "entity_id": "ent:engulfing-lightning",
+      "field_key": "rarity",
+      "value": 5,
+      "unit": "stars",
+      "game_version": "2.1",
+      "source_id": "src:hoyolab-version-2-1",
+      "validity": "active"
+    },
+    {
+      "fact_id": "fact:everlasting-moonglow-weapon-type",
+      "entity_id": "ent:everlasting-moonglow",
+      "field_key": "weapon_type",
+      "value": "Catalyst",
+      "unit": null,
+      "game_version": "2.1",
+      "source_id": "src:hoyolab-version-2-1",
+      "validity": "active"
+    },
+    {
+      "fact_id": "fact:everlasting-moonglow-rarity",
+      "entity_id": "ent:everlasting-moonglow",
+      "field_key": "rarity",
+      "value": 5,
+      "unit": "stars",
+      "game_version": "2.1",
+      "source_id": "src:hoyolab-version-2-1",
+      "validity": "active"
+    },
+    {
+      "fact_id": "fact:luxurious-sea-lord-weapon-type",
+      "entity_id": "ent:luxurious-sea-lord",
+      "field_key": "weapon_type",
+      "value": "Claymore",
+      "unit": null,
+      "game_version": "2.1",
+      "source_id": "src:hoyolab-version-2-1",
+      "validity": "active"
+    },
+    {
+      "fact_id": "fact:luxurious-sea-lord-rarity",
+      "entity_id": "ent:luxurious-sea-lord",
+      "field_key": "rarity",
+      "value": 4,
+      "unit": "stars",
+      "game_version": "2.1",
+      "source_id": "src:hoyolab-version-2-1",
+      "validity": "active"
+    },
+    {
+      "fact_id": "fact:the-catch-weapon-type",
+      "entity_id": "ent:the-catch",
+      "field_key": "weapon_type",
+      "value": "Polearm",
+      "unit": null,
+      "game_version": "2.1",
+      "source_id": "src:hoyolab-version-2-1",
+      "validity": "active"
+    },
+    {
+      "fact_id": "fact:the-catch-rarity",
+      "entity_id": "ent:the-catch",
+      "field_key": "rarity",
+      "value": 4,
+      "unit": "stars",
+      "game_version": "2.1",
+      "source_id": "src:hoyolab-version-2-1",
+      "validity": "active"
     }
   ],
   "claims": [
@@ -337,6 +568,16 @@
       "claim_text": "官方公告記載2.1版本稻妻地區開放「清籟島」與「海祇島」兩個島嶼。",
       "game_version": "2.1",
       "source_id": "src:hoyolab-version-2-1",
+      "authority_rank": 1,
+      "conflict_group_id": null
+    },
+    {
+      "claim_id": "claim:natlan-new-domains-5-0",
+      "claim_key": "natlan_new_domains",
+      "entity_id": "ent:natlan",
+      "claim_text": "官方公告記載5.0版本納塔開放煉武秘境「深古瞭望所」、精通秘境「蘊火的幽墟」與祝聖秘境「虹靈的淨土」。",
+      "game_version": "5.0",
+      "source_id": "src:hoyolab-version-5-0",
       "authority_rank": 1,
       "conflict_group_id": null
     }
