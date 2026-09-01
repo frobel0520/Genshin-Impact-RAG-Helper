@@ -6,7 +6,7 @@ export const RUNTIME_DEFAULTS = Object.freeze({
   embeddingModel: "bge-m3:latest",
   structuredDatabasePath: "artifacts/structured.db",
   documentDatabasePath: "artifacts/index.db",
-  documentMinScore: 0.35,
+  documentMinScore: 0.47,
 });
 
 const MIN_PORT = 0;
