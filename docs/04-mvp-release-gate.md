@@ -24,7 +24,12 @@ npm run ingest:validate -- artifacts\source-pack.json
 npm run ingest:build -- artifacts\source-pack.json
 npm start
 npm run evaluate -- evaluation\eval-cases.json --report artifacts\eval-report.json
+npm run review:apply -- artifactseview-export.json
 ```
+
+The last step is the human half and only runs once a reviewer has produced
+`artifacts/review-export.json`; every step above it is machine-reproducible on
+its own.
 
 Every step above was run from a cleared `artifacts/` for this record. The pack is
 byte-identical across runs, so `dataset_version` is stable and the gate can be
@@ -81,7 +86,7 @@ Verified in the browser against the running server at `http://127.0.0.1:3000`:
 | Refused (out of scope) | 「雷電將軍該配什麼隊伍？」 → 拒答, 原因「超出本助手範疇」, 引用來源（0）, and an explicit 「這個回答沒有附上來源」 |
 | Traceability | every response carries a 追蹤碼 that matches the run log |
 
-The 6 T12 acceptance scenarios and the full suite pass: `npm run check`, 341
+The 6 T12 acceptance scenarios and the full suite pass: `npm run check`, 348
 tests, 0 failures, under the offline guard — the generation stage included, its
 model replaced by a fake so CI still needs neither a model nor a live source.
 
@@ -130,6 +135,16 @@ read as green. To close the gate, review the 40 answered cases in
 `artifacts/eval-report.json` and record a verdict per case. 39 carry generated
 prose; `case:natlan-sub-regions` is the one the grounding check rejected, so it
 answers in the template's words with its citation intact.
+
+The verdict has somewhere to land: `npm run review:apply` takes the reviewer's
+export, writes `artifacts/human-review.json`, and stamps the two labels back
+onto every answered case in the report. It recomputes both rates from the
+per-case verdicts rather than trusting the totals the export carried, and it
+refuses to write anything while a case is still unreviewed — a gate closed on a
+partial review is worse than one left open. 待議 is a recorded verdict and does
+not count as a pass. Until that command has run against a real review, the two
+rows in §4 stay **pending**; this record will not report a number nobody
+judged.
 
 ## 7. Known gaps carried forward
 
