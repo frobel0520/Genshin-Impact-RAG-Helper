@@ -218,6 +218,70 @@ export function createStructuredStore(options = {}) {
   }
 
   /**
+   * Read one StructuredFact by its ID.
+   *
+   * The retrievers find facts by entity and field; a caller holding an
+   * EvidenceItem has only the ID it cited, and needs the value back to say
+   * anything about it. Returns undefined when the dataset does not hold it,
+   * because a missing record is an answer, not a failure.
+   *
+   * @param {string} factId
+   * @returns {object | undefined}
+   */
+  function getStructuredFact(factId) {
+    assertStoreIsOpen(isOpen);
+    assertDomainId(factId, "fact", "factId");
+    const row = database
+      .prepare(
+        `SELECT fact_id, entity_id, field_key, value_json, unit, game_version, source_id, validity
+         FROM structured_facts WHERE fact_id = ?`,
+      )
+      .get(factId);
+    return row === undefined ? undefined : toStructuredFact(row);
+  }
+
+  /**
+   * Read one CanonicalEntity by its ID.
+   *
+   * @param {string} entityId
+   * @returns {object | undefined}
+   */
+  function getCanonicalEntity(entityId) {
+    assertStoreIsOpen(isOpen);
+    assertDomainId(entityId, "entity", "entityId");
+    const row = database
+      .prepare(
+        "SELECT entity_id, entity_type, canonical_name, aliases_json, locale FROM canonical_entities WHERE entity_id = ?",
+      )
+      .get(entityId);
+    return row === undefined ? undefined : toCanonicalEntity(row);
+  }
+
+  /**
+   * Read one Claim by its ID, with the source dates its ordering depends on.
+   *
+   * @param {string} claimId
+   * @returns {object | undefined}
+   */
+  function getClaim(claimId) {
+    assertStoreIsOpen(isOpen);
+    assertDomainId(claimId, "claim", "claimId");
+    const row = database
+      .prepare(
+        `SELECT
+           c.claim_id, c.claim_key, c.entity_id, c.claim_text, c.game_version,
+           c.source_id, c.authority_rank, c.conflict_group_id,
+           s.published_at AS source_published_at,
+           s.retrieved_at AS source_retrieved_at
+         FROM claims AS c
+         INNER JOIN source_documents AS s ON s.source_id = c.source_id
+         WHERE c.claim_id = ?`,
+      )
+      .get(claimId);
+    return row === undefined ? undefined : toClaim(row);
+  }
+
+  /**
    * Read back every CanonicalEntity, ordered by ID so the result is stable.
    *
    * The query classifier needs the entity dictionary at runtime, and after an
@@ -291,6 +355,9 @@ export function createStructuredStore(options = {}) {
     replaceData,
     findStructuredFacts,
     findClaims,
+    getStructuredFact,
+    getClaim,
+    getCanonicalEntity,
     listCanonicalEntities,
     getSourceDocument,
     getConflictGroup,
