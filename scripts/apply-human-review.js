@@ -13,7 +13,12 @@ artifacts/human-review.json) and stamps it back onto the matching cases in
 
 Exits non-zero when the export does not describe the report it is applied to, or
 when a case is still unreviewed — a gate closed on a partial review is worse
-than one left open.`;
+than one left open.
+
+The export's reviewer field is recorded verbatim and defaults to "unattributed".
+Who judged is part of the verdict: these two criteria are specified as
+human-judged, so a record that does not say who judged cannot be read as
+evidence that anyone did.`;
 
 const VALID_LABELS = new Set(["pass", "fail", "hold"]);
 const TARGETS = { answer_correctness: 90, groundedness: 95 };
@@ -113,6 +118,7 @@ export function main(argv, streams = {}) {
   const reviewedAt = isStableString(exported.reviewed_at)
     ? exported.reviewed_at
     : new Date().toISOString();
+  const reviewer = isStableString(exported.reviewer) ? exported.reviewer : "unattributed";
 
   const metrics = {};
   for (const [metric, [passed, scored]] of Object.entries(totals)) {
@@ -129,6 +135,7 @@ export function main(argv, streams = {}) {
   const record = {
     dataset_version: isStableString(exported.dataset_version) ? exported.dataset_version : null,
     reviewed_at: reviewedAt,
+    reviewer,
     report: reportPath,
     metrics,
     reviews: answered.map((result) => {
@@ -152,6 +159,7 @@ export function main(argv, streams = {}) {
     result.human_review = {
       status: "reviewed",
       reviewed_at: reviewedAt,
+      reviewer,
       answer_correctness: review.answer_correctness,
       groundedness: review.groundedness,
       note: isStableString(review.note) ? review.note : "",
@@ -162,6 +170,8 @@ export function main(argv, streams = {}) {
   writeJson(reportPath, report);
 
   out(`Recorded ${record.reviews.length} reviewed cases to ${outputPath}\n`);
+  out(`  reviewer: ${reviewer}
+`);
   for (const [metric, value] of Object.entries(metrics)) {
     out(
       `  ${metric}: ${value.rate.toFixed(1)}% (${value.passed}/${value.scored}) ` +

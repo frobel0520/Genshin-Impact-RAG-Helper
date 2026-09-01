@@ -196,3 +196,27 @@ test("the command explains itself instead of guessing at missing arguments", (co
   assert.equal(main([join(directory, "nothing.json")], streams), 1);
   assert.match(stderr.join(""), /No file at/);
 });
+
+test("who judged is recorded, and defaults to unattributed", (context) => {
+  const directory = workspace(context);
+  const attributed = fixture(
+    directory,
+    report([{ caseId: "case:a" }]),
+    { ...review([{ caseId: "case:a" }]), reviewer: "claude-opus-5 (machine review)" },
+  );
+  const { stdout, streams } = capture();
+
+  assert.equal(run(attributed, streams), 0);
+  const record = JSON.parse(readFileSync(attributed.outPath, "utf8"));
+  assert.equal(record.reviewer, "claude-opus-5 (machine review)");
+  assert.equal(
+    JSON.parse(readFileSync(attributed.reportPath, "utf8")).results[0].human_review.reviewer,
+    "claude-opus-5 (machine review)",
+  );
+  assert.match(stdout.join(""), /reviewer: claude-opus-5/);
+
+  // A record that does not say who judged must not read as though a person did.
+  const anonymous = fixture(directory, report([{ caseId: "case:a" }]), review([{ caseId: "case:a" }]));
+  assert.equal(run(anonymous, streams), 0);
+  assert.equal(JSON.parse(readFileSync(anonymous.outPath, "utf8")).reviewer, "unattributed");
+});
