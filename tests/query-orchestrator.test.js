@@ -67,6 +67,10 @@ async function createOrchestrator(context) {
     documentRetriever: createDocumentRetriever({
       store: documentStore,
       embedQuery: embedText,
+      // The similarity floor belongs to the retriever's own suite; these cases
+      // are about how the two routes merge, and the synthetic embedder's
+      // absolute scores say nothing about relevance.
+      minScore: 0,
     }),
   });
 }
