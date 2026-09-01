@@ -10,6 +10,10 @@ npm run make:pack -- sources --out artifacts\source-pack.json
 npm run ingest:validate -- artifacts\source-pack.json
 ```
 
+Pin `retrieved_at` in every article you keep. Without it the converter stamps
+the current time, so the same sources produce a different `dataset_version` on
+every run and a release gate can never be reproduced.
+
 `make:pack` derives what a machine can derive — `source_id`, `chunk_id`,
 `document_locator`, `content_hash`, `token_hint`, `retrieved_at`, and the
 per-source-kind `rights_note` — so the file you write only carries the article
@@ -29,7 +33,8 @@ nothing when that fails.
 | `sections[].id` | no | anchor for `chunk_id` and the locator; defaults to `p1`, `p2`, … |
 | `sections[].text` | yes | source text, verbatim |
 | `sections[].entity_ids` | no | only after the entity exists in the merged pack |
-| `locale`, `rights_note`, `retrieved_at` | no | defaults are `zh-TW`, the kind's licence note, and the run time |
+| `retrieved_at` | no, but pin it | when the text was copied; leave it out and the run clock is used, which changes `dataset_version` on every rebuild |
+| `locale`, `rights_note` | no | defaults are `zh-TW` and the kind's licence note |
 
 Use `body` instead of `sections` to paste one long article: blank-line
 paragraphs are packed into chunks of at most 480 characters

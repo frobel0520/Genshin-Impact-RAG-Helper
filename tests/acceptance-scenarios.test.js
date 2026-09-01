@@ -41,7 +41,7 @@ function embedText(text) {
   return vector;
 }
 
-async function createPipeline(context) {
+async function createPipeline(context, options = {}) {
   const structuredStore = createStructuredStore();
   const documentStore = createDocumentStore();
   context.after(() => {
@@ -73,6 +73,10 @@ async function createPipeline(context) {
   const documentRetriever = createDocumentRetriever({
     store: documentStore,
     embedQuery: embedText,
+    // The scenarios below are about what the pipeline decides, not about where
+    // the similarity floor sits: the synthetic embedder's absolute scores are
+    // an artefact of the fixture. The floor has its own scenario at the end.
+    minScore: options.minScore ?? 0,
   });
 
   const service = createQueryService({
@@ -284,4 +288,18 @@ test("a refused answer carries no spoiler notice, because it has no content", as
   assert.equal(refused.spoiler_notice, undefined);
   assert.equal(answered.answer_status, "answered");
   assert.ok(answered.spoiler_notice.length > 0);
+});
+
+test("a question the corpus cannot answer is refused rather than answered from the nearest chunks", async (context) => {
+  // The floor is set where nothing can clear it, which is what "no chunk
+  // addresses this question" looks like to the retriever.
+  const run = await createPipeline(context, { minScore: 1 });
+
+  const { document } = await run("unclassified_lore_query");
+  assert.deepEqual(document.items, []);
+
+  const answer = await run.answer("unclassified_lore_query");
+  assert.equal(answer.answer_status, "refused");
+  assert.equal(answer.uncertainty_reason, "insufficient_evidence");
+  assert.deepEqual(answer.citations, []);
 });

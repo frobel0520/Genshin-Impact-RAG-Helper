@@ -18,6 +18,7 @@
     "ingest:validate": "node scripts/ingest.js validate",
     "ingest:build": "node scripts/ingest.js build",
     "evaluate": "node scripts/evaluate.js",
-    "check": "npm run check:syntax && npm run lint && npm test"
+    "check": "npm run check:syntax && npm run lint && npm test",
+    "review:apply": "node scripts/apply-human-review.js"
   }
 }
