@@ -15,6 +15,9 @@ modules must follow the allowlist enforced by `scripts/check-boundaries.js`.
 - `ingest/`: source snapshot loading, validation, and normalization orchestration.
 - `query/`: query classification and retrieval orchestration.
 - `policy/`: evidence, version, conflict, refusal, and answer policy.
+- `generation/`: the answer prompt, its guards, and the Ollama chat adapter. It
+  imports `domain/` only: the model never sees a policy decision, and a
+  generation failure can never change one.
 - `evaluation/`: evaluation runners and metric aggregation.
 - `api/`: HTTP routing and serialization; it does not fetch source websites directly.
 - `observability/`: query, answer, evidence, and evaluation logging adapters.

@@ -21,3 +21,6 @@ artifacts/source-pack.json
 
 # Generated evaluation report (rebuild with npm run evaluate)
 artifacts/eval-report.json
+
+# Local agent transcripts (not a repository deliverable)
+.agents/

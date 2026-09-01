@@ -6,7 +6,10 @@ import { classifyErrorCode } from "../domain/run-response-contract.js";
 import { formatAnswer } from "../policy/answer-formatter.js";
 import { applyConflictVersionPolicy } from "../policy/conflict-version-policy.js";
 import { evaluateRefusalScope } from "../policy/refusal-scope-policy.js";
+import { createAnswerGenerator } from "../generation/answer-generation.js";
+import { createOllamaGenerator } from "../generation/ollama-generator.js";
 import { createOllamaEmbedder } from "../ingest/ollama-embedder.js";
+import { createEvidenceContentResolver } from "../query/evidence-content.js";
 import { createDocumentRetriever } from "../query/document-retrieval.js";
 import { createQueryClassifier } from "../query/query-classifier.js";
 import { createQueryOrchestrator } from "../query/query-orchestrator.js";
@@ -43,7 +46,12 @@ export const QUERY_API_RULES = Object.freeze({
   maxBodyBytes: QUERY_API_MAX_BODY_BYTES,
 });
 
-const SERVICE_OPTION_FIELDS = new Set(["orchestrator", "generateTraceId", "logger"]);
+const SERVICE_OPTION_FIELDS = new Set([
+  "orchestrator",
+  "generateTraceId",
+  "logger",
+  "composeAnswerText",
+]);
 
 /**
  * Assemble the query pipeline: T21 orchestration, then the T18 version and
@@ -60,7 +68,8 @@ const SERVICE_OPTION_FIELDS = new Set(["orchestrator", "generateTraceId", "logge
  * @returns {{ answer: (request: object) => Promise<object> }}
  */
 export function createQueryService(options) {
-  const { orchestrator, generateTraceId, logger } = validateServiceOptions(options);
+  const { orchestrator, generateTraceId, logger, composeAnswerText } =
+    validateServiceOptions(options);
 
   async function answer(request, providedTraceId) {
     const traceId = providedTraceId ?? generateTraceId();
@@ -81,12 +90,29 @@ export function createQueryService(options) {
     const refusalDecision = evaluateRefusalScope({ queryPlan, bundle, policyDecision });
     logger?.logEvidence({ traceId, queryId, bundle, policyDecision });
 
+    // Only an answer is written: a refusal states why it refused, and handing
+    // its reason to a model to reword would be the one place a fabrication
+    // could reach a reader who was told there was nothing to say. The evidence
+    // offered is what the policy stage approved, never the raw bundle.
+    const answerText =
+      composeAnswerText === undefined ||
+      refusalDecision.answer_status === ANSWER_STATUSES.REFUSED
+        ? undefined
+        : await composeAnswerText({
+            question: request.question,
+            evidenceItems: policyDecision?.applicable_items ?? bundle.items,
+            versionScope: policyDecision?.version_scope,
+            traceId,
+            queryId,
+          });
+
     const response = formatAnswer({
       queryPlan,
       bundle,
       policyDecision,
       refusalDecision,
       traceId,
+      ...(answerText === undefined ? {} : { answerText }),
     });
     logger?.logAnswerRun({ traceId, queryId, answer: response, refusalDecision });
     return response;
@@ -136,8 +162,25 @@ export function createQueryServiceForStores(options) {
     model: config.embeddingModel,
   });
 
+  const contentResolver = createEvidenceContentResolver({ structuredStore, documentStore });
+  const generator = createAnswerGenerator({
+    ...(logger === undefined ? {} : { logger }),
+    generate: createOllamaGenerator({
+      host: config.ollamaHost,
+      model: config.generationModel,
+    }).generate,
+  });
+
   return createQueryService({
     ...(logger === undefined ? {} : { logger }),
+    composeAnswerText: ({ question, evidenceItems, versionScope, traceId, queryId }) =>
+      generator.composeAnswerText({
+        question,
+        contents: contentResolver.resolve(evidenceItems),
+        ...(versionScope === undefined ? {} : { versionScope }),
+        traceId,
+        queryId,
+      }),
     orchestrator: createQueryOrchestrator({
       classifier: createQueryClassifier({
         canonicalEntities: structuredStore.listCanonicalEntities(),
@@ -271,10 +314,14 @@ function validateServiceOptions(options) {
   if (options.logger !== undefined && typeof options.logger.logAnswerRun !== "function") {
     throw new TypeError("logger must be a run logger when provided.");
   }
+  if (options.composeAnswerText !== undefined && typeof options.composeAnswerText !== "function") {
+    throw new TypeError("composeAnswerText must be a function when provided.");
+  }
   return {
     orchestrator: options.orchestrator,
     generateTraceId: options.generateTraceId ?? (() => randomUUID()),
     logger: options.logger,
+    composeAnswerText: options.composeAnswerText,
   };
 }
 
