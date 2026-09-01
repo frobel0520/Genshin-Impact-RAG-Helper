@@ -40,3 +40,20 @@ test("runtime config rejects invalid ports and Ollama hosts", () => {
     /OLLAMA_HOST must be a valid http or https URL/,
   );
 });
+
+test("the document similarity floor is configurable and defaults to a value", () => {
+  assert.equal(loadRuntimeConfig({}).documentMinScore, 0.35);
+  assert.equal(loadRuntimeConfig({ DOCUMENT_MIN_SCORE: "0" }).documentMinScore, 0);
+  assert.equal(loadRuntimeConfig({ DOCUMENT_MIN_SCORE: "0.62" }).documentMinScore, 0.62);
+  assert.equal(loadRuntimeConfig({ DOCUMENT_MIN_SCORE: "1" }).documentMinScore, 1);
+});
+
+test("an unusable document similarity floor is rejected rather than rounded", () => {
+  for (const value of ["-0.1", "1.5", "high", "", "0.5x"]) {
+    assert.throws(
+      () => loadRuntimeConfig({ DOCUMENT_MIN_SCORE: value }),
+      /DOCUMENT_MIN_SCORE must be a number between 0 and 1/,
+      `DOCUMENT_MIN_SCORE=${value} must be refused`,
+    );
+  }
+});

@@ -335,3 +335,37 @@ test("a real query writes all three records under one trace", async (context) =>
   assert.ok(evidenceRecord.evidence_ids.length > 0);
   assert.equal(answerRecord.citation_count, response.citations.length);
 });
+
+test("filtered retrieval is recorded under its own event and is not a failure", () => {
+  const { logger, records } = collectingLogger();
+
+  const record = logger.logRetrievalFiltered({
+    traceId: "3e85e747-105b-45a2-812f-b889a533bd37",
+    queryId: "qry:3e85e747-105b-45a2-812f-b889a533bd37",
+    considered: 13,
+    kept: 0,
+    bestScore: 0.21,
+    minScore: 0.35,
+  });
+
+  assert.equal(record.event, RUN_LOG_EVENTS.RETRIEVAL_FILTERED);
+  assert.equal(record.trace_id, "3e85e747-105b-45a2-812f-b889a533bd37");
+  assert.equal(record.considered, 13);
+  assert.equal(record.kept, 0);
+  assert.equal(record.best_score, 0.21);
+  assert.equal(record.min_score, 0.35);
+  assert.equal(records.length, 1);
+
+  // Dropping irrelevant evidence is what a correct refusal looks like from the
+  // inside. Counting it as a failure would make a working system look broken.
+  assert.equal(logger.getFailureCount(), 0);
+});
+
+test("a filtered-retrieval record still needs a trace to be findable", () => {
+  const { logger } = collectingLogger();
+
+  assert.throws(
+    () => logger.logRetrievalFiltered({ queryId: "qry:no-trace", considered: 3, kept: 0 }),
+    /trace/i,
+  );
+});
