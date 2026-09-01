@@ -61,6 +61,7 @@ test("narrative QueryPlan retrieves ranked, traceable document evidence", async 
   const bundle = await retrieveDocumentEvidence({
     store,
     embedQuery: embedText,
+    minScore: 0,
     queryId: "qry:raiden-narrative",
     queryPlan,
     question,
@@ -95,7 +96,7 @@ test("structured and none routes return an empty bundle without reading the inde
     },
   };
   const classifier = createFixtureClassifier();
-  const retriever = createDocumentRetriever({ store: spyStore, embedQuery: embedText });
+  const retriever = createDocumentRetriever({ store: spyStore, embedQuery: embedText, minScore: 0 });
 
   for (const question of ["雷電將軍的元素屬性是什麼？", "今天天氣如何？"]) {
     const queryPlan = classifier.classify({ question });
@@ -121,6 +122,7 @@ test("hybrid route retrieves document chunks for every resolved entity", async (
   const bundle = await retrieveDocumentEvidence({
     store,
     embedQuery: embedText,
+    minScore: 0,
     queryId: "qry:raiden-hybrid",
     queryPlan,
     question,
@@ -142,6 +144,7 @@ test("exact version constraint isolates chunks to the requested version", async 
   const bundle = await retrieveDocumentEvidence({
     store,
     embedQuery: embedText,
+    minScore: 0,
     queryId: "qry:ayaka-exact",
     queryPlan,
     question,
@@ -161,7 +164,7 @@ test("exact constraint refuses missing or unknown game versions", async (context
   const store = await createFixtureStore(context);
   const question = "5.0版本神里綾華的更新內容與故事背景是什麼？";
   const queryPlan = createFixtureClassifier().classify({ question, game_version: "5.0" });
-  const retriever = createDocumentRetriever({ store, embedQuery: embedText });
+  const retriever = createDocumentRetriever({ store, embedQuery: embedText, minScore: 0 });
 
   await assert.rejects(
     () => retriever.retrieve({ queryId: "qry:ayaka-exact", queryPlan, question }),
@@ -194,7 +197,7 @@ test("equal cosine scores fall back to a deterministic chunk_id order", async (c
   });
   const question = "雷電將軍在一心淨土追求永恆的故事是什麼？";
   const queryPlan = createFixtureClassifier().classify({ question });
-  const retriever = createDocumentRetriever({ store, embedQuery: embedText });
+  const retriever = createDocumentRetriever({ store, embedQuery: embedText, minScore: 0 });
 
   const first = await retriever.retrieve({ queryId: "qry:tie-break", queryPlan, question });
   const second = await retriever.retrieve({ queryId: "qry:tie-break", queryPlan, question });
@@ -215,6 +218,7 @@ test("topK bounds the bundle and leaves the request untouched", async (context) 
   const bundle = await createDocumentRetriever({
     store,
     embedQuery: embedText,
+    minScore: 0,
     topK: 2,
   }).retrieve(request);
 
@@ -262,6 +266,7 @@ test("a plan without resolved entities ranks the whole index", async (context) =
   const bundle = await retrieveDocumentEvidence({
     store,
     embedQuery: embedText,
+    minScore: 0,
     queryId: "qry:entity-less",
     queryPlan,
     question,
@@ -286,6 +291,7 @@ test("an entity-less plan still honours the exact version filter", async (contex
   const bundle = await retrieveDocumentEvidence({
     store,
     embedQuery: embedText,
+    minScore: 0,
     queryId: "qry:entity-less-version",
     queryPlan,
     question,
@@ -297,4 +303,143 @@ test("an entity-less plan still honours the exact version filter", async (contex
   assert.ok(bundle.items.length > 0);
   assert.ok(bundle.items.every((item) => item.game_version === "5.0"));
   assert.ok(bundle.items.some((item) => item.chunk_id === "chunk:hoyolab-5-0-character-updates"));
+});
+
+test("a chunk below the similarity floor is not evidence", async (context) => {
+  const store = await createFixtureStore(context);
+  const question = "雷電將軍在一心淨土追求永恆的故事是什麼？";
+  const queryPlan = createFixtureClassifier().classify({ question });
+  const request = { queryId: "qry:floor", queryPlan, question };
+
+  const open = await createDocumentRetriever({
+    store,
+    embedQuery: embedText,
+    minScore: 0,
+  }).retrieve(request);
+  assert.ok(open.items.length > 0, "the fixture must rank some chunk to begin with");
+
+  // A floor no chunk can clear is the case this exists for: the nearest
+  // neighbours are still the nearest, and none of them answers the question.
+  const closed = await createDocumentRetriever({
+    store,
+    embedQuery: embedText,
+    minScore: 1,
+  }).retrieve(request);
+  assert.deepEqual(closed.items, []);
+  assertEvidenceBundle(closed);
+});
+
+test("the floor is applied before topK, not after it", async (context) => {
+  const store = await createFixtureStore(context);
+  const question = "雷電將軍在一心淨土追求永恆的故事是什麼？";
+  const queryPlan = createFixtureClassifier().classify({ question });
+  const request = { queryId: "qry:floor-order", queryPlan, question };
+
+  const ranked = await createDocumentRetriever({
+    store,
+    embedQuery: embedText,
+    minScore: 0,
+  }).retrieve(request);
+  assert.ok(ranked.items.length > 1, "this case needs more than one ranked chunk");
+
+  // The best score is the only cut that is guaranteed to keep something and
+  // drop something, whatever the fixture's vectors happen to be.
+  let bestScore;
+  await createDocumentRetriever({
+    store,
+    embedQuery: embedText,
+    minScore: 1,
+    onBelowThreshold: (report) => {
+      bestScore = report.bestScore;
+    },
+  }).retrieve(request);
+  assert.ok(bestScore > 0 && bestScore < 1);
+
+  const cut = await createDocumentRetriever({
+    store,
+    embedQuery: embedText,
+    minScore: bestScore,
+    topK: 8,
+  }).retrieve(request);
+
+  // Had the floor run after topK, the chunks below it would have taken slots
+  // and the bundle would still be capped at what survived a full-size page.
+  assert.ok(cut.items.length >= 1);
+  assert.ok(cut.items.length < ranked.items.length);
+  assert.equal(cut.items[0].chunk_id, ranked.items[0].chunk_id);
+  assert.deepEqual(
+    cut.items.map((item) => item.rank),
+    cut.items.map((_, index) => index + 1),
+    "ranks are renumbered over what survived, with no gap where a chunk was cut",
+  );
+});
+
+test("filtered evidence is reported so a refusal can be explained", async (context) => {
+  const store = await createFixtureStore(context);
+  const question = "雷電將軍在一心淨土追求永恆的故事是什麼？";
+  const queryPlan = createFixtureClassifier().classify({ question });
+  const reports = [];
+
+  const bundle = await createDocumentRetriever({
+    store,
+    embedQuery: embedText,
+    minScore: 1,
+    onBelowThreshold: (report) => reports.push(report),
+  }).retrieve({ queryId: "qry:floor-report", queryPlan, question });
+
+  assert.deepEqual(bundle.items, []);
+  assert.equal(reports.length, 1);
+  assert.equal(reports[0].query_id ?? reports[0].queryId, "qry:floor-report");
+  assert.equal(reports[0].kept, 0);
+  assert.ok(reports[0].considered > 0);
+  assert.ok(reports[0].bestScore < 1);
+  assert.equal(reports[0].minScore, 1);
+});
+
+test("nothing is reported when the floor drops nothing", async (context) => {
+  const store = await createFixtureStore(context);
+  const question = "雷電將軍在一心淨土追求永恆的故事是什麼？";
+  const queryPlan = createFixtureClassifier().classify({ question });
+  const reports = [];
+
+  await createDocumentRetriever({
+    store,
+    embedQuery: embedText,
+    minScore: 0,
+    onBelowThreshold: (report) => reports.push(report),
+  }).retrieve({ queryId: "qry:floor-quiet", queryPlan, question });
+
+  assert.deepEqual(reports, []);
+});
+
+test("a reporter that throws cannot break the retrieval it observes", async (context) => {
+  const store = await createFixtureStore(context);
+  const question = "雷電將軍在一心淨土追求永恆的故事是什麼？";
+  const queryPlan = createFixtureClassifier().classify({ question });
+
+  const bundle = await createDocumentRetriever({
+    store,
+    embedQuery: embedText,
+    minScore: 1,
+    onBelowThreshold: () => {
+      throw new Error("the log is full");
+    },
+  }).retrieve({ queryId: "qry:floor-throws", queryPlan, question });
+
+  assert.deepEqual(bundle.items, []);
+});
+
+test("an out-of-range floor fails closed", async (context) => {
+  const store = await createFixtureStore(context);
+
+  for (const minScore of [-0.1, 1.1, "0.5", Number.NaN]) {
+    assert.throws(
+      () => createDocumentRetriever({ store, embedQuery: embedText, minScore }),
+      /minScore must be a number between 0 and 1/,
+    );
+  }
+  assert.throws(
+    () => createDocumentRetriever({ store, embedQuery: embedText, onBelowThreshold: "log" }),
+    /onBelowThreshold must be a function/,
+  );
 });
