@@ -69,7 +69,7 @@ dataset version in both stores.
 | 無資料正確拒答率 | ≥ 90% | 100% (10/10) | **pass** |
 | 非拒答答案附來源率 | 100% | 100% (40/40) | **pass** |
 | 回答正確率 | ≥ 90% | 92.5% (37/40) | **pass**, failures attested |
-| 引用支持答案率 / Groundedness | ≥ 95% | 100% (40/40) | **pass**, unattested |
+| 引用支持答案率 / Groundedness | ≥ 95% | 100% (40/40) | **pass**, spot-checked 10/37 |
 
 50 cases ran: 40 answered, 10 refused — matching the bank's declared split
 exactly, with no case landing in the wrong bucket.
@@ -157,9 +157,27 @@ counted as a pass, so both numbers stood at 92.5% and 100% before and after. Wha
 changed is that the three failures now carry a human's judgement rather than a
 machine's.
 
-The 37 passing cases remain unattested — nobody has read them. The rows in §4 are
-marked accordingly. Treat the numbers as a first pass that narrowed the work, not
-as the gate being closed.
+Of the 37 passing cases, **10 have since been spot-checked by the project owner**
+against the evidence the model was actually given, and all 10 were upheld: no
+answer stated anything its evidence did not support. **The other 27 have not been
+read by anyone.** §4 says so rather than rounding the sample up to the population.
+
+The 10 were chosen to be the ones most likely to overturn the machine's
+judgement, not sampled at random:
+
+| 為什麼抽這題 | 案例 |
+|---|---|
+| 唯一走文件檢索的通過案例 | `case:inazuma-new-islands` |
+| 唯一答案來自 claim 而非 structured fact | `case:raiden-shogun-burst-name` |
+| 答案只有「5 星」，沒有主詞也沒有句子 | `case:engulfing-lightning-rarity` |
+| 三題句型彆扭，用來判斷是不是系統性問題 | `case:kujou-sara-weapon-type`, `case:kinich-weapon-type`, `case:the-catch-weapon-type` |
+| T32 三個缺陷的原始案例 | `case:kinich-weapon-type`（enum 翻譯）, `case:surfs-up-weapon-type`（證據沒有主詞）, `case:ash-graven-drinking-horn-weapon-type`（專有名詞守門） |
+| 對照組與唯一的 4 星角色 | `case:mualani-element`, `case:kachina-rarity` |
+
+A deliberately adverse sample that comes back clean says more than a random one
+of the same size, but it still says it about 10 cases. Treat 回答正確率 as
+attested only where it failed, and Groundedness as spot-checked — not as the gate
+being closed.
 
 | 準則 | 結果 |
 |---|---|
