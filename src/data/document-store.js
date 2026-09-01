@@ -6,7 +6,7 @@ import { assertDocumentChunk } from "./document-chunk-contract.js";
 import { assertSourceDocument } from "./source-document-contract.js";
 import { isRecord, isStableString } from "../domain/contract-validation.js";
 
-export const DOCUMENT_STORE_SCHEMA_VERSION = 1;
+export const DOCUMENT_STORE_SCHEMA_VERSION = 2;
 export const FIXED_INDEX_MANIFEST_VERSION = 1;
 export const FIXED_EMBEDDING_MODEL = "bge-m3:latest";
 export const FIXED_EMBEDDING_MODEL_DIGEST =
@@ -26,7 +26,8 @@ const CREATE_SCHEMA_SQL = `
     embedding_model TEXT,
     embedding_model_digest TEXT,
     embedding_dimensions INTEGER,
-    index_hash TEXT
+    index_hash TEXT,
+    dataset_version TEXT
   ) STRICT;
 
   INSERT INTO document_store_metadata (singleton, schema_version)
@@ -128,7 +129,15 @@ export function createDocumentStore(options = {}) {
 
   const statements = prepareStatements(database);
 
-  function replaceIndex(data, vectors, manifest) {
+  /**
+   * @param {object} data
+   * @param {Float32Array[]} vectors
+   * @param {object} manifest
+   * @param {string} [datasetVersion] the version of the dataset these vectors
+   *   were built from, so a reader can tell whether the structured store beside
+   *   it holds the same one
+   */
+  function replaceIndex(data, vectors, manifest, datasetVersion) {
     assertStoreIsOpen(isOpen);
     const validated = validateIndexData(data);
     const validatedVectors = validateVectors(vectors, validated.documentChunks.length);
@@ -140,7 +149,7 @@ export function createDocumentStore(options = {}) {
       database.exec("BEGIN IMMEDIATE;");
       transactionStarted = true;
       database.exec(CLEAR_INDEX_SQL);
-      insertIndex(statements, validated, validatedVectors, expectedManifest);
+      insertIndex(statements, validated, validatedVectors, expectedManifest, datasetVersion);
       database.exec("COMMIT;");
       transactionStarted = false;
     } catch (error) {
@@ -262,6 +271,9 @@ export async function buildFixedIndex(options) {
   if (!isRecord(options)) {
     throw new TypeError("Fixed index options must be a plain object.");
   }
+  if (options.datasetVersion !== undefined && !isStableString(options.datasetVersion)) {
+    throw new TypeError("datasetVersion must be a non-empty string when provided.");
+  }
   if (typeof options.store?.replaceIndex !== "function") {
     throw new TypeError("store must be a document store.");
   }
@@ -278,7 +290,7 @@ export async function buildFixedIndex(options) {
   }));
   const vectors = validateVectors(output, texts.length);
   const manifest = createIndexManifest(data, vectors);
-  options.store.replaceIndex(options.data, vectors, manifest);
+  options.store.replaceIndex(options.data, vectors, manifest, options.datasetVersion);
   return manifest;
 }
 
@@ -322,7 +334,7 @@ function prepareStatements(database) {
     metadata: database.prepare(`
       UPDATE document_store_metadata SET
         manifest_version = ?, embedding_model = ?, embedding_model_digest = ?,
-        embedding_dimensions = ?, index_hash = ?
+        embedding_dimensions = ?, index_hash = ?, dataset_version = ?
       WHERE singleton = 1
     `),
     source: database.prepare(`
@@ -468,13 +480,14 @@ function assertManifestMatches(actual, expected) {
   }
 }
 
-function insertIndex(statements, data, vectors, manifest) {
+function insertIndex(statements, data, vectors, manifest, datasetVersion) {
   statements.metadata.run(
     manifest.manifest_version,
     manifest.embedding_model,
     manifest.embedding_model_digest,
     manifest.embedding_dimensions,
     manifest.index_hash,
+    datasetVersion ?? null,
   );
   for (const source of data.sourceDocuments) {
     statements.source.run(
@@ -618,7 +631,8 @@ function readStatus(database, open) {
       (SELECT COUNT(*) FROM document_entities) AS entity_count,
       (SELECT COUNT(*) FROM document_chunks) AS chunk_count,
       (SELECT COUNT(*) FROM document_vectors) AS vector_count,
-      (SELECT index_hash FROM document_store_metadata WHERE singleton = 1) AS index_hash
+      (SELECT index_hash FROM document_store_metadata WHERE singleton = 1) AS index_hash,
+      (SELECT dataset_version FROM document_store_metadata WHERE singleton = 1) AS dataset_version
   `).get();
   return Object.freeze({
     isOpen: open,
@@ -630,6 +644,7 @@ function readStatus(database, open) {
       vectors: Number(counts.vector_count),
     }),
     indexHash: counts.index_hash ?? null,
+    datasetVersion: counts.dataset_version ?? null,
   });
 }
 

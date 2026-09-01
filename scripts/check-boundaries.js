@@ -10,6 +10,7 @@ const RUNTIME_LAYERS = new Set([
   "data",
   "domain",
   "evaluation",
+  "generation",
   "ingest",
   "observability",
   "policy",
@@ -18,11 +19,24 @@ const RUNTIME_LAYERS = new Set([
 ]);
 
 const ALLOWED_IMPORTS = new Map([
-  ["api", new Set(["config", "domain", "evaluation", "ingest", "observability", "policy", "query"])],
+  [
+    "api",
+    new Set([
+      "config",
+      "domain",
+      "evaluation",
+      "generation",
+      "ingest",
+      "observability",
+      "policy",
+      "query",
+    ]),
+  ],
   ["config", new Set()],
   ["data", new Set(["domain"])],
   ["domain", new Set()],
   ["evaluation", new Set(["domain", "observability", "policy", "query"])],
+  ["generation", new Set(["domain"])],
   ["ingest", new Set(["data", "domain", "observability"])],
   ["observability", new Set()],
   ["policy", new Set(["domain"])],
