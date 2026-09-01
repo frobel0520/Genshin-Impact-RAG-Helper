@@ -39,7 +39,7 @@ function embedText(text) {
   return vector;
 }
 
-async function createService(context, { generateTraceId } = {}) {
+async function createService(context, { generateTraceId, composeAnswerText } = {}) {
   const structuredStore = createStructuredStore();
   const documentStore = createDocumentStore();
   context.after(() => {
@@ -76,6 +76,7 @@ async function createService(context, { generateTraceId } = {}) {
       }),
     }),
     ...(generateTraceId === undefined ? {} : { generateTraceId }),
+    ...(composeAnswerText === undefined ? {} : { composeAnswerText }),
   });
 }
 
@@ -348,4 +349,49 @@ test("query service and route wiring is validated", () => {
     /generateTraceId/,
   );
   assert.throws(() => createQueryRoute({}), /service must expose answer/);
+});
+
+test("a generated answer replaces the template while the citations stay the policy's", async (context) => {
+  const seen = [];
+  const service = await createService(context, {
+    composeAnswerText: async (request) => {
+      seen.push(request);
+      return "神里綾華是冰元素角色。";
+    },
+  });
+
+  const response = await service.answer({ question: scenarios.answerable_character_query.question });
+
+  assert.equal(response.answer_status, "answered");
+  assert.equal(response.answer_text, "神里綾華是冰元素角色。");
+  assert.ok(response.citations.length > 0);
+  assert.equal(seen.length, 1);
+  assert.equal(seen[0].question, scenarios.answerable_character_query.question);
+  assert.ok(seen[0].evidenceItems.length > 0);
+});
+
+test("a refusal is never handed to the generator", async (context) => {
+  let called = false;
+  const service = await createService(context, {
+    composeAnswerText: async () => {
+      called = true;
+      return "這句話不該出現。";
+    },
+  });
+
+  const response = await service.answer({ question: scenarios.out_of_scope_query.question });
+
+  assert.equal(response.answer_status, "refused");
+  assert.equal(called, false, "a refusal must not reach a model");
+  assert.match(response.answer_text, /超出本助手的範疇/);
+});
+
+test("a generator that produces nothing leaves the deterministic template in place", async (context) => {
+  const service = await createService(context, { composeAnswerText: async () => undefined });
+
+  const response = await service.answer({ question: scenarios.answerable_character_query.question });
+
+  assert.equal(response.answer_status, "answered");
+  assert.match(response.answer_text, /依據 \d+ 筆來源佐證回答/);
+  assert.ok(response.citations.length > 0);
 });
