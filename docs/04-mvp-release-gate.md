@@ -24,7 +24,7 @@ npm run ingest:validate -- artifacts\source-pack.json
 npm run ingest:build -- artifacts\source-pack.json
 npm start
 npm run evaluate -- evaluation\eval-cases.json --report artifacts\eval-report.json
-npm run review:apply -- artifactseview-export.json
+npm run review:apply -- artifacts\review-export.json
 ```
 
 The last step is the human half and only runs once a reviewer has produced
