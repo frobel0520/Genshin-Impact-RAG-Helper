@@ -1,0 +1,264 @@
+{
+  "dataset_version": "4e87e7d5d3f251188cb94550eeb4d3afe588d2725a600802c14d13920b6d987b",
+  "reviewed_at": "2026-09-01T13:33:46.478Z",
+  "reviewer": "claude-opus-5 (machine review, not countersigned)",
+  "report": "artifacts/eval-report.json",
+  "metrics": {
+    "answer_correctness": {
+      "passed": 37,
+      "scored": 40,
+      "rate": 92.5,
+      "target": 90,
+      "verdict": "pass"
+    },
+    "groundedness": {
+      "passed": 40,
+      "scored": 40,
+      "rate": 100,
+      "target": 95,
+      "verdict": "pass"
+    }
+  },
+  "reviews": [
+    {
+      "case_id": "case:mualani-element",
+      "answer_correctness": "pass",
+      "groundedness": "pass",
+      "note": ""
+    },
+    {
+      "case_id": "case:mualani-weapon-type",
+      "answer_correctness": "pass",
+      "groundedness": "pass",
+      "note": ""
+    },
+    {
+      "case_id": "case:mualani-rarity",
+      "answer_correctness": "pass",
+      "groundedness": "pass",
+      "note": ""
+    },
+    {
+      "case_id": "case:kinich-element",
+      "answer_correctness": "pass",
+      "groundedness": "pass",
+      "note": ""
+    },
+    {
+      "case_id": "case:kinich-weapon-type",
+      "answer_correctness": "pass",
+      "groundedness": "pass",
+      "note": ""
+    },
+    {
+      "case_id": "case:kinich-rarity",
+      "answer_correctness": "pass",
+      "groundedness": "pass",
+      "note": ""
+    },
+    {
+      "case_id": "case:kachina-element",
+      "answer_correctness": "pass",
+      "groundedness": "pass",
+      "note": ""
+    },
+    {
+      "case_id": "case:kachina-weapon-type",
+      "answer_correctness": "pass",
+      "groundedness": "pass",
+      "note": ""
+    },
+    {
+      "case_id": "case:kachina-rarity",
+      "answer_correctness": "pass",
+      "groundedness": "pass",
+      "note": ""
+    },
+    {
+      "case_id": "case:raiden-shogun-element",
+      "answer_correctness": "pass",
+      "groundedness": "pass",
+      "note": ""
+    },
+    {
+      "case_id": "case:raiden-shogun-weapon-type",
+      "answer_correctness": "pass",
+      "groundedness": "pass",
+      "note": ""
+    },
+    {
+      "case_id": "case:raiden-shogun-rarity",
+      "answer_correctness": "pass",
+      "groundedness": "pass",
+      "note": ""
+    },
+    {
+      "case_id": "case:kujou-sara-element",
+      "answer_correctness": "pass",
+      "groundedness": "pass",
+      "note": ""
+    },
+    {
+      "case_id": "case:kujou-sara-weapon-type",
+      "answer_correctness": "pass",
+      "groundedness": "pass",
+      "note": ""
+    },
+    {
+      "case_id": "case:kujou-sara-rarity",
+      "answer_correctness": "pass",
+      "groundedness": "pass",
+      "note": ""
+    },
+    {
+      "case_id": "case:sangonomiya-kokomi-element",
+      "answer_correctness": "pass",
+      "groundedness": "pass",
+      "note": ""
+    },
+    {
+      "case_id": "case:sangonomiya-kokomi-weapon-type",
+      "answer_correctness": "pass",
+      "groundedness": "pass",
+      "note": ""
+    },
+    {
+      "case_id": "case:sangonomiya-kokomi-rarity",
+      "answer_correctness": "pass",
+      "groundedness": "pass",
+      "note": ""
+    },
+    {
+      "case_id": "case:aloy-element",
+      "answer_correctness": "pass",
+      "groundedness": "pass",
+      "note": ""
+    },
+    {
+      "case_id": "case:aloy-weapon-type",
+      "answer_correctness": "pass",
+      "groundedness": "pass",
+      "note": ""
+    },
+    {
+      "case_id": "case:aloy-rarity",
+      "answer_correctness": "pass",
+      "groundedness": "pass",
+      "note": ""
+    },
+    {
+      "case_id": "case:surfs-up-weapon-type",
+      "answer_correctness": "pass",
+      "groundedness": "pass",
+      "note": ""
+    },
+    {
+      "case_id": "case:surfs-up-rarity",
+      "answer_correctness": "pass",
+      "groundedness": "pass",
+      "note": ""
+    },
+    {
+      "case_id": "case:fang-of-the-mountain-king-weapon-type",
+      "answer_correctness": "pass",
+      "groundedness": "pass",
+      "note": ""
+    },
+    {
+      "case_id": "case:fang-of-the-mountain-king-rarity",
+      "answer_correctness": "pass",
+      "groundedness": "pass",
+      "note": ""
+    },
+    {
+      "case_id": "case:ash-graven-drinking-horn-weapon-type",
+      "answer_correctness": "pass",
+      "groundedness": "pass",
+      "note": ""
+    },
+    {
+      "case_id": "case:ash-graven-drinking-horn-rarity",
+      "answer_correctness": "pass",
+      "groundedness": "pass",
+      "note": ""
+    },
+    {
+      "case_id": "case:engulfing-lightning-weapon-type",
+      "answer_correctness": "pass",
+      "groundedness": "pass",
+      "note": ""
+    },
+    {
+      "case_id": "case:engulfing-lightning-rarity",
+      "answer_correctness": "pass",
+      "groundedness": "pass",
+      "note": ""
+    },
+    {
+      "case_id": "case:everlasting-moonglow-weapon-type",
+      "answer_correctness": "pass",
+      "groundedness": "pass",
+      "note": ""
+    },
+    {
+      "case_id": "case:everlasting-moonglow-rarity",
+      "answer_correctness": "pass",
+      "groundedness": "pass",
+      "note": ""
+    },
+    {
+      "case_id": "case:luxurious-sea-lord-weapon-type",
+      "answer_correctness": "pass",
+      "groundedness": "pass",
+      "note": ""
+    },
+    {
+      "case_id": "case:luxurious-sea-lord-rarity",
+      "answer_correctness": "pass",
+      "groundedness": "pass",
+      "note": ""
+    },
+    {
+      "case_id": "case:the-catch-weapon-type",
+      "answer_correctness": "pass",
+      "groundedness": "pass",
+      "note": ""
+    },
+    {
+      "case_id": "case:the-catch-rarity",
+      "answer_correctness": "pass",
+      "groundedness": "pass",
+      "note": ""
+    },
+    {
+      "case_id": "case:version-5-0-changes",
+      "answer_correctness": "hold",
+      "groundedness": "pass",
+      "note": "內容全部正確且有據，但題庫預期答案要求列出瑪拉妮、基尼奇、卡齊娜三名新角色，回答完全沒提到。證據裡也沒有角色資訊，是檢索沒撈到而不是模型漏寫。"
+    },
+    {
+      "case_id": "case:version-2-1-changes",
+      "answer_correctness": "hold",
+      "groundedness": "pass",
+      "note": "同上，且更嚴重：題庫預期要求四名新角色與釣魚系統，回答只涵蓋兩座島嶼、解鎖條件與更新時間。說出來的都對，但答得不完整。"
+    },
+    {
+      "case_id": "case:natlan-sub-regions",
+      "answer_correctness": "fail",
+      "groundedness": "pass",
+      "note": "grounding 檢查擋下模型輸出後退回模板，答案沒有回答問題本身（沒說出四個區域名稱）。引用完整，但這題不算答對。"
+    },
+    {
+      "case_id": "case:inazuma-new-islands",
+      "answer_correctness": "pass",
+      "groundedness": "pass",
+      "note": ""
+    },
+    {
+      "case_id": "case:raiden-shogun-burst-name",
+      "answer_correctness": "pass",
+      "groundedness": "pass",
+      "note": ""
+    }
+  ]
+}
