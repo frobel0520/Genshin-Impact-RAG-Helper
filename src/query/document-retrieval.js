@@ -11,7 +11,29 @@ import { assertQueryPlan } from "./query-contract.js";
 
 export const DEFAULT_DOCUMENT_TOP_K = 8;
 
-const RETRIEVER_OPTION_FIELDS = new Set(["store", "embedQuery", "topK"]);
+/**
+ * The cosine similarity a chunk must reach before it counts as evidence.
+ *
+ * Ranking alone answers "which chunks are nearest", never "do any of them
+ * address the question". Without a floor the nearest neighbours are returned no
+ * matter how far away they are, so a question the corpus cannot answer still
+ * arrives with citations behind it — harmless while the answer was a template,
+ * and not harmless now that a model writes the prose.
+ *
+ * The value is deliberately low: its job is to drop chunks that are plainly
+ * about something else, not to second-guess a ranking that is doing its job.
+ * It is provisional until measured against the 50-case bank on a machine with
+ * the embedding model — see `docs/03-system-design.md` §9.3.
+ */
+export const DEFAULT_DOCUMENT_MIN_SCORE = 0.35;
+
+const RETRIEVER_OPTION_FIELDS = new Set([
+  "store",
+  "embedQuery",
+  "topK",
+  "minScore",
+  "onBelowThreshold",
+]);
 const RETRIEVAL_REQUEST_FIELDS = new Set([
   "queryId",
   "queryPlan",
@@ -33,11 +55,18 @@ const REQUIRED_STORE_METHODS = Object.freeze([
  * similarity. The embedder is injected so this stage stays offline and
  * deterministic; the live Ollama adapter belongs to T24.
  *
- * @param {{ store: object, embedQuery: Function, topK?: number }} options
+ * @param {{
+ *   store: object,
+ *   embedQuery: Function,
+ *   topK?: number,
+ *   minScore?: number,
+ *   onBelowThreshold?: (report: object) => void,
+ * }} options
  * @returns {{ retrieve: (request: object) => Promise<object> }}
  */
 export function createDocumentRetriever(options) {
-  const { store, embedQuery, topK } = validateRetrieverOptions(options);
+  const { store, embedQuery, topK, minScore, onBelowThreshold } =
+    validateRetrieverOptions(options);
 
   async function retrieve(request) {
     const { queryId, queryPlan, question, gameVersion } =
@@ -63,8 +92,25 @@ export function createDocumentRetriever(options) {
       right.score - left.score || left.chunk.chunk_id.localeCompare(right.chunk.chunk_id),
     );
 
+    // The floor is applied before topK, so a question with no relevant chunk
+    // returns nothing rather than the least irrelevant few.
+    const relevant = scored.filter((entry) => entry.score >= minScore);
+    if (relevant.length < scored.length) {
+      reportBelowThreshold({
+        onBelowThreshold,
+        queryId,
+        considered: scored.length,
+        kept: relevant.length,
+        bestScore: scored[0].score,
+        minScore,
+      });
+    }
+    if (relevant.length === 0) {
+      return createEmptyBundle(queryId);
+    }
+
     const sourceDocuments = new Map();
-    const items = scored.slice(0, topK).map((entry, index) => ({
+    const items = relevant.slice(0, topK).map((entry, index) => ({
       evidence_id: createEvidenceId(queryId, "chunk", entry.chunk.chunk_id),
       ...sourceProjection(
         getRequiredSource(store, sourceDocuments, entry.chunk.source_id),
@@ -88,6 +134,8 @@ export function createDocumentRetriever(options) {
  *   store: object,
  *   embedQuery: Function,
  *   topK?: number,
+ *   minScore?: number,
+ *   onBelowThreshold?: (report: object) => void,
  *   queryId: string,
  *   queryPlan: object,
  *   question: string,
@@ -99,11 +147,13 @@ export function retrieveDocumentEvidence(options) {
   if (!isRecord(options)) {
     throw new TypeError("Document retrieval options must be a plain object.");
   }
-  const { store, embedQuery, topK, ...request } = options;
+  const { store, embedQuery, topK, minScore, onBelowThreshold, ...request } = options;
   return createDocumentRetriever({
     store,
     embedQuery,
     ...(topK === undefined ? {} : { topK }),
+    ...(minScore === undefined ? {} : { minScore }),
+    ...(onBelowThreshold === undefined ? {} : { onBelowThreshold }),
   }).retrieve(request);
 }
 
@@ -131,7 +181,20 @@ function validateRetrieverOptions(options) {
   if (!Number.isInteger(topK) || topK < 1) {
     throw new TypeError("topK must be a positive integer.");
   }
-  return { store: options.store, embedQuery: options.embedQuery, topK };
+  const minScore = options.minScore ?? DEFAULT_DOCUMENT_MIN_SCORE;
+  if (!Number.isFinite(minScore) || minScore < 0 || minScore > 1) {
+    throw new TypeError("minScore must be a number between 0 and 1.");
+  }
+  if (options.onBelowThreshold !== undefined && typeof options.onBelowThreshold !== "function") {
+    throw new TypeError("onBelowThreshold must be a function.");
+  }
+  return {
+    store: options.store,
+    embedQuery: options.embedQuery,
+    topK,
+    minScore,
+    onBelowThreshold: options.onBelowThreshold,
+  };
 }
 
 function validateRetrievalRequest(request) {
@@ -289,6 +352,23 @@ function sourceProjection(source) {
       : { source_published_at: source.published_at }),
     source_retrieved_at: source.retrieved_at,
   };
+}
+
+/**
+ * Say why evidence was dropped.
+ *
+ * Best effort on purpose: the threshold has already done its job, and an
+ * observer that throws must not turn a correct refusal into a failed query.
+ */
+function reportBelowThreshold({ onBelowThreshold, ...report }) {
+  if (onBelowThreshold === undefined) {
+    return;
+  }
+  try {
+    onBelowThreshold(report);
+  } catch {
+    // Nothing to do: the retrieval result is already decided.
+  }
 }
 
 function createEmptyBundle(queryId) {
