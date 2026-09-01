@@ -188,6 +188,21 @@ export function createQueryServiceForStores(options) {
       structuredRetriever: createStructuredRetriever({ store: structuredStore }),
       documentRetriever: createDocumentRetriever({
         store: documentStore,
+        minScore: config.documentMinScore,
+        // The retriever is built once, before any query exists, so it reports
+        // the query it filtered rather than the trace. The query ID is minted
+        // from the trace ID, which is what makes the record findable alongside
+        // the rest of the run.
+        onBelowThreshold: ({ queryId, considered, kept, bestScore, minScore }) => {
+          logger?.logRetrievalFiltered({
+            traceId: queryId.slice(queryId.indexOf(":") + 1),
+            queryId,
+            considered,
+            kept,
+            bestScore,
+            minScore,
+          });
+        },
         embedQuery: async (question) => {
           const [vector] = await embedder.embedDocuments([question], {
             model: config.embeddingModel,
