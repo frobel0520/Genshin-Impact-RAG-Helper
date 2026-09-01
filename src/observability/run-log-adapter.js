@@ -21,6 +21,7 @@ export const RUN_LOG_EVENTS = Object.freeze({
   EVAL_RESULT: "eval_result",
   REQUEST_REJECTED: "request_rejected",
   FAILURE: "failure",
+  RETRIEVAL_FILTERED: "retrieval_filtered",
 });
 
 export const REDACTED = "[redacted]";
@@ -42,6 +43,7 @@ const LOGGER_OPTION_FIELDS = new Set(["write", "now", "maxTextLength"]);
  *   logQueryRun: (entry: object) => object,
  *   logAnswerRun: (entry: object) => object,
  *   logEvidence: (entry: object) => object,
+ *   logRetrievalFiltered: (entry: object) => object,
  *   logEvalResult: (entry: object) => object,
  *   getFailureCount: () => number,
  * }}
@@ -152,6 +154,22 @@ export function createRunLogger(options) {
         query_id: queryId,
         code,
         message: clip(message, maxTextLength),
+      });
+    },
+
+    /**
+     * Evidence the similarity floor removed. This is normal operation, not a
+     * failure — it is what a correct refusal looks like from the inside — so it
+     * is recorded under its own event and never counted as one.
+     */
+    logRetrievalFiltered({ traceId, queryId, considered, kept, bestScore, minScore }) {
+      return emit(RUN_LOG_EVENTS.RETRIEVAL_FILTERED, {
+        trace_id: requireTraceId(traceId),
+        query_id: queryId,
+        considered,
+        kept,
+        best_score: bestScore,
+        min_score: minScore,
       });
     },
 
