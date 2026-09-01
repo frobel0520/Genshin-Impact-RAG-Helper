@@ -67,6 +67,58 @@ export const SUPPORT_TYPES = Object.freeze({
   CONFLICTING: "conflicting",
 });
 
+/**
+ * zh-TW labels for the field keys and enum values a StructuredFact stores.
+ *
+ * Values are stored in the vocabulary that compares across sources — genshin-db
+ * writes `Claymore`, and rewriting it per source would make two sources look
+ * like they disagree when they do not. A reader must still be told 雙手劍, and
+ * anything that renders a fact for a person, or hands one to a model, must
+ * translate here rather than leave it to be guessed: asked to render `Claymore`
+ * in Chinese, a model answers 長劍, which is a different weapon.
+ */
+export const FIELD_KEY_LABELS_ZH_TW = Object.freeze({
+  element: "元素",
+  weapon_type: "武器類型",
+  rarity: "星級",
+  base_atk_lvl90: "90級基礎攻擊力",
+  material_type: "素材類型",
+  release_version: "登場版本",
+  release_window: "登場版本區間",
+  version_update_start: "版本更新開始時間",
+});
+
+export const FIELD_VALUE_LABELS_ZH_TW = Object.freeze({
+  element: Object.freeze({
+    Anemo: "風",
+    Geo: "岩",
+    Electro: "雷",
+    Dendro: "草",
+    Hydro: "水",
+    Pyro: "火",
+    Cryo: "冰",
+  }),
+  weapon_type: Object.freeze({
+    Sword: "單手劍",
+    Claymore: "雙手劍",
+    Polearm: "長柄武器",
+    Bow: "弓",
+    Catalyst: "法器",
+  }),
+});
+
+/**
+ * @param {string} fieldKey
+ * @param {unknown} value
+ * @returns {string | undefined} the zh-TW label, or undefined when none is defined
+ */
+export function labelForFieldValue(fieldKey, value) {
+  if (typeof value !== "string") {
+    return undefined;
+  }
+  return FIELD_VALUE_LABELS_ZH_TW[fieldKey]?.[value];
+}
+
 export const ANSWERABILITY = Object.freeze({
   ANSWERABLE: "answerable",
   REFUSE: "refuse",
