@@ -42,7 +42,7 @@ test("runtime config rejects invalid ports and Ollama hosts", () => {
 });
 
 test("the document similarity floor is configurable and defaults to a value", () => {
-  assert.equal(loadRuntimeConfig({}).documentMinScore, 0.35);
+  assert.equal(loadRuntimeConfig({}).documentMinScore, 0.47);
   assert.equal(loadRuntimeConfig({ DOCUMENT_MIN_SCORE: "0" }).documentMinScore, 0);
   assert.equal(loadRuntimeConfig({ DOCUMENT_MIN_SCORE: "0.62" }).documentMinScore, 0.62);
   assert.equal(loadRuntimeConfig({ DOCUMENT_MIN_SCORE: "1" }).documentMinScore, 1);
