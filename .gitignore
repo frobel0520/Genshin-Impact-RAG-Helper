@@ -12,3 +12,15 @@ artifacts/session-summaries/
 .DS_Store
 Thumbs.db
 
+
+# Locally built datasets
+artifacts/*.db
+
+# Generated source pack (rebuild with npm run make:pack)
+artifacts/source-pack.json
+
+# Generated evaluation report (rebuild with npm run evaluate)
+artifacts/eval-report.json
+
+# Local agent transcripts (not a repository deliverable)
+.agents/

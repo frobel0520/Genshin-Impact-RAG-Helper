@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>原神知識助手</title>
+    <link rel="stylesheet" href="/assets/styles.css" />
+  </head>
+  <body>
+    <main>
+      <h1>原神知識助手</h1>
+      <p class="intro">
+        只回答能以官方或可追溯來源佐證的事實性問題。資料不足、來源衝突或超出範疇時會直接拒答。
+      </p>
+      <p id="service-status" class="service-status" data-ready="false">讀取服務狀態中…</p>
+
+      <form id="query-form">
+        <label for="question">你的問題</label>
+        <textarea id="question" name="question" rows="3" placeholder="例如：雷電將軍的元素屬性是什麼？"></textarea>
+
+        <div class="options">
+          <label for="game-version">
+            遊戲版本（選填）
+            <input id="game-version" name="game-version" type="text" placeholder="例如 5.0" />
+          </label>
+          <label for="spoiler-level">
+            劇透提示
+            <select id="spoiler-level" name="spoiler-level">
+              <option value="none">不需要</option>
+              <option value="notice">提醒我</option>
+              <option value="explicit">我接受劇透</option>
+            </select>
+          </label>
+        </div>
+
+        <button id="submit" type="submit">查詢</button>
+      </form>
+
+      <section id="answer" class="answer" data-status="idle" aria-live="polite"></section>
+    </main>
+    <script type="module" src="/assets/app.js"></script>
+  </body>
+</html>

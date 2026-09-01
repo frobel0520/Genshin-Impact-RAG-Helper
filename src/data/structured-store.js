@@ -13,7 +13,7 @@ import { assertSourceDocument } from "./source-document-contract.js";
 import { AUTHORITY_RANKS, isDomainId } from "../domain/domain-contract.js";
 import { isRecord, isStableString } from "../domain/contract-validation.js";
 
-export const STRUCTURED_STORE_SCHEMA_VERSION = 1;
+export const STRUCTURED_STORE_SCHEMA_VERSION = 2;
 export const DEFAULT_STRUCTURED_STORE_DATABASE_PATH = ":memory:";
 
 const STORE_OPTION_FIELDS = new Set(["databasePath"]);
@@ -39,7 +39,8 @@ const CLAIM_FILTER_FIELDS = new Set(["entityId", "claimKey", "gameVersion"]);
 const CREATE_SCHEMA_SQL = `
   CREATE TABLE IF NOT EXISTS structured_store_metadata (
     singleton INTEGER PRIMARY KEY CHECK (singleton = 1),
-    schema_version INTEGER NOT NULL
+    schema_version INTEGER NOT NULL,
+    dataset_version TEXT
   ) STRICT;
 
   INSERT INTO structured_store_metadata (singleton, schema_version)
@@ -137,6 +138,7 @@ export function createStructuredStore(options = {}) {
   const database = new DatabaseSync(databasePath);
   let isOpen = true;
   let lastKnownCounts;
+  let lastKnownDatasetVersion = null;
 
   try {
     database.exec("PRAGMA foreign_keys = ON;");
@@ -144,6 +146,7 @@ export function createStructuredStore(options = {}) {
     database.exec(CREATE_SCHEMA_SQL);
     assertCompatibleSchema(database);
     lastKnownCounts = readCounts(database);
+    lastKnownDatasetVersion = readDatasetVersion(database);
   } catch (error) {
     database.close();
     throw error;
@@ -151,10 +154,17 @@ export function createStructuredStore(options = {}) {
 
   const insertStatements = prepareInsertStatements(database);
 
-  function replaceData(data) {
+  /**
+   * @param {object} data
+   * @param {{ datasetVersion?: string }} [options] the version of the batch this
+   *   data came from, recorded so a reader can tell whether the document index
+   *   beside it was built from the same one
+   */
+  function replaceData(data, options = {}) {
     assertStoreIsOpen(isOpen);
     const validatedData = validateStoreData(data);
     const serializedData = serializeStoreData(validatedData);
+    const datasetVersion = validateDatasetVersion(options);
     let transactionStarted = false;
 
     try {
@@ -162,6 +172,9 @@ export function createStructuredStore(options = {}) {
       transactionStarted = true;
       database.exec(CLEAR_DATA_SQL);
       insertSerializedData(insertStatements, serializedData);
+      database
+        .prepare("UPDATE structured_store_metadata SET dataset_version = ? WHERE singleton = 1")
+        .run(datasetVersion ?? null);
       database.exec("COMMIT;");
       transactionStarted = false;
     } catch (error) {
@@ -172,7 +185,8 @@ export function createStructuredStore(options = {}) {
     }
 
     lastKnownCounts = readCounts(database);
-    return createStatusSnapshot(isOpen, lastKnownCounts);
+    lastKnownDatasetVersion = datasetVersion ?? null;
+    return createStatusSnapshot(isOpen, lastKnownCounts, lastKnownDatasetVersion);
   }
 
   function findStructuredFacts(filters) {
@@ -201,6 +215,84 @@ export function createStructuredStore(options = {}) {
       rows.map((row) => [row.source_id, toClaimSourceDocument(row)]),
     );
     return sortClaims(rows.map(toClaim), sourceDocuments);
+  }
+
+  /**
+   * Read one StructuredFact by its ID.
+   *
+   * The retrievers find facts by entity and field; a caller holding an
+   * EvidenceItem has only the ID it cited, and needs the value back to say
+   * anything about it. Returns undefined when the dataset does not hold it,
+   * because a missing record is an answer, not a failure.
+   *
+   * @param {string} factId
+   * @returns {object | undefined}
+   */
+  function getStructuredFact(factId) {
+    assertStoreIsOpen(isOpen);
+    assertDomainId(factId, "fact", "factId");
+    const row = database
+      .prepare(
+        `SELECT fact_id, entity_id, field_key, value_json, unit, game_version, source_id, validity
+         FROM structured_facts WHERE fact_id = ?`,
+      )
+      .get(factId);
+    return row === undefined ? undefined : toStructuredFact(row);
+  }
+
+  /**
+   * Read one CanonicalEntity by its ID.
+   *
+   * @param {string} entityId
+   * @returns {object | undefined}
+   */
+  function getCanonicalEntity(entityId) {
+    assertStoreIsOpen(isOpen);
+    assertDomainId(entityId, "entity", "entityId");
+    const row = database
+      .prepare(
+        "SELECT entity_id, entity_type, canonical_name, aliases_json, locale FROM canonical_entities WHERE entity_id = ?",
+      )
+      .get(entityId);
+    return row === undefined ? undefined : toCanonicalEntity(row);
+  }
+
+  /**
+   * Read one Claim by its ID, with the source dates its ordering depends on.
+   *
+   * @param {string} claimId
+   * @returns {object | undefined}
+   */
+  function getClaim(claimId) {
+    assertStoreIsOpen(isOpen);
+    assertDomainId(claimId, "claim", "claimId");
+    const row = database
+      .prepare(
+        `SELECT
+           c.claim_id, c.claim_key, c.entity_id, c.claim_text, c.game_version,
+           c.source_id, c.authority_rank, c.conflict_group_id,
+           s.published_at AS source_published_at,
+           s.retrieved_at AS source_retrieved_at
+         FROM claims AS c
+         INNER JOIN source_documents AS s ON s.source_id = c.source_id
+         WHERE c.claim_id = ?`,
+      )
+      .get(claimId);
+    return row === undefined ? undefined : toClaim(row);
+  }
+
+  /**
+   * Read back every CanonicalEntity, ordered by ID so the result is stable.
+   *
+   * The query classifier needs the entity dictionary at runtime, and after an
+   * ingest run this store is the only place it exists.
+   */
+  function listCanonicalEntities() {
+    assertStoreIsOpen(isOpen);
+    return database
+      .prepare("SELECT * FROM canonical_entities ORDER BY entity_id")
+      .all()
+      .map(toCanonicalEntity);
   }
 
   function getSourceDocument(sourceId) {
@@ -244,8 +336,9 @@ export function createStructuredStore(options = {}) {
   function getStatus() {
     if (isOpen) {
       lastKnownCounts = readCounts(database);
+      lastKnownDatasetVersion = readDatasetVersion(database);
     }
-    return createStatusSnapshot(isOpen, lastKnownCounts);
+    return createStatusSnapshot(isOpen, lastKnownCounts, lastKnownDatasetVersion);
   }
 
   function close() {
@@ -262,6 +355,10 @@ export function createStructuredStore(options = {}) {
     replaceData,
     findStructuredFacts,
     findClaims,
+    getStructuredFact,
+    getClaim,
+    getCanonicalEntity,
+    listCanonicalEntities,
     getSourceDocument,
     getConflictGroup,
     getStatus,
@@ -723,6 +820,16 @@ function toClaimSourceDocument(row) {
   return document;
 }
 
+function toCanonicalEntity(row) {
+  return {
+    entity_id: row.entity_id,
+    entity_type: row.entity_type,
+    canonical_name: row.canonical_name,
+    aliases: JSON.parse(row.aliases_json),
+    locale: row.locale,
+  };
+}
+
 function toSourceDocument(row) {
   const document = {
     source_id: row.source_id,
@@ -758,12 +865,35 @@ function readTableCount(database, tableName) {
   return database.prepare(`SELECT COUNT(*) AS count FROM ${tableName}`).get().count;
 }
 
-function createStatusSnapshot(isOpen, counts) {
+function createStatusSnapshot(isOpen, counts, datasetVersion = null) {
   return Object.freeze({
     isOpen,
     schemaVersion: STRUCTURED_STORE_SCHEMA_VERSION,
     counts: Object.freeze({ ...counts }),
+    datasetVersion,
   });
+}
+
+function readDatasetVersion(database) {
+  const row = database
+    .prepare("SELECT dataset_version FROM structured_store_metadata WHERE singleton = 1")
+    .get();
+  return row?.dataset_version ?? null;
+}
+
+function validateDatasetVersion(options) {
+  if (!isRecord(options)) {
+    throw new TypeError("replaceData options must be a plain object.");
+  }
+  for (const field of Object.keys(options)) {
+    if (field !== "datasetVersion") {
+      throw new TypeError(`Unknown replaceData option: ${field}.`);
+    }
+  }
+  if (options.datasetVersion !== undefined && !isStableString(options.datasetVersion)) {
+    throw new TypeError("datasetVersion must be a non-empty string when provided.");
+  }
+  return options.datasetVersion;
 }
 
 function assertStoreIsOpen(isOpen) {

@@ -1,0 +1,367 @@
+{
+  "dataset_version": "4e87e7d5d3f251188cb94550eeb4d3afe588d2725a600802c14d13920b6d987b",
+  "reviewed_at": "2026-09-01T13:33:46.478Z",
+  "reviewer": "claude-opus-5 (machine review); the three failing cases countersigned by the project owner",
+  "reviews": [
+    {
+      "case_id": "case:mualani-element",
+      "human_review": {
+        "status": "reviewed",
+        "answer_correctness": "pass",
+        "groundedness": "pass",
+        "note": ""
+      }
+    },
+    {
+      "case_id": "case:mualani-weapon-type",
+      "human_review": {
+        "status": "reviewed",
+        "answer_correctness": "pass",
+        "groundedness": "pass",
+        "note": ""
+      }
+    },
+    {
+      "case_id": "case:mualani-rarity",
+      "human_review": {
+        "status": "reviewed",
+        "answer_correctness": "pass",
+        "groundedness": "pass",
+        "note": ""
+      }
+    },
+    {
+      "case_id": "case:kinich-element",
+      "human_review": {
+        "status": "reviewed",
+        "answer_correctness": "pass",
+        "groundedness": "pass",
+        "note": ""
+      }
+    },
+    {
+      "case_id": "case:kinich-weapon-type",
+      "human_review": {
+        "status": "reviewed",
+        "answer_correctness": "pass",
+        "groundedness": "pass",
+        "note": ""
+      }
+    },
+    {
+      "case_id": "case:kinich-rarity",
+      "human_review": {
+        "status": "reviewed",
+        "answer_correctness": "pass",
+        "groundedness": "pass",
+        "note": ""
+      }
+    },
+    {
+      "case_id": "case:kachina-element",
+      "human_review": {
+        "status": "reviewed",
+        "answer_correctness": "pass",
+        "groundedness": "pass",
+        "note": ""
+      }
+    },
+    {
+      "case_id": "case:kachina-weapon-type",
+      "human_review": {
+        "status": "reviewed",
+        "answer_correctness": "pass",
+        "groundedness": "pass",
+        "note": ""
+      }
+    },
+    {
+      "case_id": "case:kachina-rarity",
+      "human_review": {
+        "status": "reviewed",
+        "answer_correctness": "pass",
+        "groundedness": "pass",
+        "note": ""
+      }
+    },
+    {
+      "case_id": "case:raiden-shogun-element",
+      "human_review": {
+        "status": "reviewed",
+        "answer_correctness": "pass",
+        "groundedness": "pass",
+        "note": ""
+      }
+    },
+    {
+      "case_id": "case:raiden-shogun-weapon-type",
+      "human_review": {
+        "status": "reviewed",
+        "answer_correctness": "pass",
+        "groundedness": "pass",
+        "note": ""
+      }
+    },
+    {
+      "case_id": "case:raiden-shogun-rarity",
+      "human_review": {
+        "status": "reviewed",
+        "answer_correctness": "pass",
+        "groundedness": "pass",
+        "note": ""
+      }
+    },
+    {
+      "case_id": "case:kujou-sara-element",
+      "human_review": {
+        "status": "reviewed",
+        "answer_correctness": "pass",
+        "groundedness": "pass",
+        "note": ""
+      }
+    },
+    {
+      "case_id": "case:kujou-sara-weapon-type",
+      "human_review": {
+        "status": "reviewed",
+        "answer_correctness": "pass",
+        "groundedness": "pass",
+        "note": ""
+      }
+    },
+    {
+      "case_id": "case:kujou-sara-rarity",
+      "human_review": {
+        "status": "reviewed",
+        "answer_correctness": "pass",
+        "groundedness": "pass",
+        "note": ""
+      }
+    },
+    {
+      "case_id": "case:sangonomiya-kokomi-element",
+      "human_review": {
+        "status": "reviewed",
+        "answer_correctness": "pass",
+        "groundedness": "pass",
+        "note": ""
+      }
+    },
+    {
+      "case_id": "case:sangonomiya-kokomi-weapon-type",
+      "human_review": {
+        "status": "reviewed",
+        "answer_correctness": "pass",
+        "groundedness": "pass",
+        "note": ""
+      }
+    },
+    {
+      "case_id": "case:sangonomiya-kokomi-rarity",
+      "human_review": {
+        "status": "reviewed",
+        "answer_correctness": "pass",
+        "groundedness": "pass",
+        "note": ""
+      }
+    },
+    {
+      "case_id": "case:aloy-element",
+      "human_review": {
+        "status": "reviewed",
+        "answer_correctness": "pass",
+        "groundedness": "pass",
+        "note": ""
+      }
+    },
+    {
+      "case_id": "case:aloy-weapon-type",
+      "human_review": {
+        "status": "reviewed",
+        "answer_correctness": "pass",
+        "groundedness": "pass",
+        "note": ""
+      }
+    },
+    {
+      "case_id": "case:aloy-rarity",
+      "human_review": {
+        "status": "reviewed",
+        "answer_correctness": "pass",
+        "groundedness": "pass",
+        "note": ""
+      }
+    },
+    {
+      "case_id": "case:surfs-up-weapon-type",
+      "human_review": {
+        "status": "reviewed",
+        "answer_correctness": "pass",
+        "groundedness": "pass",
+        "note": ""
+      }
+    },
+    {
+      "case_id": "case:surfs-up-rarity",
+      "human_review": {
+        "status": "reviewed",
+        "answer_correctness": "pass",
+        "groundedness": "pass",
+        "note": ""
+      }
+    },
+    {
+      "case_id": "case:fang-of-the-mountain-king-weapon-type",
+      "human_review": {
+        "status": "reviewed",
+        "answer_correctness": "pass",
+        "groundedness": "pass",
+        "note": ""
+      }
+    },
+    {
+      "case_id": "case:fang-of-the-mountain-king-rarity",
+      "human_review": {
+        "status": "reviewed",
+        "answer_correctness": "pass",
+        "groundedness": "pass",
+        "note": ""
+      }
+    },
+    {
+      "case_id": "case:ash-graven-drinking-horn-weapon-type",
+      "human_review": {
+        "status": "reviewed",
+        "answer_correctness": "pass",
+        "groundedness": "pass",
+        "note": ""
+      }
+    },
+    {
+      "case_id": "case:ash-graven-drinking-horn-rarity",
+      "human_review": {
+        "status": "reviewed",
+        "answer_correctness": "pass",
+        "groundedness": "pass",
+        "note": ""
+      }
+    },
+    {
+      "case_id": "case:engulfing-lightning-weapon-type",
+      "human_review": {
+        "status": "reviewed",
+        "answer_correctness": "pass",
+        "groundedness": "pass",
+        "note": ""
+      }
+    },
+    {
+      "case_id": "case:engulfing-lightning-rarity",
+      "human_review": {
+        "status": "reviewed",
+        "answer_correctness": "pass",
+        "groundedness": "pass",
+        "note": ""
+      }
+    },
+    {
+      "case_id": "case:everlasting-moonglow-weapon-type",
+      "human_review": {
+        "status": "reviewed",
+        "answer_correctness": "pass",
+        "groundedness": "pass",
+        "note": ""
+      }
+    },
+    {
+      "case_id": "case:everlasting-moonglow-rarity",
+      "human_review": {
+        "status": "reviewed",
+        "answer_correctness": "pass",
+        "groundedness": "pass",
+        "note": ""
+      }
+    },
+    {
+      "case_id": "case:luxurious-sea-lord-weapon-type",
+      "human_review": {
+        "status": "reviewed",
+        "answer_correctness": "pass",
+        "groundedness": "pass",
+        "note": ""
+      }
+    },
+    {
+      "case_id": "case:luxurious-sea-lord-rarity",
+      "human_review": {
+        "status": "reviewed",
+        "answer_correctness": "pass",
+        "groundedness": "pass",
+        "note": ""
+      }
+    },
+    {
+      "case_id": "case:the-catch-weapon-type",
+      "human_review": {
+        "status": "reviewed",
+        "answer_correctness": "pass",
+        "groundedness": "pass",
+        "note": ""
+      }
+    },
+    {
+      "case_id": "case:the-catch-rarity",
+      "human_review": {
+        "status": "reviewed",
+        "answer_correctness": "pass",
+        "groundedness": "pass",
+        "note": ""
+      }
+    },
+    {
+      "case_id": "case:version-5-0-changes",
+      "human_review": {
+        "status": "reviewed",
+        "answer_correctness": "fail",
+        "groundedness": "pass",
+        "note": "內容全部正確且有據，但題庫預期答案要求列出瑪拉妮、基尼奇、卡齊娜三名新角色，回答完全沒提到。證據裡也沒有角色資訊，是檢索沒撈到而不是模型漏寫。 專案擁有者確認：這算答錯，不是待議。"
+      }
+    },
+    {
+      "case_id": "case:version-2-1-changes",
+      "human_review": {
+        "status": "reviewed",
+        "answer_correctness": "fail",
+        "groundedness": "pass",
+        "note": "同上，且更嚴重：題庫預期要求四名新角色與釣魚系統，回答只涵蓋兩座島嶼、解鎖條件與更新時間。說出來的都對，但答得不完整。 專案擁有者確認：這算答錯，不是待議。"
+      }
+    },
+    {
+      "case_id": "case:natlan-sub-regions",
+      "human_review": {
+        "status": "reviewed",
+        "answer_correctness": "fail",
+        "groundedness": "pass",
+        "note": "grounding 檢查擋下模型輸出後退回模板，答案沒有回答問題本身（沒說出四個區域名稱）。引用完整，但這題不算答對。"
+      }
+    },
+    {
+      "case_id": "case:inazuma-new-islands",
+      "human_review": {
+        "status": "reviewed",
+        "answer_correctness": "pass",
+        "groundedness": "pass",
+        "note": ""
+      }
+    },
+    {
+      "case_id": "case:raiden-shogun-burst-name",
+      "human_review": {
+        "status": "reviewed",
+        "answer_correctness": "pass",
+        "groundedness": "pass",
+        "note": ""
+      }
+    }
+  ]
+}

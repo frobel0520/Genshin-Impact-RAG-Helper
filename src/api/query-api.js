@@ -1,10 +1,20 @@
 import { randomUUID } from "node:crypto";
 
 import { ANSWER_STATUSES, ERROR_CODES, createDomainId } from "../domain/domain-contract.js";
+import { isRecord } from "../domain/contract-validation.js";
+import { classifyErrorCode } from "../domain/run-response-contract.js";
 import { formatAnswer } from "../policy/answer-formatter.js";
 import { applyConflictVersionPolicy } from "../policy/conflict-version-policy.js";
 import { evaluateRefusalScope } from "../policy/refusal-scope-policy.js";
+import { createAnswerGenerator } from "../generation/answer-generation.js";
+import { createOllamaGenerator } from "../generation/ollama-generator.js";
+import { createOllamaEmbedder } from "../ingest/ollama-embedder.js";
+import { createEvidenceContentResolver } from "../query/evidence-content.js";
+import { createDocumentRetriever } from "../query/document-retrieval.js";
+import { createQueryClassifier } from "../query/query-classifier.js";
+import { createQueryOrchestrator } from "../query/query-orchestrator.js";
 import { validateQueryRequest } from "../query/query-contract.js";
+import { createStructuredRetriever } from "../query/structured-retrieval.js";
 
 export const QUERY_API_ROUTE = "/api/v1/query";
 export const QUERY_API_MAX_BODY_BYTES = 16 * 1024;
@@ -36,7 +46,12 @@ export const QUERY_API_RULES = Object.freeze({
   maxBodyBytes: QUERY_API_MAX_BODY_BYTES,
 });
 
-const SERVICE_OPTION_FIELDS = new Set(["orchestrator", "generateTraceId"]);
+const SERVICE_OPTION_FIELDS = new Set([
+  "orchestrator",
+  "generateTraceId",
+  "logger",
+  "composeAnswerText",
+]);
 
 /**
  * Assemble the query pipeline: T21 orchestration, then the T18 version and
@@ -53,10 +68,11 @@ const SERVICE_OPTION_FIELDS = new Set(["orchestrator", "generateTraceId"]);
  * @returns {{ answer: (request: object) => Promise<object> }}
  */
 export function createQueryService(options) {
-  const { orchestrator, generateTraceId } = validateServiceOptions(options);
+  const { orchestrator, generateTraceId, logger, composeAnswerText } =
+    validateServiceOptions(options);
 
-  async function answer(request) {
-    const traceId = generateTraceId();
+  async function answer(request, providedTraceId) {
+    const traceId = providedTraceId ?? generateTraceId();
     const queryId = createDomainId("query", traceId);
 
     const {
@@ -64,29 +80,149 @@ export function createQueryService(options) {
       bundle,
       game_version: gameVersion,
     } = await orchestrator.run({ queryId, request });
+    logger?.logQueryRun({ traceId, queryId, request, queryPlan });
+
     const policyDecision = applyConflictVersionPolicy({
       bundle,
       versionConstraint: queryPlan.version_constraint,
       ...(gameVersion === undefined ? {} : { gameVersion }),
     });
     const refusalDecision = evaluateRefusalScope({ queryPlan, bundle, policyDecision });
+    logger?.logEvidence({ traceId, queryId, bundle, policyDecision });
 
-    return formatAnswer({
+    // Only an answer is written: a refusal states why it refused, and handing
+    // its reason to a model to reword would be the one place a fabrication
+    // could reach a reader who was told there was nothing to say. The evidence
+    // offered is what the policy stage approved, never the raw bundle.
+    const answerText =
+      composeAnswerText === undefined ||
+      refusalDecision.answer_status === ANSWER_STATUSES.REFUSED
+        ? undefined
+        : await composeAnswerText({
+            question: request.question,
+            evidenceItems: policyDecision?.applicable_items ?? bundle.items,
+            versionScope: policyDecision?.version_scope,
+            traceId,
+            queryId,
+          });
+
+    const response = formatAnswer({
       queryPlan,
       bundle,
       policyDecision,
       refusalDecision,
       traceId,
+      ...(answerText === undefined ? {} : { answerText }),
     });
+    logger?.logAnswerRun({ traceId, queryId, answer: response, refusalDecision });
+    return response;
   }
 
-  return Object.freeze({ answer });
+  /**
+   * A failure carries the trace it failed under, so the answer that never came
+   * back can still be looked up beside the records the run did write.
+   */
+  async function answerWithTrace(request) {
+    const traceId = generateTraceId();
+    try {
+      return await answer(request, traceId);
+    } catch (error) {
+      if (error !== null && typeof error === "object" && error.traceId === undefined) {
+        error.traceId = traceId;
+      }
+      throw error;
+    }
+  }
+
+  return Object.freeze({ answer: answerWithTrace });
+}
+
+/**
+ * Assemble the query service that answers from a built dataset.
+ *
+ * Both the server and the evaluation runner need the same pipeline over the
+ * same stores; building it twice would risk evaluating something other than
+ * what the API serves.
+ *
+ * @param {{ config: object, structuredStore: object, documentStore: object, logger?: object }} options
+ * @returns {{ answer: (request: object) => Promise<object> }}
+ */
+export function createQueryServiceForStores(options) {
+  if (
+    !isRecord(options) ||
+    !isRecord(options.config) ||
+    typeof options.structuredStore?.listCanonicalEntities !== "function" ||
+    typeof options.documentStore?.getIndexManifest !== "function"
+  ) {
+    throw new TypeError("config, structuredStore, and documentStore are required.");
+  }
+  const { config, structuredStore, documentStore, logger } = options;
+  const embedder = createOllamaEmbedder({
+    host: config.ollamaHost,
+    model: config.embeddingModel,
+  });
+
+  const contentResolver = createEvidenceContentResolver({ structuredStore, documentStore });
+  const generator = createAnswerGenerator({
+    ...(logger === undefined ? {} : { logger }),
+    generate: createOllamaGenerator({
+      host: config.ollamaHost,
+      model: config.generationModel,
+    }).generate,
+  });
+
+  return createQueryService({
+    ...(logger === undefined ? {} : { logger }),
+    composeAnswerText: ({ question, evidenceItems, versionScope, traceId, queryId }) =>
+      generator.composeAnswerText({
+        question,
+        contents: contentResolver.resolve(evidenceItems),
+        ...(versionScope === undefined ? {} : { versionScope }),
+        traceId,
+        queryId,
+      }),
+    orchestrator: createQueryOrchestrator({
+      classifier: createQueryClassifier({
+        canonicalEntities: structuredStore.listCanonicalEntities(),
+      }),
+      structuredRetriever: createStructuredRetriever({ store: structuredStore }),
+      documentRetriever: createDocumentRetriever({
+        store: documentStore,
+        minScore: config.documentMinScore,
+        // The retriever is built once, before any query exists, so it reports
+        // the query it filtered rather than the trace. The query ID is minted
+        // from the trace ID, which is what makes the record findable alongside
+        // the rest of the run.
+        onBelowThreshold: ({ queryId, considered, kept, bestScore, minScore }) => {
+          logger?.logRetrievalFiltered({
+            traceId: queryId.slice(queryId.indexOf(":") + 1),
+            queryId,
+            considered,
+            kept,
+            bestScore,
+            minScore,
+          });
+        },
+        embedQuery: async (question) => {
+          const [vector] = await embedder.embedDocuments([question], {
+            model: config.embeddingModel,
+            dimensions: documentStore.getIndexManifest().embedding_dimensions,
+          });
+          return vector;
+        },
+      }),
+    }),
+  });
 }
 
 /**
  * Create the `POST /api/v1/query` handler.
  *
- * @param {{ service: { answer: (request: object) => Promise<object> } }} options
+ * @param {{
+ *   service: { answer: (request: object) => Promise<object> },
+ *   logger?: object,
+ *   generateTraceId?: () => string,
+ * }} options
  * @returns {(request: import("node:http").IncomingMessage, response: import("node:http").ServerResponse) => Promise<void>}
  */
 export function createQueryRoute(options) {
@@ -97,18 +233,32 @@ export function createQueryRoute(options) {
   ) {
     throw new TypeError("service must expose answer().");
   }
-  const { service } = options;
+  const { service, logger } = options;
+  const generateTraceId = options.generateTraceId ?? (() => randomUUID());
 
   return async function handleQuery(request, response) {
+    // Every request gets a trace before anything can go wrong with it, so a
+    // rejection is as traceable as an answer.
+    const requestTraceId = generateTraceId();
+    const reject = (statusCode, error) => {
+      logger?.logRequestRejected({
+        traceId: requestTraceId,
+        statusCode,
+        code: error.code,
+        message: error.message,
+      });
+      sendError(response, statusCode, { ...error, traceId: requestTraceId });
+    };
+
     if (request.method !== QUERY_API_RULES.method) {
-      sendError(response, HTTP_STATUS.METHOD_NOT_ALLOWED, {
+      reject(HTTP_STATUS.METHOD_NOT_ALLOWED, {
         code: ERROR_CODES.INVALID_REQUEST,
         message: `${QUERY_API_ROUTE} accepts POST only.`,
       });
       return;
     }
     if (!isJsonContentType(request.headers["content-type"])) {
-      sendError(response, HTTP_STATUS.UNSUPPORTED_MEDIA_TYPE, {
+      reject(HTTP_STATUS.UNSUPPORTED_MEDIA_TYPE, {
         code: ERROR_CODES.INVALID_REQUEST,
         message: "Content-Type must be application/json.",
       });
@@ -119,7 +269,7 @@ export function createQueryRoute(options) {
     try {
       body = await readJsonBody(request);
     } catch (error) {
-      sendError(response, error.statusCode ?? HTTP_STATUS.BAD_REQUEST, {
+      reject(error.statusCode ?? HTTP_STATUS.BAD_REQUEST, {
         code: ERROR_CODES.INVALID_REQUEST,
         message: error.publicMessage ?? "The request body could not be read as JSON.",
       });
@@ -128,7 +278,7 @@ export function createQueryRoute(options) {
 
     const validation = validateQueryRequest(body);
     if (!validation.ok) {
-      sendError(response, HTTP_STATUS.BAD_REQUEST, {
+      reject(HTTP_STATUS.BAD_REQUEST, {
         code: ERROR_CODES.INVALID_REQUEST,
         message: "The request does not satisfy the QueryRequest contract.",
         details: validation.errors.map((error) => ({
@@ -142,10 +292,20 @@ export function createQueryRoute(options) {
     try {
       sendJson(response, HTTP_STATUS.OK, await service.answer(body));
     } catch (error) {
-      // The player never sees an internal message: only a classifiable code.
+      // The player never sees an internal message: only a classifiable code and
+      // the trace the failure happened under.
+      const traceId = error?.traceId ?? requestTraceId;
+      const code = classifyErrorCode(error);
+      logger?.logFailure({
+        traceId,
+        code,
+        message: error instanceof Error ? error.message : "unknown failure",
+      });
       sendError(response, HTTP_STATUS.INTERNAL_SERVER_ERROR, {
-        code: classifyFailure(error),
+        code,
         message: "The query could not be completed because of an internal failure.",
+        traceId,
+        systemFailure: true,
       });
     }
   };
@@ -166,25 +326,18 @@ function validateServiceOptions(options) {
   if (options.generateTraceId !== undefined && typeof options.generateTraceId !== "function") {
     throw new TypeError("generateTraceId must be a function when provided.");
   }
+  if (options.logger !== undefined && typeof options.logger.logAnswerRun !== "function") {
+    throw new TypeError("logger must be a run logger when provided.");
+  }
+  if (options.composeAnswerText !== undefined && typeof options.composeAnswerText !== "function") {
+    throw new TypeError("composeAnswerText must be a function when provided.");
+  }
   return {
     orchestrator: options.orchestrator,
     generateTraceId: options.generateTraceId ?? (() => randomUUID()),
+    logger: options.logger,
+    composeAnswerText: options.composeAnswerText,
   };
-}
-
-/**
- * Map a thrown failure onto a stable error code without reading its message.
- * T24 does the same for the ingest adapters.
- */
-function classifyFailure(error) {
-  const code = error?.code;
-  if (typeof code === "string" && Object.values(ERROR_CODES).includes(code)) {
-    return code;
-  }
-  if (code === "ECONNREFUSED" || code === "ENOTFOUND" || code === "ETIMEDOUT") {
-    return ERROR_CODES.DEPENDENCY_UNAVAILABLE;
-  }
-  return ERROR_CODES.INTERNAL_ERROR;
 }
 
 function isJsonContentType(contentType) {
@@ -243,10 +396,16 @@ function createTransportError(statusCode, publicMessage) {
   return error;
 }
 
-function sendError(response, statusCode, { code, message, details }) {
+/**
+ * `answer_status: "error"` marks a system failure only. A malformed request is
+ * not a broken helper, so a 4xx says what was wrong with the request without
+ * claiming the system failed. Both carry the trace they happened under.
+ */
+function sendError(response, statusCode, { code, message, details, traceId, systemFailure }) {
   sendJson(response, statusCode, {
-    answer_status: ANSWER_STATUSES.ERROR,
+    ...(systemFailure === true ? { answer_status: ANSWER_STATUSES.ERROR } : {}),
     error: { code, message, ...(details === undefined ? {} : { details }) },
+    trace_id: traceId,
   });
 }
 
