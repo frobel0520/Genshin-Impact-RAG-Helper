@@ -1,7 +1,7 @@
 {
   "dataset_version": "4e87e7d5d3f251188cb94550eeb4d3afe588d2725a600802c14d13920b6d987b",
   "reviewed_at": "2026-09-01T13:33:46.478Z",
-  "reviewer": "claude-opus-5 (machine review, not countersigned)",
+  "reviewer": "claude-opus-5 (machine review); the three failing cases countersigned by the project owner",
   "reviews": [
     {
       "case_id": "case:mualani-element",
@@ -322,18 +322,18 @@
       "case_id": "case:version-5-0-changes",
       "human_review": {
         "status": "reviewed",
-        "answer_correctness": "hold",
+        "answer_correctness": "fail",
         "groundedness": "pass",
-        "note": "內容全部正確且有據，但題庫預期答案要求列出瑪拉妮、基尼奇、卡齊娜三名新角色，回答完全沒提到。證據裡也沒有角色資訊，是檢索沒撈到而不是模型漏寫。"
+        "note": "內容全部正確且有據，但題庫預期答案要求列出瑪拉妮、基尼奇、卡齊娜三名新角色，回答完全沒提到。證據裡也沒有角色資訊，是檢索沒撈到而不是模型漏寫。 專案擁有者確認：這算答錯，不是待議。"
       }
     },
     {
       "case_id": "case:version-2-1-changes",
       "human_review": {
         "status": "reviewed",
-        "answer_correctness": "hold",
+        "answer_correctness": "fail",
         "groundedness": "pass",
-        "note": "同上，且更嚴重：題庫預期要求四名新角色與釣魚系統，回答只涵蓋兩座島嶼、解鎖條件與更新時間。說出來的都對，但答得不完整。"
+        "note": "同上，且更嚴重：題庫預期要求四名新角色與釣魚系統，回答只涵蓋兩座島嶼、解鎖條件與更新時間。說出來的都對，但答得不完整。 專案擁有者確認：這算答錯，不是待議。"
       }
     },
     {

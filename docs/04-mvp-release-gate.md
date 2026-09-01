@@ -68,7 +68,7 @@ dataset version in both stores.
 | Retrieval Recall@5 | ≥ 90% | 100% (40/40) | **pass** |
 | 無資料正確拒答率 | ≥ 90% | 100% (10/10) | **pass** |
 | 非拒答答案附來源率 | 100% | 100% (40/40) | **pass** |
-| 回答正確率 | ≥ 90% | 92.5% (37/40) | **pass**, unattested |
+| 回答正確率 | ≥ 90% | 92.5% (37/40) | **pass**, failures attested |
 | 引用支持答案率 / Groundedness | ≥ 95% | 100% (40/40) | **pass**, unattested |
 
 50 cases ran: 40 answered, 10 refused — matching the bank's declared split
@@ -148,9 +148,18 @@ The 40 cases were reviewed by **Claude (claude-opus-5), not by a person**, at th
 project owner's instruction. `artifacts/human-review.json` and every stamped case
 carry that attribution verbatim. This matters to how §4 should be read: the two
 criteria are specified as human-judged, and the model that wrote the answers is
-the same model that graded them. The rows are marked *unattested* until a person
-countersigns or overturns them. Treat the numbers as a first pass that narrowed
-the work, not as the gate being closed.
+the same model that graded them.
+
+The project owner has since reviewed the three failing cases and confirmed all
+three as 答錯 — two of them had been recorded as 待議 and were relabelled on that
+instruction. **The relabelling did not change either rate**: 待議 was never
+counted as a pass, so both numbers stood at 92.5% and 100% before and after. What
+changed is that the three failures now carry a human's judgement rather than a
+machine's.
+
+The 37 passing cases remain unattested — nobody has read them. The rows in §4 are
+marked accordingly. Treat the numbers as a first pass that narrowed the work, not
+as the gate being closed.
 
 | 準則 | 結果 |
 |---|---|
@@ -159,20 +168,21 @@ the work, not as the gate being closed.
 
 Groundedness was unanimous: no answer stated anything its evidence did not
 support. Three cases did not pass 回答正確率, and all three fail the same way —
-the answer is true and cited, and incomplete against what the bank expects:
+the answer is true and cited, and incomplete against what the bank expects. All
+three are recorded as **fail** on the project owner's instruction:
 
 1. `case:natlan-sub-regions` — **fail.** The grounding check rejected the model's
    prose, so the template answers instead and never names the four regions the
    question asks for. Correct, cited, and not an answer.
-2. `case:version-5-0-changes` — **hold.** The expected answer names 瑪拉妮,
+2. `case:version-5-0-changes` — **fail.** The expected answer names 瑪拉妮,
    基尼奇 and 卡齊娜; the answer covers the quest, the region and the update
    window and never mentions a character. The evidence handed to the model
    contained no character information, so this is retrieval, not generation.
-3. `case:version-2-1-changes` — **hold.** The same shape, wider: the expected
+3. `case:version-2-1-changes` — **fail.** The same shape, wider: the expected
    answer names four characters and the fishing system; the answer covers two
    islands, the unlock condition and the update window.
 
-The two `hold` cases point at one thing worth fixing before the corpus grows: a
+Cases 2 and 3 point at one thing worth fixing before the corpus grows: a
 「這個版本更新了什麼」 question retrieves some of the version's sections and
 answers from those alone, with nothing checking that the sections it got cover
 what the question asked. That is a sibling of the gap T33 closed — T33 stopped
@@ -189,8 +199,8 @@ irrelevant evidence from being used; nothing yet notices *missing* evidence.
 
 2. **Nothing notices missing evidence.** T33 stopped irrelevant chunks from being
    used; no stage checks that the evidence retrieved covers what the question
-   asked. This is what both `hold` cases in §6 are: a version question answered
-   completely and correctly from an incomplete slice of that version's sections.
+   asked. This is what the two version cases in §6 are: a version question
+   answered correctly from an incomplete slice of that version's sections.
 3. **The grounding check reads names, not claims.** It verifies the terms an
    answer presents as copied; a fabrication stated in running prose still passes.
    It is narrow on purpose — a check that fires only on real problems is one
