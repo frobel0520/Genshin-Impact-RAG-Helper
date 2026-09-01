@@ -68,8 +68,8 @@ dataset version in both stores.
 | Retrieval Recall@5 | ≥ 90% | 100% (40/40) | **pass** |
 | 無資料正確拒答率 | ≥ 90% | 100% (10/10) | **pass** |
 | 非拒答答案附來源率 | 100% | 100% (40/40) | **pass** |
-| 回答正確率 | ≥ 90% | awaiting human review of 40 answers | **pending** |
-| 引用支持答案率 / Groundedness | ≥ 95% | awaiting human review of 40 answers | **pending** |
+| 回答正確率 | ≥ 90% | 92.5% (37/40) | **pass**, unattested |
+| 引用支持答案率 / Groundedness | ≥ 95% | 100% (40/40) | **pass**, unattested |
 
 50 cases ran: 40 answered, 10 refused — matching the bank's declared split
 exactly, with no case landing in the wrong bucket.
@@ -86,7 +86,7 @@ Verified in the browser against the running server at `http://127.0.0.1:3000`:
 | Refused (out of scope) | 「雷電將軍該配什麼隊伍？」 → 拒答, 原因「超出本助手範疇」, 引用來源（0）, and an explicit 「這個回答沒有附上來源」 |
 | Traceability | every response carries a 追蹤碼 that matches the run log |
 
-The 6 T12 acceptance scenarios and the full suite pass: `npm run check`, 348
+The 6 T12 acceptance scenarios and the full suite pass: `npm run check`, 360
 tests, 0 failures, under the offline guard — the generation stage included, its
 model replaced by a fake so CI still needs neither a model nor a live source.
 
@@ -142,25 +142,63 @@ onto every answered case in the report. It recomputes both rates from the
 per-case verdicts rather than trusting the totals the export carried, and it
 refuses to write anything while a case is still unreviewed — a gate closed on a
 partial review is worse than one left open. 待議 is a recorded verdict and does
-not count as a pass. Until that command has run against a real review, the two
-rows in §4 stay **pending**; this record will not report a number nobody
-judged.
+not count as a pass. ### What the review found, and who did it
+
+The 40 cases were reviewed by **Claude (claude-opus-5), not by a person**, at the
+project owner's instruction. `artifacts/human-review.json` and every stamped case
+carry that attribution verbatim. This matters to how §4 should be read: the two
+criteria are specified as human-judged, and the model that wrote the answers is
+the same model that graded them. The rows are marked *unattested* until a person
+countersigns or overturns them. Treat the numbers as a first pass that narrowed
+the work, not as the gate being closed.
+
+| 準則 | 結果 |
+|---|---|
+| 回答正確率 | 92.5% (37/40) — 目標 ≥ 90% |
+| Groundedness | 100% (40/40) — 目標 ≥ 95% |
+
+Groundedness was unanimous: no answer stated anything its evidence did not
+support. Three cases did not pass 回答正確率, and all three fail the same way —
+the answer is true and cited, and incomplete against what the bank expects:
+
+1. `case:natlan-sub-regions` — **fail.** The grounding check rejected the model's
+   prose, so the template answers instead and never names the four regions the
+   question asks for. Correct, cited, and not an answer.
+2. `case:version-5-0-changes` — **hold.** The expected answer names 瑪拉妮,
+   基尼奇 and 卡齊娜; the answer covers the quest, the region and the update
+   window and never mentions a character. The evidence handed to the model
+   contained no character information, so this is retrieval, not generation.
+3. `case:version-2-1-changes` — **hold.** The same shape, wider: the expected
+   answer names four characters and the fishing system; the answer covers two
+   islands, the unlock condition and the update window.
+
+The two `hold` cases point at one thing worth fixing before the corpus grows: a
+「這個版本更新了什麼」 question retrieves some of the version's sections and
+answers from those alone, with nothing checking that the sections it got cover
+what the question asked. That is a sibling of the gap T33 closed — T33 stopped
+irrelevant evidence from being used; nothing yet notices *missing* evidence.
 
 ## 7. Known gaps carried forward
 
-1. **No similarity threshold on document retrieval.** 「納塔的火神是誰？」 is
-   answered with one citation although no chunk mentions a Natlan archon: the
-   entity resolves, document retrieval returns its nearest chunks, and nothing
-   checks that they address the question. This was harmless while the answer was
-   a template. It is not harmless now that a model writes the answer.
-2. **The grounding check reads names, not claims.** It verifies the terms an
+1. ~~**No similarity threshold on document retrieval.**~~ Closed by T33
+   (issue #56, PR #57). `DOCUMENT_MIN_SCORE` defaults to 0.47, measured against
+   the bank: the four document-route cases score 0.532–0.795 and
+   「納塔的火神是誰？」 scores 0.410. That question is now refused with
+   `insufficient_evidence` and no citation. The three machine-scored criteria
+   were re-run at 0.47 and all still pass at 100%.
+
+2. **Nothing notices missing evidence.** T33 stopped irrelevant chunks from being
+   used; no stage checks that the evidence retrieved covers what the question
+   asked. This is what both `hold` cases in §6 are: a version question answered
+   completely and correctly from an incomplete slice of that version's sections.
+3. **The grounding check reads names, not claims.** It verifies the terms an
    answer presents as copied; a fabrication stated in running prose still passes.
    It is narrow on purpose — a check that fires only on real problems is one
    people act on — but it is not a substitute for the human review above.
-3. **`entity_unknown` is unreachable.** The classifier matches explicit names
+4. **`entity_unknown` is unreachable.** The classifier matches explicit names
    only (`fuzzyMatching: false`), so an unknown proper noun yields
    `insufficient_evidence`. The refusal is correct; the reason is coarser than
    the contract allows for.
-4. **Source coverage is two announcements.** genshin-db and Fandom are still
+5. **Source coverage is two announcements.** genshin-db and Fandom are still
    unimported, so the bank cannot yet grow toward the 100-question target in the
    plan, and OPEN-06 (terms review) remains open.
