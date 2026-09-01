@@ -17,10 +17,16 @@ export const DEFAULT_CLASSIFIER_SPOILER_LEVEL = SPOILER_LEVELS.NONE;
 const CLASSIFIER_OPTION_FIELDS = new Set(["canonicalEntities"]);
 const EXPLICIT_RANGE_PATTERN = /\d+\.\d+\s*(?:-|–|—|~|～|至|到)\s*\d+\.\d+/u;
 const EXPLICIT_VERSION_PATTERN = /(?:版本\s*)?\d+\.\d+/u;
+const VERSION_NUMBER_PATTERN = /\d+\.\d+/u;
 const TEXTUAL_RANGE_PATTERN = /版本區間|版本範圍|哪些版本/u;
 
 const OUT_OF_SCOPE_PATTERNS = Object.freeze([
   /配隊|組隊|隊伍搭配|配裝/u,
+  // "該配什麼隊伍" reads as advice however it is worded, so the request for a
+  // team is matched by shape rather than by one fixed phrase.
+  /(?:配|搭配|組|帶).{0,4}(?:隊伍|陣容)/u,
+  /(?:隊伍|陣容).{0,4}(?:推薦|建議|怎麼|如何)/u,
+  /(?:適合|推薦|建議).{0,6}(?:隊伍|陣容)/u,
   /值得抽|抽不抽|抽卡建議|抽取建議/u,
   /(?:建議|推薦|該|要不要|值不值得).{0,6}(?:抽|練|養|升)/u,
   /抽.{0,6}(?:還是|或是|或)/u,
@@ -50,6 +56,10 @@ const VERSION_INTENT_PATTERNS = Object.freeze([
   /版本.{0,8}(?:更新|調整|改動|修正|已知問題)/u,
   /(?:更新|調整|改動|修正|已知問題).{0,8}版本/u,
   /更新內容|版本差異|改版/u,
+  // "8.0版本有哪些新角色？" asks what a version brought just as much as
+  // "更新了哪些內容" does; without this it fell past every intent and was
+  // called out of scope instead of a version nobody has data for.
+  /版本.{0,8}(?:有哪些|有什麼|新增|新的)/u,
 ]);
 
 export const QUERY_CLASSIFIER_RULES = Object.freeze({
@@ -80,10 +90,16 @@ export function createQueryClassifier(options) {
       question,
     );
     const routing = classifyRouting(question, normalizedEntities.length > 0);
+    const planGameVersion = resolvePlanGameVersion(
+      versionConstraint,
+      normalizedRequest.game_version,
+      question,
+    );
     const plan = {
       query_category: routing.queryCategory,
       normalized_entities: normalizedEntities,
       version_constraint: versionConstraint,
+      ...(planGameVersion === undefined ? {} : { game_version: planGameVersion }),
       retrieval_mode: routing.retrievalMode,
       spoiler_level:
         normalizedRequest.spoiler_level ?? DEFAULT_CLASSIFIER_SPOILER_LEVEL,
@@ -264,6 +280,27 @@ function classifyVersionConstraint(requestVersion, question) {
   return VERSION_CONSTRAINTS.CURRENT_UNSPECIFIED;
 }
 
+/**
+ * Resolve the single version an exact constraint was built for.
+ *
+ * The constraint alone is not enough for a later stage to filter on: a question
+ * that names a version has already been read here, and re-parsing it downstream
+ * would be a second, divergent implementation of this rule. The request wins
+ * when it states a version, because an explicit caller outranks the question
+ * text. A range constraint carries no single version and so carries none.
+ */
+function resolvePlanGameVersion(versionConstraint, requestVersion, question) {
+  if (versionConstraint !== VERSION_CONSTRAINTS.EXACT) {
+    return undefined;
+  }
+  if (typeof requestVersion === "string" && requestVersion !== "unknown") {
+    return requestVersion;
+  }
+
+  const version = VERSION_NUMBER_PATTERN.exec(question);
+  return version === null ? undefined : version[0];
+}
+
 function classifyRouting(question, hasResolvedEntity) {
   if (matchesAny(question, OUT_OF_SCOPE_PATTERNS)) {
     return routing(QUERY_CATEGORIES.OUT_OF_SCOPE, RETRIEVAL_MODES.NONE);
@@ -284,6 +321,14 @@ function classifyRouting(question, hasResolvedEntity) {
   }
   if (hasResolvedEntity || hasNarrativeIntent) {
     return routing(QUERY_CATEGORIES.NARRATIVE, RETRIEVAL_MODES.DOCUMENT);
+  }
+  // A field question about an entity nobody has heard of is not out of scope:
+  // it is a question this dataset cannot answer. Routing it to the structured
+  // store — which returns nothing without a resolved entity — lets the refusal
+  // say "insufficient evidence" instead of wrongly telling the player their
+  // question was off-topic. The entity is still never guessed.
+  if (hasStructuredIntent) {
+    return routing(QUERY_CATEGORIES.STRUCTURED, RETRIEVAL_MODES.STRUCTURED);
   }
   return routing(QUERY_CATEGORIES.OUT_OF_SCOPE, RETRIEVAL_MODES.NONE);
 }

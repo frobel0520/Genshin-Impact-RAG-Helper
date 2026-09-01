@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
 import {
   QUERY_API_MAX_BODY_BYTES,
@@ -19,6 +22,7 @@ import { createDocumentRetriever } from "../src/query/document-retrieval.js";
 import { createQueryClassifier } from "../src/query/query-classifier.js";
 import { createQueryOrchestrator } from "../src/query/query-orchestrator.js";
 import { createStructuredRetriever } from "../src/query/structured-retrieval.js";
+import { createRunLogger } from "../src/observability/run-log-adapter.js";
 import { createApplication } from "../src/server.js";
 
 const LOOPBACK_HOST = "127.0.0.1";
@@ -35,7 +39,7 @@ function embedText(text) {
   return vector;
 }
 
-async function createService(context, { generateTraceId } = {}) {
+async function createService(context, { generateTraceId, composeAnswerText } = {}) {
   const structuredStore = createStructuredStore();
   const documentStore = createDocumentStore();
   context.after(() => {
@@ -72,6 +76,7 @@ async function createService(context, { generateTraceId } = {}) {
       }),
     }),
     ...(generateTraceId === undefined ? {} : { generateTraceId }),
+    ...(composeAnswerText === undefined ? {} : { composeAnswerText }),
   });
 }
 
@@ -179,9 +184,11 @@ test("a contract-invalid request is rejected with field-level codes", async (con
   const payload = await response.json();
 
   assert.equal(response.status, 400);
-  assert.equal(payload.answer_status, "error");
   assert.equal(payload.error.code, "invalid_request");
   assert.ok(payload.error.details.some((detail) => detail.field === "question"));
+  // A malformed request is not a broken helper, so it is not an error status.
+  assert.equal(payload.answer_status, undefined);
+  assert.ok(payload.trace_id.length > 0);
 });
 
 test("malformed JSON, wrong media type, and wrong method are refused separately", async (context) => {
@@ -196,8 +203,9 @@ test("malformed JSON, wrong media type, and wrong method are refused separately"
   assert.equal(wrongMethod.status, 405);
   for (const response of [malformed, wrongMedia, wrongMethod]) {
     const payload = await response.json();
-    assert.equal(payload.answer_status, "error");
     assert.equal(payload.error.code, "invalid_request");
+    assert.equal(payload.answer_status, undefined);
+    assert.ok(payload.trace_id.length > 0);
   }
 });
 
@@ -226,8 +234,10 @@ test("an internal failure becomes a classified error without leaking its message
   assert.equal(response.status, 500);
   assert.equal(body.includes("bge-m3"), false);
   const payload = JSON.parse(body);
+  // A system failure keeps the error status, and stays traceable.
   assert.equal(payload.answer_status, "error");
   assert.equal(payload.error.code, "internal_error");
+  assert.ok(payload.trace_id.length > 0);
 });
 
 test("an unavailable dependency is classified by its error code", async (context) => {
@@ -246,8 +256,69 @@ test("an unavailable dependency is classified by its error code", async (context
   assert.equal((await response.json()).error.code, "dependency_unavailable");
 });
 
+test("a failure is logged and answers with the trace it failed under", async (context) => {
+  const records = [];
+  const failing = {
+    answer() {
+      const error = new Error("bge-m3 socket blew up");
+      error.traceId = "trace:failed-run";
+      throw error;
+    },
+  };
+  const { config, server } = createApplication(
+    { PORT: "0" },
+    {
+      queryHandler: createQueryRoute({
+        service: failing,
+        logger: createRunLogger({ write: (record) => records.push(record) }),
+      }),
+    },
+  );
+  await new Promise((resolve, reject) => {
+    server.once("error", reject);
+    server.listen(config.port, LOOPBACK_HOST, resolve);
+  });
+  context.after(
+    () =>
+      new Promise((resolve, reject) => {
+        server.closeAllConnections();
+        server.close((error) => (error ? reject(error) : resolve()));
+      }),
+  );
+  const url = `http://${LOOPBACK_HOST}:${server.address().port}${QUERY_API_ROUTE}`;
+
+  const failure = await postJson(url, { question: "雷電將軍的元素屬性是什麼？" });
+  const rejected = await postJson(url, { question: "   " });
+  const failurePayload = await failure.json();
+  const rejectedPayload = await rejected.json();
+
+  // The answer that never came back is still findable: the response carries the
+  // same trace the log record was written under.
+  assert.equal(failurePayload.trace_id, "trace:failed-run");
+  assert.deepEqual(
+    records.map((record) => [record.event, record.trace_id]),
+    [
+      ["failure", "trace:failed-run"],
+      ["request_rejected", rejectedPayload.trace_id],
+    ],
+  );
+  // The internal message is kept in the log and never sent to the player.
+  assert.equal(records[0].message, "bge-m3 socket blew up");
+  assert.equal(failurePayload.error.message.includes("socket"), false);
+  assert.equal(records[1].status_code, 400);
+});
+
 test("the query route is not mounted when no handler is injected", async (context) => {
-  const { config, server } = createApplication({ PORT: "0" });
+  // The databases are pointed at a directory that has none, so the route is
+  // absent because there is no dataset — not because the machine running the
+  // suite happens to have no artifacts/ of its own.
+  const directory = mkdtempSync(join(tmpdir(), "query-api-no-dataset-"));
+  context.after(() => rmSync(directory, { recursive: true, force: true, maxRetries: 5 }));
+  const { config, server } = createApplication({
+    PORT: "0",
+    STRUCTURED_DB_PATH: join(directory, "structured.db"),
+    DOCUMENT_DB_PATH: join(directory, "index.db"),
+  });
   await new Promise((resolve, reject) => {
     server.once("error", reject);
     server.listen(config.port, LOOPBACK_HOST, resolve);
@@ -278,4 +349,49 @@ test("query service and route wiring is validated", () => {
     /generateTraceId/,
   );
   assert.throws(() => createQueryRoute({}), /service must expose answer/);
+});
+
+test("a generated answer replaces the template while the citations stay the policy's", async (context) => {
+  const seen = [];
+  const service = await createService(context, {
+    composeAnswerText: async (request) => {
+      seen.push(request);
+      return "神里綾華是冰元素角色。";
+    },
+  });
+
+  const response = await service.answer({ question: scenarios.answerable_character_query.question });
+
+  assert.equal(response.answer_status, "answered");
+  assert.equal(response.answer_text, "神里綾華是冰元素角色。");
+  assert.ok(response.citations.length > 0);
+  assert.equal(seen.length, 1);
+  assert.equal(seen[0].question, scenarios.answerable_character_query.question);
+  assert.ok(seen[0].evidenceItems.length > 0);
+});
+
+test("a refusal is never handed to the generator", async (context) => {
+  let called = false;
+  const service = await createService(context, {
+    composeAnswerText: async () => {
+      called = true;
+      return "這句話不該出現。";
+    },
+  });
+
+  const response = await service.answer({ question: scenarios.out_of_scope_query.question });
+
+  assert.equal(response.answer_status, "refused");
+  assert.equal(called, false, "a refusal must not reach a model");
+  assert.match(response.answer_text, /超出本助手的範疇/);
+});
+
+test("a generator that produces nothing leaves the deterministic template in place", async (context) => {
+  const service = await createService(context, { composeAnswerText: async () => undefined });
+
+  const response = await service.answer({ question: scenarios.answerable_character_query.question });
+
+  assert.equal(response.answer_status, "answered");
+  assert.match(response.answer_text, /依據 \d+ 筆來源佐證回答/);
+  assert.ok(response.citations.length > 0);
 });
