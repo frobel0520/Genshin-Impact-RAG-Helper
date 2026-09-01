@@ -20,12 +20,12 @@ export const DEFAULT_DOCUMENT_TOP_K = 8;
  * arrives with citations behind it — harmless while the answer was a template,
  * and not harmless now that a model writes the prose.
  *
- * The value is deliberately low: its job is to drop chunks that are plainly
- * about something else, not to second-guess a ranking that is doing its job.
- * It is provisional until measured against the 50-case bank on a machine with
- * the embedding model — see `docs/03-system-design.md` §9.3.
+ * Measured against the 50-case bank with bge-m3: the four cases that reach the
+ * document route score 0.532 to 0.795, and 「納塔的火神是誰？」 — the question
+ * the corpus cannot answer — scores 0.410. 0.47 sits in that gap with roughly
+ * equal margin on each side. See `docs/03-system-design.md` §9.3.
  */
-export const DEFAULT_DOCUMENT_MIN_SCORE = 0.35;
+export const DEFAULT_DOCUMENT_MIN_SCORE = 0.47;
 
 const RETRIEVER_OPTION_FIELDS = new Set([
   "store",
