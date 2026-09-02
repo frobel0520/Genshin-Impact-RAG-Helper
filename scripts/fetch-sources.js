@@ -1,6 +1,13 @@
 #!/usr/bin/env node
 import { createHash } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { extname, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
@@ -103,6 +110,11 @@ export async function main(argv, streams = {}, dependencies = {}) {
           `${sections.reduce((total, section) => total + section.text.length, 0)} characters\n`,
       );
     } catch (error) {
+      // An earlier run's output for this source must not survive a failed one.
+      // Left in place it is text the current pointer no longer describes, and
+      // make:pack would happily build a dataset from it — the exact outcome the
+      // hash check exists to prevent, reached by ignoring one exit code.
+      rmSync(join(resolve(outDir), basenameOf(file)), { force: true });
       failures.push(`${basenameOf(file)}: ${error.message}`);
     }
   }
@@ -112,9 +124,11 @@ export async function main(argv, streams = {}, dependencies = {}) {
     for (const failure of failures) {
       err(`  ${failure}\n`);
     }
-    // Nothing is half-written: the files that succeeded are on disk and named
-    // above, so a partial run is visible rather than mistaken for a full one.
-    err(`${written} of ${files.length} written to ${outDir}.\n`);
+    // The sources that succeeded are on disk and named above; the ones that
+    // failed have no output at all, so a partial run cannot be packed as if it
+    // were a whole one.
+    err(`${written} of ${files.length} written to ${outDir}. `);
+    err("The failed sources have no output: fix the pointers and run again.\n");
     return 1;
   }
 
