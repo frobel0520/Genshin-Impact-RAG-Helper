@@ -156,6 +156,66 @@
         "長柄武器·『漁獲』"
       ],
       "locale": "zh-TW"
+    },
+    {
+      "entity_id": "ent:zhongli",
+      "entity_type": "character",
+      "canonical_name": "鍾離",
+      "aliases": [
+        "塵世閒遊",
+        "Zhongli"
+      ],
+      "locale": "zh-TW"
+    },
+    {
+      "entity_id": "ent:hu-tao",
+      "entity_type": "character",
+      "canonical_name": "胡桃",
+      "aliases": [
+        "雪霽梅香",
+        "Hu Tao"
+      ],
+      "locale": "zh-TW"
+    },
+    {
+      "entity_id": "ent:ganyu",
+      "entity_type": "character",
+      "canonical_name": "甘雨",
+      "aliases": [
+        "循循守月",
+        "Ganyu"
+      ],
+      "locale": "zh-TW"
+    },
+    {
+      "entity_id": "ent:nahida",
+      "entity_type": "character",
+      "canonical_name": "納西妲",
+      "aliases": [
+        "白草淨華",
+        "Nahida"
+      ],
+      "locale": "zh-TW"
+    },
+    {
+      "entity_id": "ent:furina",
+      "entity_type": "character",
+      "canonical_name": "芙寧娜",
+      "aliases": [
+        "不休獨舞",
+        "Furina"
+      ],
+      "locale": "zh-TW"
+    },
+    {
+      "entity_id": "ent:xiao",
+      "entity_type": "character",
+      "canonical_name": "魈",
+      "aliases": [
+        "護法夜叉",
+        "Xiao"
+      ],
+      "locale": "zh-TW"
     }
   ],
   "structured_facts": [
