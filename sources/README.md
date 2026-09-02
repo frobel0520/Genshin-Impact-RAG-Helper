@@ -18,6 +18,23 @@ npm run ingest:validate -- artifacts\source-pack.json
 `fetch:sources` writes to `artifacts/sources/` by default. That directory is
 git-ignored: the source text lives only on the machine that fetched it.
 
+## genshin-db is a different shape
+
+genshin-db is structured data, not prose: its fields become **StructuredFacts**,
+not chunks. It has its own pointer (`_genshin-db.json`, skipped by
+`fetch:sources` like every `_` file) and its own command:
+
+```powershell
+npm run fetch:genshin-db -- sources\_genshin-db.json --base sources\_facts.json --out artifacts\sources\_facts-merged.json
+npm run make:pack -- artifacts\sources --merge artifacts\sources\_facts-merged.json --out artifacts\source-pack.json
+```
+
+The pointer pins a **commit SHA**, not a branch — genshin-db moves, and an
+import that cannot say which revision it read cannot be reproduced. Enum values
+are mapped through a table in `src/ingest/genshin-db-mapping.js`; a value with
+no entry stops the import rather than passing the raw name through, because a
+guessed value would arrive as a fact with a source behind it.
+
 Pin `retrieved_at` in every article you keep. Without it the converter stamps
 the current time, so the same sources produce a different `dataset_version` on
 every run and a release gate can never be reproduced.

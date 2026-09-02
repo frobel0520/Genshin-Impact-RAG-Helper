@@ -20,6 +20,7 @@
     "evaluate": "node scripts/evaluate.js",
     "check": "npm run check:syntax && npm run lint && npm test",
     "review:apply": "node scripts/apply-human-review.js",
-    "fetch:sources": "node scripts/fetch-sources.js"
+    "fetch:sources": "node scripts/fetch-sources.js",
+    "fetch:genshin-db": "node scripts/fetch-genshin-db.js"
   }
 }

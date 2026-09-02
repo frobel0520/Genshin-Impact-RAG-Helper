@@ -1,0 +1,92 @@
+{
+  "source_id": "src:genshin-db",
+  "commit": "8b15995fa220c88a4d0d7ffe1e21b041d0b32588",
+  "retrieved_at": "2026-09-02T00:00:00Z",
+  "locale": "zh-TW",
+  "entries": [
+    {
+      "entity_id": "ent:mualani",
+      "entity_type": "character",
+      "collection": "characters",
+      "file": "mualani"
+    },
+    {
+      "entity_id": "ent:kinich",
+      "entity_type": "character",
+      "collection": "characters",
+      "file": "kinich"
+    },
+    {
+      "entity_id": "ent:kachina",
+      "entity_type": "character",
+      "collection": "characters",
+      "file": "kachina"
+    },
+    {
+      "entity_id": "ent:kujou-sara",
+      "entity_type": "character",
+      "collection": "characters",
+      "file": "kujousara"
+    },
+    {
+      "entity_id": "ent:raiden-shogun",
+      "entity_type": "character",
+      "collection": "characters",
+      "file": "raidenshogun"
+    },
+    {
+      "entity_id": "ent:sangonomiya-kokomi",
+      "entity_type": "character",
+      "collection": "characters",
+      "file": "sangonomiyakokomi"
+    },
+    {
+      "entity_id": "ent:aloy",
+      "entity_type": "character",
+      "collection": "characters",
+      "file": "aloy"
+    },
+    {
+      "entity_id": "ent:surfs-up",
+      "entity_type": "weapon",
+      "collection": "weapons",
+      "file": "surfsup"
+    },
+    {
+      "entity_id": "ent:fang-of-the-mountain-king",
+      "entity_type": "weapon",
+      "collection": "weapons",
+      "file": "fangofthemountainking"
+    },
+    {
+      "entity_id": "ent:ash-graven-drinking-horn",
+      "entity_type": "weapon",
+      "collection": "weapons",
+      "file": "ashgravendrinkinghorn"
+    },
+    {
+      "entity_id": "ent:engulfing-lightning",
+      "entity_type": "weapon",
+      "collection": "weapons",
+      "file": "engulfinglightning"
+    },
+    {
+      "entity_id": "ent:everlasting-moonglow",
+      "entity_type": "weapon",
+      "collection": "weapons",
+      "file": "everlastingmoonglow"
+    },
+    {
+      "entity_id": "ent:luxurious-sea-lord",
+      "entity_type": "weapon",
+      "collection": "weapons",
+      "file": "luxurioussealord"
+    },
+    {
+      "entity_id": "ent:the-catch",
+      "entity_type": "weapon",
+      "collection": "weapons",
+      "file": "thecatch"
+    }
+  ]
+}
