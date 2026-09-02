@@ -94,3 +94,55 @@ function isBareName(value) {
   const runs = value.match(HAN_RUN_PATTERN) ?? [];
   return runs.length === 1 && runs[0] === value;
 }
+
+/**
+ * Patterns a model uses when it is telling you the evidence does not answer the
+ * question. Deliberately narrow: each one has to be the *shape of the whole
+ * reply*, not a phrase that could appear inside a real answer.
+ */
+const CANNOT_ANSWER_PATTERNS = Object.freeze([
+  /(?:證據|資料|來源)(?:中|裡)?(?:並)?(?:沒有|未)(?:提到|提及|說明|記載|包含)/,
+  /無法(?:根據|依據)?(?:現有)?(?:證據|資料|來源)?回答/,
+  /(?:證據|資料|來源)不足以回答/,
+]);
+
+const MAX_CANNOT_ANSWER_LENGTH = 60;
+
+/**
+ * Does this reply say the evidence cannot answer the question?
+ *
+ * The retrieval floor decides whether a chunk is close enough to the question;
+ * it cannot decide whether the chunk *addresses* it. The model, having read
+ * both, sometimes says so outright — and the system used to throw that away and
+ * report the reply as an answer, with a citation behind it. A reader is not
+ * misled by the prose, but `answer_status: answered` is still a false claim
+ * about what happened.
+ *
+ * Narrow on purpose. A long reply that mentions a gap in passing is still an
+ * answer: 「證據中沒有提到她的生日，但她是水元素角色」 answers the question. Only a
+ * short reply that is *nothing but* the statement of inability counts, so a
+ * false positive cannot silently turn a good answer into a refusal.
+ *
+ * @param {string} answerText
+ * @returns {boolean}
+ */
+export function readsAsCannotAnswer(answerText) {
+  if (typeof answerText !== "string") {
+    return false;
+  }
+  const trimmed = answerText.trim();
+  if (trimmed === "" || trimmed.length > MAX_CANNOT_ANSWER_LENGTH) {
+    return false;
+  }
+  // More than one sentence means the model went on to say something else, and
+  // whatever that was is content this check must not discard.
+  if (trimmed.replace(/[。！？]\s*$/u, "").search(/[。！？]/u) !== -1) {
+    return false;
+  }
+  // Nor may it discard content that arrived in the same sentence:
+  // 「證據中沒有提到她的生日，但她是水元素角色」 names the gap and then answers.
+  if (/但|不過|然而|惟|只(?:知道|能說)/u.test(trimmed)) {
+    return false;
+  }
+  return CANNOT_ANSWER_PATTERNS.some((pattern) => pattern.test(trimmed));
+}
