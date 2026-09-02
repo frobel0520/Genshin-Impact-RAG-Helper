@@ -82,7 +82,9 @@ export async function main(argv, streams = {}, dependencies = {}) {
       });
       facts.push(...result.facts);
     } catch (error) {
-      failures.push(`${entry.entity_id ?? entry.file}: ${error.message}`);
+      // The mapper's messages already name the entity, so the prefix here is
+      // the file that produced it — which is what a maintainer edits.
+      failures.push(`${entry.collection ?? "?"}/${entry.file ?? "?"}: ${error.message}`);
     }
   }
 
