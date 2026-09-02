@@ -24,3 +24,6 @@ artifacts/eval-report.json
 
 # Local agent transcripts (not a repository deliverable)
 .agents/
+
+# Fetched source text (rebuild with npm run fetch:sources)
+artifacts/sources/
