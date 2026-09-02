@@ -43,16 +43,21 @@ const DEFAULT_LOCALE = "zh-TW";
 const DEFAULT_MAX_CHUNK_CHARS = 480;
 const GAME_VERSION_UNKNOWN = "unknown";
 
-// A hand-copied article carries no licence metadata, so the rights note is
-// stated once per source kind here instead of being retyped — and eventually
-// mistyped — in every file. An article may still override it.
+// An imported article carries no licence metadata, so the rights note is stated
+// once per source kind here instead of being retyped — and eventually mistyped —
+// in every file. An article may still override it.
+//
+// These are the conclusions of the OPEN-06 review, not placeholders: see
+// `docs/05-source-licensing.md`. The project stores pointers rather than source
+// text (option A), so nothing here licenses redistribution — each note says what
+// the reader of a citation is entitled to and what the local copy may be used for.
 const DEFAULT_RIGHTS_NOTES = Object.freeze({
   [SOURCE_KINDS.HOYOLAB]:
-    "Personal non-commercial use; retain official attribution and URL; terms review pending.",
+    "HoYoverse copyright, no open licence; personal non-commercial use only; cite by URL, do not redistribute the text.",
   [SOURCE_KINDS.GENSHIN_DB]:
-    "genshin-db package data; game data owned by HoYoverse; retain package attribution and URL.",
+    "genshin-db package code is MIT (theBowja); the game data it carries is not — HoYoverse retains it. Cite by URL, do not redistribute the data.",
   [SOURCE_KINDS.FANDOM]:
-    "Fandom wiki text under CC BY-SA 3.0; retain page URL and author attribution; derivative text shares alike.",
+    "Fandom wiki text under CC BY-SA 3.0 Unported; attribution and page URL required; share-alike applies to redistributed text.",
 });
 
 const ARTICLE_FIELDS = new Set([
