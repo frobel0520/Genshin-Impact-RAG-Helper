@@ -1,7 +1,7 @@
 {
   "dataset_version": "4e87e7d5d3f251188cb94550eeb4d3afe588d2725a600802c14d13920b6d987b",
   "reviewed_at": "2026-09-02T01:53:57.123Z",
-  "reviewer": "claude-opus-5 (machine review); Groundedness 全部 39 題判為通過的案例已由專案擁有者閱讀確認（v1.0.0 抽驗 10 題，v1.1.0 後補完 29 題）；回答正確率的 T34 後重評仍未經人簽署",
+  "reviewer": "claude-opus-5 (machine review); 專案擁有者已確認：Groundedness 全部 39 題判為通過的案例（v1.0.0 抽驗 10 題，v1.1.0 後補完 29 題），以及回答正確率的 3 題 v1.0.0 失敗判定與 T34 改變後的 2 題重判",
   "report": "artifacts/eval-report.json",
   "metrics": {
     "answer_correctness": {
@@ -234,13 +234,13 @@
       "case_id": "case:version-5-0-changes",
       "answer_correctness": "pass",
       "groundedness": "pass",
-      "note": "T34 後改由整份 5.0 公告作答，回答含瑪拉妮、基尼奇、卡齊娜三名新角色、秘境、劇情、納塔與四個子區域、武器與更新時間。題庫預期的項目全數涵蓋。所有專有名詞逐字出現在證據裡。"
+      "note": "T34 後改由整份 5.0 公告作答，回答含瑪拉妮、基尼奇、卡齊娜三名新角色、秘境、劇情、納塔與四個子區域、武器與更新時間。題庫預期的項目全數涵蓋。所有專有名詞逐字出現在證據裡。 專案擁有者以全文閱讀確認：完整涵蓋題庫預期，判定通過。"
     },
     {
       "case_id": "case:version-2-1-changes",
       "answer_correctness": "pass",
       "groundedness": "pass",
-      "note": "T34 後改由整份 2.1 公告作答，回答含四名新角色、清籟島與海祇島、劇情、釣魚系統、武器與更新時間。題庫預期的項目全數涵蓋。所有專有名詞逐字出現在證據裡。"
+      "note": "T34 後改由整份 2.1 公告作答，回答含四名新角色、清籟島與海祇島、劇情、釣魚系統、武器與更新時間。題庫預期的項目全數涵蓋。所有專有名詞逐字出現在證據裡。 專案擁有者以全文閱讀確認：完整涵蓋題庫預期，判定通過。"
     },
     {
       "case_id": "case:natlan-sub-regions",
