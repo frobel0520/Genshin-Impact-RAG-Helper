@@ -68,8 +68,8 @@ dataset version in both stores.
 | Retrieval Recall@5 | ≥ 90% | 100% (40/40) | **pass** |
 | 無資料正確拒答率 | ≥ 90% | 100% (10/10) | **pass** |
 | 非拒答答案附來源率 | 100% | 100% (40/40) | **pass** |
-| 回答正確率 | ≥ 90% | 92.5% (37/40) | **pass**, failures attested |
-| 引用支持答案率 / Groundedness | ≥ 95% | 100% (40/40) | **pass**, spot-checked 10/37 |
+| 回答正確率 | ≥ 90% | 97.5% (39/40) | **pass**, T34 後重評未經人簽署 |
+| 引用支持答案率 / Groundedness | ≥ 95% | 100% (40/40) | **pass**, spot-checked 10/37（v1.0.0 時） |
 
 50 cases ran: 40 answered, 10 refused — matching the bank's declared split
 exactly, with no case landing in the wrong bucket.
@@ -215,10 +215,12 @@ irrelevant evidence from being used; nothing yet notices *missing* evidence.
    `insufficient_evidence` and no citation. The three machine-scored criteria
    were re-run at 0.47 and all still pass at 100%.
 
-2. **Nothing notices missing evidence.** T33 stopped irrelevant chunks from being
-   used; no stage checks that the evidence retrieved covers what the question
-   asked. This is what the two version cases in §6 are: a version question
-   answered correctly from an incomplete slice of that version's sections.
+2. ~~**Nothing notices missing evidence.**~~ Closed for version overviews by T34
+   (issue #61). A version question that resolves no entity now takes the whole
+   announcement instead of the top-ranked sections, and both version cases pass.
+   The general problem is untouched: no stage checks that retrieved evidence
+   covers what was asked. Only the one shape this corpus could demonstrate is
+   fixed.
 3. **The grounding check reads names, not claims.** It verifies the terms an
    answer presents as copied; a fabrication stated in running prose still passes.
    It is narrow on purpose — a check that fires only on real problems is one
