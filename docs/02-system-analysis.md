@@ -381,7 +381,7 @@ SA 通過前，需由專案擁有者確認：
 | OPEN-03 | 繁中 Embedding、Hybrid Search 與 Reranking | Recall、延遲與成本 | SD ADR |
 | OPEN-04 | Vector DB、結構化儲存、後端與 UI 組合 | API／資料模型與維護成本 | SD ADR |
 | OPEN-05 | 本機效能門檻、日誌保存期限與遮罩規則 | NFR-PERF／NFR-OBS | SD 原型測試 |
-| OPEN-06 | Fandom、genshin-db、HoYoLAB 的具體保存量與發布授權 | 資料治理與公開 repo 風險 | SA／SD Review |
+| OPEN-06 | Fandom、genshin-db、HoYoLAB 的具體保存量與發布授權 | 資料治理與公開 repo 風險 | 調查完成，待決策——見 [05-source-licensing.md](05-source-licensing.md) |
 | OPEN-07 | `spoiler_level`、引用格式與多版本回答 UI | 使用者體驗與驗收 | SD API／UI 設計 |
 
 ## 12. 下一步
