@@ -40,7 +40,7 @@ const USER_AGENT =
 export async function main(argv, streams = {}, dependencies = {}) {
   const out = streams.stdout ?? ((text) => process.stdout.write(text));
   const err = streams.stderr ?? ((text) => process.stderr.write(text));
-  const fetchArticle = dependencies.fetchArticle ?? fetchHoyolabArticle;
+  const fetchArticle = dependencies.fetchArticle ?? fetchBySourceKind;
 
   const [sourcesDir, ...rest] = argv;
   if (sourcesDir === undefined) {
@@ -136,6 +136,87 @@ export async function main(argv, streams = {}, dependencies = {}) {
   return 0;
 }
 
+const FETCHERS = Object.freeze({
+  hoyolab: fetchHoyolabArticle,
+  fandom: fetchFandomPage,
+});
+
+/**
+ * Pick the fetcher a source file's kind needs.
+ *
+ * Each source is a different site with a different way of handing over its
+ * text; `source_kind` already decides authority and rights elsewhere, so it
+ * decides this too rather than a second field that could disagree with it.
+ */
+function fetchBySourceKind(article) {
+  const fetcher = FETCHERS[article.source_kind];
+  if (fetcher === undefined) {
+    throw new Error(
+      `source_kind ${JSON.stringify(article.source_kind)} has no fetcher. ` +
+        `Known kinds: ${Object.keys(FETCHERS).join(", ")}.`,
+    );
+  }
+  return fetcher(article);
+}
+
+/**
+ * Fetch one Fandom wiki page.
+ *
+ * `prop=extracts` returns nothing here — Fandom does not install TextExtracts —
+ * so the text comes from the rendered HTML, which `htmlToPlainText` reduces to
+ * the same shape a HoYoLAB announcement arrives in. The revision ID is pinned
+ * alongside the content hash: a wiki page changes whenever anyone edits it, and
+ * the revision says *the page changed* where the hash only says the text this
+ * pointer extracts came out different.
+ */
+async function fetchFandomPage(article) {
+  const { origin, title } = fandomPage(article.source_url);
+  const url =
+    `${origin}/api.php?action=parse&page=${encodeURIComponent(title)}` +
+    "&prop=text%7Crevid&format=json";
+  const response = await fetch(url, { headers: { "user-agent": USER_AGENT } });
+  if (!response.ok) {
+    throw new Error(`Fandom returned HTTP ${response.status} for ${title}.`);
+  }
+  const payload = await response.json();
+  if (payload.error !== undefined) {
+    throw new Error(`Fandom returned ${payload.error.code} for ${title}.`);
+  }
+  const html = payload.parse?.text?.["*"];
+  if (typeof html !== "string" || html.trim() === "") {
+    throw new Error(`Fandom page ${title} carries no rendered text.`);
+  }
+  // A page that exists is not the same as a page worth citing: a disambiguation
+  // page fetches cleanly, hashes stably, and would reach the index as evidence
+  // for the entity whose name it carries. 雷電將軍 on the zh wiki is one.
+  if (isDisambiguation(htmlToPlainText(html))) {
+    throw new Error(
+      `Fandom page ${title} is a disambiguation page, not an article. ` +
+        "Point at the article it lists instead.",
+    );
+  }
+  if (article.revision_id !== undefined && payload.parse.revid !== article.revision_id) {
+    throw new Error(
+      `Fandom page ${title} is at revision ${payload.parse.revid}, not the recorded ` +
+        `${article.revision_id}. Someone edited it. Review the difference, then update ` +
+        "the revision and the hashes deliberately.",
+    );
+  }
+  return { html, revisionId: payload.parse.revid };
+}
+
+export function isDisambiguation(plainText) {
+  return /這是一個消歧義頁|消歧義頁面|disambiguation page/.test(plainText);
+}
+
+function fandomPage(sourceUrl) {
+  const match = /^(https:\/\/[^/]+(?:\/[a-z-]{2,5})?)\/wiki\/(.+)$/.exec(String(sourceUrl ?? ""));
+  if (match === null) {
+    throw new Error(`source_url ${sourceUrl} is not a Fandom wiki page URL.`);
+  }
+  return { origin: match[1], title: decodeURIComponent(match[2]) };
+}
+
 /**
  * Fetch one HoYoLAB announcement.
  *
@@ -203,7 +284,10 @@ export function hashText(text) {
 }
 
 function stripFetchFields(article) {
-  const { sections, ...rest } = article;
+  // `sections` is replaced with extracted text, and `revision_id` is a pointer's
+  // own bookkeeping — make:pack rejects article fields it does not know, and it
+  // has no reason to know this one.
+  const { sections, revision_id: revisionId, ...rest } = article;
   return rest;
 }
 

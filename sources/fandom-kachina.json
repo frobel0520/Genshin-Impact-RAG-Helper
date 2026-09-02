@@ -1,0 +1,21 @@
+{
+  "key": "fandom-kachina",
+  "source_kind": "fandom",
+  "source_url": "https://genshin-impact.fandom.com/zh/wiki/%E5%8D%A1%E9%BD%8A%E5%A8%9C",
+  "title": "卡齊娜 - 原神 Wiki",
+  "retrieved_at": "2026-09-02T00:00:00Z",
+  "revision_id": 25353,
+  "sections": [
+    {
+      "id": "profile",
+      "locator": {
+        "start": "角色簡介[]",
+        "end": "角色形象[]"
+      },
+      "content_hash": "4b5f1785001bba4e33837abf9bbd33a9e6d22dc9023fa4742b9b65c785230ac8",
+      "entity_ids": [
+        "ent:kachina"
+      ]
+    }
+  ]
+}

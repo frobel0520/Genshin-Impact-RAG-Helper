@@ -1,0 +1,21 @@
+{
+  "key": "fandom-aloy",
+  "source_kind": "fandom",
+  "source_url": "https://genshin-impact.fandom.com/zh/wiki/%E4%BA%9E%E8%98%BF%E4%BC%8A",
+  "title": "亞蘿伊 - 原神 Wiki",
+  "retrieved_at": "2026-09-02T00:00:00Z",
+  "revision_id": 18787,
+  "sections": [
+    {
+      "id": "profile",
+      "locator": {
+        "start": "角色簡介[]",
+        "end": "角色形象[]"
+      },
+      "content_hash": "bcfebcaa1f601f65a54a673d0394f08c65caf59c0765d7053bc445558fbb75cb",
+      "entity_ids": [
+        "ent:aloy"
+      ]
+    }
+  ]
+}
