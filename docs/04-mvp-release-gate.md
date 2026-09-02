@@ -1,80 +1,42 @@
 # MVP E2E Release Gate (T31)
 
-> ⚠️ **This record describes a corpus that no longer exists.** T36 replaced the
-> hand-copied source text with the fetched verbatim article (2026-09-02), so
-> every number below was measured against a different dataset than the one the
-> repository now builds. See §0 before reading anything else.
+> Re-run: 2026-09-02 · Branch: `dev` · Dataset version:
+> `5c49fb1e6fc577c1780e16987e6fa34688ca9b4bbce7acab03b69076bdbb1a87`
 >
-> First run: 2026-08-29 · Second run (with generation): 2026-08-29 · Branch:
-> `dev` · Dataset version:
-> `4e87e7d5d3f251188cb94550eeb4d3afe588d2725a600802c14d13920b6d987b`
+> Earlier runs: 2026-08-29 (first, no generation stage) and 2026-08-29 (with
+> generation). Both measured a corpus of two hand-copied announcements that the
+> project no longer builds; §0 records what changed.
 
 This is the evidence record for the gate defined in
 [`01-project-plan.md` §8.1](01-project-plan.md) and
 [`03-system-design.md` §9.2](03-system-design.md). It reports what the gate
 measured, not what the project hoped to measure.
 
-The first run found three of the five criteria passing and two unscorable: the
-MVP had no generation stage, so there was no answer for 回答正確率 or
-Groundedness to be about. T32 added one, and this record covers both runs. The
-three machine-scored criteria still pass; the two human-judged ones now have 40
-real answers to judge, and that review is the one step this record cannot
-perform for itself.
+## 0. What changed since the first run
 
-## 0. Why this record is stale
+The corpus was replaced twice and extended once between 2026-08-29 and
+2026-09-02, so the three earlier numbers in this record are not comparable to
+the current ones:
 
-T36 moved the project from hand-copied source text to pointers plus a local
-fetch (`docs/05-source-licensing.md`). The text the index is built from changed
-with it: the hand-copied sections were a human condensation of about 498
-characters per document, and the fetched sections are the verbatim article —
-4,608 characters for 5.0 and 3,430 for 2.1, roughly eight to nine times more.
+| Change | Effect on the corpus |
+|---|---|
+| T36 pointers + fetch | Hand-copied 498-character condensations replaced by the verbatim articles (4,608 and 3,430 characters) |
+| T36 Fandom import | 6 zh-wiki character profiles, 2,586 characters |
+| T36 genshin-db import | 20 records → 53 structured facts, 6 of the entities appearing in no announcement |
 
-That is a different corpus, so this record measures something the repository no
-longer produces. What is known about the new one, from a re-run on 2026-09-02:
-
-| 準則 | 這份紀錄（舊語料） | 新語料重跑 |
-|---|---:|---:|
-| Retrieval Recall@5 | 100% (40/40) | 100% (40/40) |
-| 無資料正確拒答率 | 100% (10/10) | 100% (10/10) |
-| 非拒答答案附來源率 | 100% (40/40) | 100% (40/40) |
-| 回答正確率 | 97.5% (39/40) | **未重判** |
-| 引用支持答案率 / Groundedness | 100% (40/40) | **未重判** |
-
-The three machine-scored criteria still pass. The two human-judged ones do not
-carry over: **the 39/39 attestation in §6 was given for answers that no longer
-exist.** Nobody has read the answers the current corpus produces.
-
-Two other facts about the new corpus, both recorded rather than acted on:
-
-1. **Chunks went from 13 to 12**, and the 40-answered / 10-refused split is
-   unchanged.
-2. **A second case now falls back to the template.** `case:version-5-0-changes`
-   joins `case:natlan-sub-regions`, and its trace says why: the model, given the
-   richer article, invented a list of enemies —「回聲之子·雷」 and others — that
-   appears in no evidence, and the verbatim-name check rejected the answer. That
-   is the T32 guard doing exactly what it exists for. It is also a fabrication
-   that the thinner corpus never provoked, which is worth knowing.
-
-### What closing this properly needs
-
-1. `evaluation/eval-cases.json` still declares
-   `dataset_version: 4e87e7d5…`, which no longer describes the corpus. The
-   current pack hashes to `8d025829…`. The bank's declared binding has to be
-   updated as part of the re-run, not before it.
-2. Re-run `npm run evaluate` and re-judge the 40 answers on both human criteria.
-3. Rewrite §4 and §6 against the new numbers, and say who judged them.
-
-Until then §4 stands as a record of what was measured on 2026-08-29, not as a
-claim about the system as it is today.
+The machine-scored criteria were re-measured on the current corpus and all three
+still pass. **The two human-judged criteria have not been re-judged**, and the
+attestation recorded in §6 was given for answers three corpus changes ago. §4
+marks them accordingly.
 
 ## 1. How to reproduce
 
-These steps are the ones this record was produced with. T36 inserted a fetch
-step before them and moved the pack's input to `artifacts\sources`:
+These steps are the ones this record was produced with:
 
 ```powershell
 npm run fetch:sources -- sources
-npm run make:pack -- artifacts\sources --merge sources\_facts.json --out artifacts\source-pack.json
+npm run fetch:genshin-db -- sources\_genshin-db.json --base sources\_facts.json --out artifacts\sources\_facts-merged.json
+npm run make:pack -- artifacts\sources --merge artifacts\sources\_facts-merged.json --out artifacts\source-pack.json
 npm run ingest:validate -- artifacts\source-pack.json
 npm run ingest:build -- artifacts\source-pack.json
 npm start
@@ -86,11 +48,10 @@ The last step is the human half and only runs once a reviewer has produced
 `artifacts/review-export.json`; every step above it is machine-reproducible on
 its own.
 
-Every step above was run from a cleared `artifacts/` for this record. The pack is
-byte-identical across runs, so `dataset_version` is stable and the gate can be
-re-run and compared. That was not true before this gate: the converter stamped
-`retrieved_at` from the clock, so the same sources produced a new dataset
-version every rebuild. `retrieved_at` is now pinned in each article file.
+Every step above was run from a cleared `artifacts/` for this record, twice. The
+pack hashed identically both times, so `dataset_version` is stable and this run
+can be compared with the next one — a property that now has to survive three
+fetched sources rather than files sitting in the repository, and does.
 
 ## 2. Environment
 
@@ -105,45 +66,80 @@ version every rebuild. `retrieved_at` is now pinned in each article file.
 
 | Stage | Output | Hash (first 16) |
 |---|---|---|
-| `make:pack` | `artifacts/source-pack.json` — 2 documents, 13 chunks | input `4e87e7d5d3f25118` |
+| `fetch:sources` | `artifacts/sources/` — 8 files (2 HoYoLAB, 6 Fandom) | git-ignored; the repository stores pointers |
+| `fetch:genshin-db` | `artifacts/sources/_facts-merged.json` — 53 facts from 20 records | commit `8b15995fa220` |
+| `make:pack` | `artifacts/source-pack.json` — 9 documents, 18 chunks | `5c49fb1e6fc577c1` |
 | `ingest:validate` | RunResponse `passed`, 0 errors | — |
-| `ingest:build` | `artifacts/structured.db` | `83004f25eb7904e2` |
-| `ingest:build` | `artifacts/index.db` | `39f4afd60914974d` |
+| `ingest:build` | `artifacts/structured.db` | `433099a6759b10a9` |
+| `ingest:build` | `artifacts/index.db` | `2a9f7214f4916a53` |
 | `evaluate` | `artifacts/eval-report.json` | run `passed`, exit 0 |
 
-Dataset contents: 2 source documents, 16 canonical entities, 38 structured
-facts, 4 claims, 13 verbatim chunks, 13 vectors. `GET /health` reports
-`status: ok`, `dataset.state: ready`, `index.verified: true`, and the same
-dataset version in both stores.
+Dataset contents: 9 source documents (2 HoYoLAB announcements, 6 Fandom
+profiles, 1 genshin-db tree), 22 canonical entities, 91 structured facts, 4
+claims, 18 verbatim chunks.
+
+**Reproducible.** The pipeline was run twice from a cleared `artifacts/` and the
+pack hashed identically both times (`5c49fb1e6fc577c1`), so `dataset_version` is
+stable and this run can be compared with the next one. That property now covers
+three fetched sources, not just files sitting in the repository.
 
 ## 4. Gate criteria
 
 | Criterion | Target | Result | Verdict |
 |---|---:|---:|---|
-| Retrieval Recall@5 | ≥ 90% | 100% (40/40) | **pass** |
+| Retrieval Recall@5 | ≥ 90% | 100% (58/58) | **pass** |
 | 無資料正確拒答率 | ≥ 90% | 100% (10/10) | **pass** |
-| 非拒答答案附來源率 | 100% | 100% (40/40) | **pass** |
-| 回答正確率 | ≥ 90% | 97.5% (39/40) | **pass**, 爭議判定經人確認（見 §6） |
-| 引用支持答案率 / Groundedness | ≥ 95% | 100% (40/40) | **pass**, 39/39 全數經人閱讀 |
+| 非拒答答案附來源率 | 100% | 100% (58/58) | **pass** |
+| 回答正確率 | ≥ 90% | — | **未評**（見 §6） |
+| 引用支持答案率 / Groundedness | ≥ 95% | — | **未評**（見 §6） |
 
-50 cases ran: 40 answered, 10 refused — matching the bank's declared split
+68 cases ran: 58 answered, 10 refused — matching the bank's declared split
 exactly, with no case landing in the wrong bucket.
+
+All three sources reach answers: of the citations attached to the 58 non-refused
+answers, 43 are HoYoLAB, 9 Fandom and 9 genshin-db. Two answers fall back to the
+citation-only template — `case:version-5-0-changes`, where the verbatim-name
+check rejected an invented list of enemies, and `case:natlan-sub-regions`, where
+it rejected a corrupted place name.
 
 ## 5. End-to-end evidence
 
-Verified in the browser against the running server at `http://127.0.0.1:3000`:
+Collected on 2026-09-02 against the running server at `http://127.0.0.1:3000`.
 
-| Path | Observed |
-|---|---|
-| Dataset banner | 「資料已就緒・索引 39f4afd60914・13 個切塊・bge-m3:latest」 |
-| Answered (structured) | 「瑪拉妮是什麼元素？」 → 已回答, 版本範圍 5.0, 1 citation to the 5.0 announcement with its source kind, version and retrieval date |
-| Answered (version) | 「5.0版本更新了哪些內容？」 → 已回答, 6 pieces of evidence, 版本範圍 5.0 |
-| Refused (out of scope) | 「雷電將軍該配什麼隊伍？」 → 拒答, 原因「超出本助手範疇」, 引用來源（0）, and an explicit 「這個回答沒有附上來源」 |
-| Traceability | every response carries a 追蹤碼 that matches the run log |
+`GET /health` reports `status: ok`, `dataset.state: ready`, `index.verified:
+true`, 9 source documents, 22 canonical entities, 91 structured facts and 18
+chunks with 18 vectors, with the same dataset version in both stores.
 
-The 6 T12 acceptance scenarios and the full suite pass: `npm run check`, 360
-tests, 0 failures, under the offline guard — the generation stage included, its
-model replaced by a fake so CI still needs neither a model nor a live source.
+`POST /api/v1/query`:
+
+| Question | Status | Reason | Citations |
+|---|---|---|---|
+| 瑪拉妮是什麼元素？ | uncertain | version_unknown | hoyolab + genshin-db |
+| 鍾離是什麼元素？ | uncertain | version_unknown | genshin-db |
+| 瑪拉妮是做什麼的？ | uncertain | version_unknown | hoyolab + fandom |
+| 5.0版本更新了哪些內容？ | answered | — | hoyolab |
+| 雷電將軍該配什麼隊伍？ | refused | out_of_scope | none |
+| 納塔的火神是誰？ | refused | insufficient_evidence | none |
+| 迪盧克是什麼元素？ | refused | insufficient_evidence | none |
+
+Every response carries a `trace_id` that matches the run log.
+
+Two of these deserve reading twice:
+
+- **`uncertain` is not a defect here.** genshin-db states what is true of the
+  current game and carries no version, so a question answered from it — or from
+  a mix that includes it — is correctly reported as version-unscoped rather
+  than silently claiming a version it does not have. The same question scores
+  `answered` in the evaluation, where the bank supplies the version.
+- **「納塔的火神是誰？」 refuses again.** The similarity floor stopped catching it
+  once Fandom profiles mentioning 納塔 entered the corpus; what refuses it now is
+  the check added in §9.3.1 of the design — the model said the evidence does not
+  answer the question, and the system stopped reporting that as an answer.
+
+The 6 T12 acceptance scenarios and the full suite pass: `npm run check`, 401
+tests, 0 failures, under the offline guard — the generation stage and both
+fetchers included, their network calls replaced by fakes so CI still needs
+neither a model nor a live source.
 
 ## 6. Generation, and what the first review of it found
 
@@ -197,7 +193,26 @@ onto every answered case in the report. It recomputes both rates from the
 per-case verdicts rather than trusting the totals the export carried, and it
 refuses to write anything while a case is still unreviewed — a gate closed on a
 partial review is worse than one left open. 待議 is a recorded verdict and does
-not count as a pass. ### What the review found, and who did it
+not count as a pass.
+
+### The review this record still needs
+
+**Nothing below has been re-judged on the current corpus.** The account that
+follows describes the review of a 40-answer run over two hand-copied
+announcements; the current run has 58 answers over nine documents from three
+sources, and two of the three previously-failing cases were changed by T34
+before the corpus changed again. §4 therefore reports 回答正確率 and
+Groundedness as 未評 rather than carrying the old numbers forward.
+
+What re-judging needs: `artifacts/eval-report.json` holds the 58 answered cases,
+`npm run review:apply` records a verdict per case, and the `reviewer` field says
+who judged. The three machine-scored criteria do not need a person and already
+pass.
+
+The rest of this section is kept as the record of the earlier review, because it
+is where the three defects in §6 below were found and why the guards exist.
+
+### What the earlier review found, and who did it
 
 The 40 cases were reviewed by **Claude (claude-opus-5), not by a person**, at the
 project owner's instruction. `artifacts/human-review.json` and every stamped case
