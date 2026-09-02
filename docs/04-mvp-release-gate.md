@@ -69,7 +69,7 @@ dataset version in both stores.
 | 無資料正確拒答率 | ≥ 90% | 100% (10/10) | **pass** |
 | 非拒答答案附來源率 | 100% | 100% (40/40) | **pass** |
 | 回答正確率 | ≥ 90% | 97.5% (39/40) | **pass**, T34 後重評未經人簽署 |
-| 引用支持答案率 / Groundedness | ≥ 95% | 100% (40/40) | **pass**, spot-checked 10/37（v1.0.0 時） |
+| 引用支持答案率 / Groundedness | ≥ 95% | 100% (40/40) | **pass**, 39/39 全數經人閱讀 |
 
 50 cases ran: 40 answered, 10 refused — matching the bank's declared split
 exactly, with no case landing in the wrong bucket.
@@ -157,13 +157,24 @@ counted as a pass, so both numbers stood at 92.5% and 100% before and after. Wha
 changed is that the three failures now carry a human's judgement rather than a
 machine's.
 
-Of the 37 passing cases, **10 have since been spot-checked by the project owner**
-against the evidence the model was actually given, and all 10 were upheld: no
-answer stated anything its evidence did not support. **The other 27 have not been
-read by anyone.** §4 says so rather than rounding the sample up to the population.
+**Every passing case has now been read by the project owner.** It happened in two
+passes: 10 spot-checked at v1.0.0, and the remaining 29 after v1.1.0. All 39 were
+upheld — no answer stated anything its evidence did not support. Groundedness in
+§4 therefore carries no reservation.
 
-The 10 were chosen to be the ones most likely to overturn the machine's
-judgement, not sampled at random:
+The second pass was 29 and not 27 because the population moved: `case:version-5-0-changes`
+and `case:version-2-1-changes` were failures at v1.0.0 and so were never in the 37,
+and T34 changed both answers. They were read in their v1.1.0 form, against the whole
+announcement each now retrieves.
+
+回答正確率 is a different matter and §4 still says so: the three v1.0.0 failures
+were attested by the project owner, but T34 changed two of those answers into
+passes, and **that re-scoring was machine-made and has not been countersigned.**
+Reading an answer for groundedness — does it exceed its evidence — is not the same
+act as judging it correct against what the bank expects.
+
+The first pass's 10 were chosen to be the ones most likely to overturn the
+machine's judgement, not sampled at random:
 
 | 為什麼抽這題 | 案例 |
 |---|---|
@@ -174,10 +185,8 @@ judgement, not sampled at random:
 | T32 三個缺陷的原始案例 | `case:kinich-weapon-type`（enum 翻譯）, `case:surfs-up-weapon-type`（證據沒有主詞）, `case:ash-graven-drinking-horn-weapon-type`（專有名詞守門） |
 | 對照組與唯一的 4 星角色 | `case:mualani-element`, `case:kachina-rarity` |
 
-A deliberately adverse sample that comes back clean says more than a random one
-of the same size, but it still says it about 10 cases. Treat 回答正確率 as
-attested only where it failed, and Groundedness as spot-checked — not as the gate
-being closed.
+The adverse sample came back clean, and so did the other 29 — which is the
+stronger statement, because it is no longer a sample.
 
 | 準則 | 結果 |
 |---|---|
