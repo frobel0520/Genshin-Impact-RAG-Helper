@@ -1,0 +1,21 @@
+{
+  "key": "fandom-kinich",
+  "source_kind": "fandom",
+  "source_url": "https://genshin-impact.fandom.com/zh/wiki/%E5%9F%BA%E5%B0%BC%E5%A5%87",
+  "title": "基尼奇 - 原神 Wiki",
+  "retrieved_at": "2026-09-02T00:00:00Z",
+  "revision_id": 25356,
+  "sections": [
+    {
+      "id": "profile",
+      "locator": {
+        "start": "角色簡介[]",
+        "end": "角色形象[]"
+      },
+      "content_hash": "fa60d3254c446cc3232fe4f30c0f8a9a809e264805e309fd80faa2e60f2bf763",
+      "entity_ids": [
+        "ent:kinich"
+      ]
+    }
+  ]
+}
