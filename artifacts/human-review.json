@@ -1,7 +1,7 @@
 {
   "dataset_version": "4e87e7d5d3f251188cb94550eeb4d3afe588d2725a600802c14d13920b6d987b",
   "reviewed_at": "2026-09-02T01:53:57.123Z",
-  "reviewer": "claude-opus-5 (machine review); v1.0.0 的三題失敗曾由專案擁有者背書，T34 後兩題答案已改變，重新評分未經人簽署",
+  "reviewer": "claude-opus-5 (machine review); Groundedness 全部 39 題判為通過的案例已由專案擁有者閱讀確認（v1.0.0 抽驗 10 題，v1.1.0 後補完 29 題）；回答正確率的 T34 後重評仍未經人簽署",
   "report": "artifacts/eval-report.json",
   "metrics": {
     "answer_correctness": {
