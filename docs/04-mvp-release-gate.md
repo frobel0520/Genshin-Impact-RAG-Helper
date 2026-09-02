@@ -68,7 +68,7 @@ dataset version in both stores.
 | Retrieval Recall@5 | ≥ 90% | 100% (40/40) | **pass** |
 | 無資料正確拒答率 | ≥ 90% | 100% (10/10) | **pass** |
 | 非拒答答案附來源率 | 100% | 100% (40/40) | **pass** |
-| 回答正確率 | ≥ 90% | 97.5% (39/40) | **pass**, 40/40 全數經人確認 |
+| 回答正確率 | ≥ 90% | 97.5% (39/40) | **pass**, 爭議判定經人確認（見 §6） |
 | 引用支持答案率 / Groundedness | ≥ 95% | 100% (40/40) | **pass**, 39/39 全數經人閱讀 |
 
 50 cases ran: 40 answered, 10 refused — matching the bank's declared split
