@@ -199,3 +199,28 @@ test("the Ollama adapter validates its configuration", () => {
     /timeoutMs/,
   );
 });
+
+test("a prompt without a version scope is still usable by the model", () => {
+  const contents = [{ source_kind: "fandom", source_title: "瑪拉妮 - 原神 Wiki", text: "嚮導" }];
+
+  // The generator refuses a prompt with surrounding whitespace. Appending the
+  // blank separator unconditionally left a trailing newline, so every answer
+  // whose version scope was unknown fell back to the template without anyone
+  // asking a model anything — invisible while every case carried a version.
+  for (const request of [
+    { question: "瑪拉妮的職業是什麼？", contents },
+    { question: "瑪拉妮的職業是什麼？", contents, versionScope: "unknown" },
+  ]) {
+    const prompt = buildGenerationPrompt(request);
+    assert.equal(prompt, prompt.trim());
+    assert.ok(!prompt.includes("適用版本"));
+  }
+
+  const scoped = buildGenerationPrompt({
+    question: "瑪拉妮是什麼元素？",
+    contents,
+    versionScope: "5.0",
+  });
+  assert.equal(scoped, scoped.trim());
+  assert.match(scoped, /\n\n適用版本：5\.0$/);
+});
