@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "dataset_version": "ae44aac1bfa9804a21e070f8450a63b6ddb76d591679b48eb6cb007421b86109",
+  "dataset_version": "5c49fb1e6fc577c1780e16987e6fa34688ca9b4bbce7acab03b69076bdbb1a87",
   "target_counts": {
-    "total": 59,
-    "answerable": 49,
+    "total": 68,
+    "answerable": 58,
     "refuse": 10
   },
   "cases": [
@@ -976,8 +976,8 @@
       "notes": "範疇外請求，助手只回答可追溯的事實性問題。"
     },
     {
-      "case_id": "case:unknown-entity-nahida",
-      "question_zh_tw": "納西妲是什麼元素？",
+      "case_id": "case:unknown-entity-diluc",
+      "question_zh_tw": "迪盧克是什麼元素？",
       "category": "character",
       "query_type": "structured",
       "answerability": "refuse",
@@ -985,7 +985,7 @@
       "game_version": "unknown",
       "spoiler_level": "none",
       "refusal_reason": "insufficient_evidence",
-      "notes": "庫內沒有納西妲。分類器的規則是明確別名比對（fuzzyMatching: false），不會把未知的專有名詞認成「未解析實體」，因此 entity_unknown 這個理由目前產不出來；insufficient_evidence 才是這套規則下正確且誠實的理由。"
+      "notes": "庫內沒有迪盧克。分類器的規則是明確別名比對（fuzzyMatching: false），不會把未知的專有名詞認成「未解析實體」，因此 entity_unknown 這個理由目前產不出來；insufficient_evidence 才是這套規則下正確且誠實的理由。原本這題用納西妲，T36 把她從 genshin-db 匯入之後她不再是未知實體，故改用迪盧克。"
     },
     {
       "case_id": "case:unknown-region-fontaine",
@@ -1229,6 +1229,215 @@
       "game_version": "unknown",
       "spoiler_level": "none",
       "notes": "Fandom 條目的角色簡介；沒有官方公告涵蓋這類敘事問題。"
+    },
+    {
+      "case_id": "case:zhongli-element",
+      "question_zh_tw": "鍾離是什麼元素？",
+      "category": "character",
+      "query_type": "structured",
+      "answerability": "answerable",
+      "expected_answer": "鍾離是岩元素角色。",
+      "required_facts": [
+        {
+          "key": "element",
+          "expected_value": "Geo"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "genshin-db",
+          "source_url": "https://github.com/theBowja/genshin-db/tree/8b15995fa220c88a4d0d7ffe1e21b041d0b32588"
+        }
+      ],
+      "game_version": "unknown",
+      "spoiler_level": "none",
+      "notes": "公告未涵蓋的實體，事實只有 genshin-db 一個來源。"
+    },
+    {
+      "case_id": "case:zhongli-weapon-type",
+      "question_zh_tw": "鍾離使用什麼武器類型？",
+      "category": "character",
+      "query_type": "structured",
+      "answerability": "answerable",
+      "expected_answer": "鍾離使用長柄武器。",
+      "required_facts": [
+        {
+          "key": "weapon_type",
+          "expected_value": "Polearm"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "genshin-db",
+          "source_url": "https://github.com/theBowja/genshin-db/tree/8b15995fa220c88a4d0d7ffe1e21b041d0b32588"
+        }
+      ],
+      "game_version": "unknown",
+      "spoiler_level": "none",
+      "notes": "公告未涵蓋的實體，事實只有 genshin-db 一個來源。"
+    },
+    {
+      "case_id": "case:hu-tao-element",
+      "question_zh_tw": "胡桃是什麼元素？",
+      "category": "character",
+      "query_type": "structured",
+      "answerability": "answerable",
+      "expected_answer": "胡桃是火元素角色。",
+      "required_facts": [
+        {
+          "key": "element",
+          "expected_value": "Pyro"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "genshin-db",
+          "source_url": "https://github.com/theBowja/genshin-db/tree/8b15995fa220c88a4d0d7ffe1e21b041d0b32588"
+        }
+      ],
+      "game_version": "unknown",
+      "spoiler_level": "none",
+      "notes": "公告未涵蓋的實體，事實只有 genshin-db 一個來源。"
+    },
+    {
+      "case_id": "case:ganyu-weapon-type",
+      "question_zh_tw": "甘雨使用什麼武器類型？",
+      "category": "character",
+      "query_type": "structured",
+      "answerability": "answerable",
+      "expected_answer": "甘雨使用弓。",
+      "required_facts": [
+        {
+          "key": "weapon_type",
+          "expected_value": "Bow"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "genshin-db",
+          "source_url": "https://github.com/theBowja/genshin-db/tree/8b15995fa220c88a4d0d7ffe1e21b041d0b32588"
+        }
+      ],
+      "game_version": "unknown",
+      "spoiler_level": "none",
+      "notes": "公告未涵蓋的實體，事實只有 genshin-db 一個來源。"
+    },
+    {
+      "case_id": "case:nahida-rarity",
+      "question_zh_tw": "納西妲的星級是多少？",
+      "category": "character",
+      "query_type": "structured",
+      "answerability": "answerable",
+      "expected_answer": "納西妲是5星角色。",
+      "required_facts": [
+        {
+          "key": "rarity",
+          "expected_value": 5,
+          "unit": "stars"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "genshin-db",
+          "source_url": "https://github.com/theBowja/genshin-db/tree/8b15995fa220c88a4d0d7ffe1e21b041d0b32588"
+        }
+      ],
+      "game_version": "unknown",
+      "spoiler_level": "none",
+      "notes": "公告未涵蓋的實體，事實只有 genshin-db 一個來源。"
+    },
+    {
+      "case_id": "case:furina-weapon-type",
+      "question_zh_tw": "芙寧娜使用什麼武器類型？",
+      "category": "character",
+      "query_type": "structured",
+      "answerability": "answerable",
+      "expected_answer": "芙寧娜使用單手劍。",
+      "required_facts": [
+        {
+          "key": "weapon_type",
+          "expected_value": "Sword"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "genshin-db",
+          "source_url": "https://github.com/theBowja/genshin-db/tree/8b15995fa220c88a4d0d7ffe1e21b041d0b32588"
+        }
+      ],
+      "game_version": "unknown",
+      "spoiler_level": "none",
+      "notes": "公告未涵蓋的實體，事實只有 genshin-db 一個來源。"
+    },
+    {
+      "case_id": "case:furina-element",
+      "question_zh_tw": "芙寧娜是什麼元素？",
+      "category": "character",
+      "query_type": "structured",
+      "answerability": "answerable",
+      "expected_answer": "芙寧娜是水元素角色。",
+      "required_facts": [
+        {
+          "key": "element",
+          "expected_value": "Hydro"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "genshin-db",
+          "source_url": "https://github.com/theBowja/genshin-db/tree/8b15995fa220c88a4d0d7ffe1e21b041d0b32588"
+        }
+      ],
+      "game_version": "unknown",
+      "spoiler_level": "none",
+      "notes": "公告未涵蓋的實體，事實只有 genshin-db 一個來源。"
+    },
+    {
+      "case_id": "case:xiao-element",
+      "question_zh_tw": "魈是什麼元素？",
+      "category": "character",
+      "query_type": "structured",
+      "answerability": "answerable",
+      "expected_answer": "魈是風元素角色。",
+      "required_facts": [
+        {
+          "key": "element",
+          "expected_value": "Anemo"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "genshin-db",
+          "source_url": "https://github.com/theBowja/genshin-db/tree/8b15995fa220c88a4d0d7ffe1e21b041d0b32588"
+        }
+      ],
+      "game_version": "unknown",
+      "spoiler_level": "none",
+      "notes": "公告未涵蓋的實體，事實只有 genshin-db 一個來源。"
+    },
+    {
+      "case_id": "case:xiao-rarity",
+      "question_zh_tw": "魈的星級是多少？",
+      "category": "character",
+      "query_type": "structured",
+      "answerability": "answerable",
+      "expected_answer": "魈是5星角色。",
+      "required_facts": [
+        {
+          "key": "rarity",
+          "expected_value": 5,
+          "unit": "stars"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "genshin-db",
+          "source_url": "https://github.com/theBowja/genshin-db/tree/8b15995fa220c88a4d0d7ffe1e21b041d0b32588"
+        }
+      ],
+      "game_version": "unknown",
+      "spoiler_level": "none",
+      "notes": "公告未涵蓋的實體，事實只有 genshin-db 一個來源。"
     }
   ]
 }

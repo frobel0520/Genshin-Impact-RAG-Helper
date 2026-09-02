@@ -87,6 +87,42 @@
       "entity_type": "weapon",
       "collection": "weapons",
       "file": "thecatch"
+    },
+    {
+      "entity_id": "ent:zhongli",
+      "entity_type": "character",
+      "collection": "characters",
+      "file": "zhongli"
+    },
+    {
+      "entity_id": "ent:hu-tao",
+      "entity_type": "character",
+      "collection": "characters",
+      "file": "hutao"
+    },
+    {
+      "entity_id": "ent:ganyu",
+      "entity_type": "character",
+      "collection": "characters",
+      "file": "ganyu"
+    },
+    {
+      "entity_id": "ent:nahida",
+      "entity_type": "character",
+      "collection": "characters",
+      "file": "nahida"
+    },
+    {
+      "entity_id": "ent:furina",
+      "entity_type": "character",
+      "collection": "characters",
+      "file": "furina"
+    },
+    {
+      "entity_id": "ent:xiao",
+      "entity_type": "character",
+      "collection": "characters",
+      "file": "xiao"
     }
   ]
 }
