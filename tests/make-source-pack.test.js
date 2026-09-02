@@ -66,7 +66,7 @@ test("an article becomes a dataset the ingest contract accepts", () => {
       retrieved_at: RETRIEVED_AT,
       locale: "zh-TW",
       rights_note:
-        "Personal non-commercial use; retain official attribution and URL; terms review pending.",
+        "HoYoverse copyright, no open licence; personal non-commercial use only; cite by URL, do not redistribute the text.",
       content_hash: pack.source_documents[0].content_hash,
       published_at: "2024-08-28T07:00:00+08:00",
       game_version: "5.0",
