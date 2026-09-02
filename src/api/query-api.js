@@ -1,12 +1,18 @@
 import { randomUUID } from "node:crypto";
 
-import { ANSWER_STATUSES, ERROR_CODES, createDomainId } from "../domain/domain-contract.js";
+import {
+  ANSWER_STATUSES,
+  ERROR_CODES,
+  UNCERTAINTY_REASONS,
+  createDomainId,
+} from "../domain/domain-contract.js";
 import { isRecord } from "../domain/contract-validation.js";
 import { classifyErrorCode } from "../domain/run-response-contract.js";
 import { formatAnswer } from "../policy/answer-formatter.js";
 import { applyConflictVersionPolicy } from "../policy/conflict-version-policy.js";
 import { evaluateRefusalScope } from "../policy/refusal-scope-policy.js";
 import { createAnswerGenerator } from "../generation/answer-generation.js";
+import { readsAsCannotAnswer } from "../generation/answer-grounding.js";
 import { createOllamaGenerator } from "../generation/ollama-generator.js";
 import { createOllamaEmbedder } from "../ingest/ollama-embedder.js";
 import { createEvidenceContentResolver } from "../query/evidence-content.js";
@@ -106,15 +112,37 @@ export function createQueryService(options) {
             queryId,
           });
 
+    // The retrieval floor decides whether a chunk is close enough to the
+    // question; nothing decides whether it addresses it. The model, having read
+    // both, sometimes says outright that the evidence does not — and reporting
+    // that as an answer with a citation behind it is a false claim about what
+    // happened, even though the prose itself misleads nobody.
+    const cannotAnswer = readsAsCannotAnswer(answerText);
+    const decision = cannotAnswer
+      ? {
+          ...refusalDecision,
+          answer_status: ANSWER_STATUSES.REFUSED,
+          uncertainty_reason: UNCERTAINTY_REASONS.INSUFFICIENT_EVIDENCE,
+        }
+      : refusalDecision;
+    if (cannotAnswer) {
+      logger?.logFailure({
+        traceId,
+        queryId,
+        code: "model_reports_no_evidence",
+        message: `The model reported the evidence does not answer the question: ${answerText}`,
+      });
+    }
+
     const response = formatAnswer({
       queryPlan,
       bundle,
       policyDecision,
-      refusalDecision,
+      refusalDecision: decision,
       traceId,
-      ...(answerText === undefined ? {} : { answerText }),
+      ...(answerText === undefined || cannotAnswer ? {} : { answerText }),
     });
-    logger?.logAnswerRun({ traceId, queryId, answer: response, refusalDecision });
+    logger?.logAnswerRun({ traceId, queryId, answer: response, refusalDecision: decision });
     return response;
   }
 
