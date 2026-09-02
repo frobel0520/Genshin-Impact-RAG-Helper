@@ -443,3 +443,102 @@ test("an out-of-range floor fails closed", async (context) => {
     /onBelowThreshold must be a function/,
   );
 });
+
+test("a version overview takes the whole announcement, not the nearest sections", async (context) => {
+  const store = await createFixtureStore(context);
+  const question = "5.0版本更新了哪些內容？";
+  const queryPlan = createFixtureClassifier().classify({ question, game_version: "5.0" });
+  assert.equal(queryPlan.query_category, "version");
+  assert.equal(
+    queryPlan.normalized_entities.filter((e) => e.resolution_status === "resolved").length,
+    0,
+    "this case is about a version question that names no subject",
+  );
+
+  const everyChunk = store.listDocumentChunks({ gameVersion: "5.0" });
+  assert.ok(everyChunk.length > 1, "the fixture needs more than one 5.0 chunk");
+
+  // topK of 1 and a floor nothing could clear: neither may apply here, because
+  // the question is about the release and the answer is the announcement.
+  const bundle = await retrieveDocumentEvidence({
+    store,
+    embedQuery: embedText,
+    topK: 1,
+    minScore: 1,
+    queryId: "qry:version-overview",
+    queryPlan,
+    question,
+    gameVersion: "5.0",
+  });
+
+  assert.deepEqual(
+    bundle.items.map((item) => item.chunk_id).sort(),
+    everyChunk.map((chunk) => chunk.chunk_id).sort(),
+  );
+  assert.ok(bundle.items.every((item) => item.game_version === "5.0"));
+  assert.deepEqual(
+    bundle.items.map((item) => item.rank),
+    bundle.items.map((_, index) => index + 1),
+  );
+  assertEvidenceBundle(bundle);
+});
+
+test("a version question that names a subject still ranks", async (context) => {
+  const store = await createFixtureStore(context);
+  const question = "5.0版本神里綾華的更新內容與故事背景是什麼？";
+  const queryPlan = createFixtureClassifier().classify({ question, game_version: "5.0" });
+  assert.equal(queryPlan.query_category, "version");
+
+  const bundle = await retrieveDocumentEvidence({
+    store,
+    embedQuery: embedText,
+    minScore: 0,
+    queryId: "qry:version-with-subject",
+    queryPlan,
+    question,
+    gameVersion: "5.0",
+  });
+
+  // The entity filter is the point of this question. Handing it every section
+  // of the release would bury the one the reader asked for.
+  const everyChunk = store.listDocumentChunks({ gameVersion: "5.0" });
+  assert.ok(bundle.items.length < everyChunk.length);
+  assert.deepEqual(
+    bundle.items.map((item) => item.chunk_id),
+    ["chunk:hoyolab-5-0-character-updates"],
+  );
+});
+
+test("an announcement past the chunk ceiling goes back to ranking", async (context) => {
+  const store = await createFixtureStore(context);
+  const question = "5.0版本更新了哪些內容？";
+  const queryPlan = createFixtureClassifier().classify({ question, game_version: "5.0" });
+  const everyChunk = store.listDocumentChunks({ gameVersion: "5.0" });
+
+  const bundle = await retrieveDocumentEvidence({
+    store,
+    embedQuery: embedText,
+    minScore: 0,
+    topK: 1,
+    versionDocumentMaxChunks: everyChunk.length - 1,
+    queryId: "qry:version-too-long",
+    queryPlan,
+    question,
+    gameVersion: "5.0",
+  });
+
+  // A partial answer that says so through its citations beats pushing a hundred
+  // sections at the model.
+  assert.equal(bundle.items.length, 1);
+});
+
+test("an unusable chunk ceiling fails closed", async (context) => {
+  const store = await createFixtureStore(context);
+
+  for (const versionDocumentMaxChunks of [0, -1, 2.5, "24"]) {
+    assert.throws(
+      () => createDocumentRetriever({ store, embedQuery: embedText, versionDocumentMaxChunks }),
+      /versionDocumentMaxChunks must be a positive integer/,
+    );
+  }
+});
