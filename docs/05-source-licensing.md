@@ -40,12 +40,12 @@ HoYoLAB 公告**逐字原文**，已經提交在公開 repo 裡。
 設計會把數十倍的文字帶進來，那時就不是引用範圍了。
 
 `rights_note` 的機制已經存在（`scripts/make-source-pack.js` 的
-`DEFAULT_RIGHTS_NOTES`），HoYoLAB 那條目前寫著 "terms review pending"——就是這份
-文件要結清的東西。
+`DEFAULT_RIGHTS_NOTES`）。HoYoLAB 那條原本寫著 "terms review pending"，本文件的
+決議已經把三條全部換成實際結論。
 
 ## 3. 三個保存策略
 
-### 方案 A：只存指標，本機重建（建議）
+### 方案 A：只存指標，本機重建（採用）
 
 repo 裡不存任何來源原文，只存**擷取設定**：URL、章節 locator、`retrieved_at`、
 `content_hash`、以及人工標註的 `entity_ids`。原文在使用者本機擷取一次，落在
