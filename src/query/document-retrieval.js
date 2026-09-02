@@ -21,12 +21,13 @@ export const DEFAULT_DOCUMENT_TOP_K = 8;
  * arrives with citations behind it — harmless while the answer was a template,
  * and not harmless now that a model writes the prose.
  *
- * Measured against the 50-case bank with bge-m3: the four cases that reach the
- * document route score 0.532 to 0.795, and 「納塔的火神是誰？」 — the question
- * the corpus cannot answer — scores 0.410. 0.47 sits in that gap with roughly
- * equal margin on each side. See `docs/03-system-design.md` §9.3.
+ * Measured, and re-measured whenever the corpus changes. 0.47 was right for two
+ * hand-copied announcements; the Fandom import made it too tight, and a sweep
+ * over the 59-case bank put the highest value that keeps Recall@5 at 100% at
+ * 0.42. See `docs/03-system-design.md` §9.3 for the numbers and for what the
+ * sweep also showed: this floor no longer refuses 「納塔的火神是誰？」.
  */
-export const DEFAULT_DOCUMENT_MIN_SCORE = 0.47;
+export const DEFAULT_DOCUMENT_MIN_SCORE = 0.42;
 
 /**
  * How many chunks a version overview may take before it goes back to ranking.
