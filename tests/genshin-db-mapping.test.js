@@ -75,8 +75,22 @@ test("an unmapped enum stops the import instead of passing the raw name through"
     /genshin-db element "ELEMENT_ELECTRIC" has no mapping/,
   );
   assert.throws(
-    () => facts({ weaponType: "WEAPON_SWORD_ONE_HAND" }),
-    /genshin-db weapon_type "WEAPON_SWORD_ONE_HAND" has no mapping/,
+    () => facts({ weaponType: "WEAPON_SWORD_TWO_HAND" }),
+    /genshin-db weapon_type "WEAPON_SWORD_TWO_HAND" has no mapping/,
+  );
+});
+
+test("a name the guard reported is added deliberately, then it maps", () => {
+  // WEAPON_SWORD_ONE_HAND was left out until an entity used one. Importing
+  // 芙寧娜 stopped the run and named it; the key below is the name it reported,
+  // not a guess made in advance.
+  assert.deepEqual(
+    facts({ weaponType: "WEAPON_SWORD_ONE_HAND" }).map((fact) => [fact.field_key, fact.value]),
+    [
+      ["element", "Hydro"],
+      ["weapon_type", "Sword"],
+      ["rarity", 5],
+    ],
   );
 });
 

@@ -12,11 +12,12 @@ import { FIELD_VALUE_LABELS_ZH_TW } from "../domain/domain-contract.js";
  * arrive as a fact with a source behind it — the shape of the defect T32 found
  * when a model translated `Claymore` into 長劍.
  *
- * Every key below was read out of the pinned data, not guessed: the first draft
- * of this table guessed `ELEMENT_ELECTRIC` and `WEAPON_SWORD_ONE_HAND`, and the
- * real names are `ELEMENT_ELECTRO` and — for the one-handed sword — still to be
- * confirmed the first time a sword user is imported, which is why an unmapped
- * value is an error rather than a pass-through.
+ * Every key below was read out of the pinned data, not guessed. The first draft
+ * of this table guessed `ELEMENT_ELECTRIC`; the real name is `ELEMENT_ELECTRO`.
+ * The one-handed sword was then left out until an entity actually used one, and
+ * when 芙寧娜 was imported the run stopped and reported the name it could not
+ * place — which is the whole reason an unmapped value is an error rather than a
+ * pass-through.
  */
 export const ELEMENT_BY_GENSHIN_DB = Object.freeze({
   ELEMENT_ANEMO: "Anemo",
@@ -29,10 +30,11 @@ export const ELEMENT_BY_GENSHIN_DB = Object.freeze({
 });
 
 export const WEAPON_TYPE_BY_GENSHIN_DB = Object.freeze({
-  // Confirmed against the pinned data: CLAYMORE, POLE, BOW, CATALYST all appear
-  // in the imported entities. The one-handed sword does not, so its key is left
-  // out entirely — a guess here would be a wrong fact with a source behind it,
-  // and an unmapped value stops the import with the name it could not place.
+  // Every key confirmed against the pinned data. WEAPON_SWORD_ONE_HAND was left
+  // out of the first version precisely because no imported entity used it — and
+  // when 芙寧娜 was added, the import stopped and named it rather than writing a
+  // guess. The name it reported is the one below.
+  WEAPON_SWORD_ONE_HAND: "Sword",
   WEAPON_CLAYMORE: "Claymore",
   WEAPON_POLE: "Polearm",
   WEAPON_BOW: "Bow",
