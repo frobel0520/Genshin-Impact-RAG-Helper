@@ -15,7 +15,11 @@
  */
 
 const BLOCK_TAG_PATTERN = /<\/p\s*>|<br\s*\/?>|<\/div\s*>|<\/li\s*>|<\/h[1-6]\s*>/gi;
-const TAG_PATTERN = /<[^>]*>/g;
+// Only a `<` that begins something shaped like a tag is a tag. A bare `<` in the
+// body — 「生命值 <30% 時觸發」 — is content, and a pattern that ran to the next
+// `>` would delete the text between them: the section still extracts, still
+// hashes, and reaches the index as evidence with a hole in it.
+const TAG_PATTERN = /<\/?[A-Za-z][^>]*>|<!--[\s\S]*?-->/g;
 const ENTITIES = Object.freeze({
   "&nbsp;": " ",
   "&amp;": "&",
@@ -74,8 +78,17 @@ export function extractSections(text, sections) {
     throw new TypeError("sections must be a non-empty array.");
   }
 
+  const seenIds = new Set();
   const located = sections.map((section) => {
     const { id, locator } = validateSection(section);
+    // Two sections under one id would both be handed the text of whichever was
+    // cut last, and the other section's text would never reach the pack — with
+    // nothing to notice it, because a section added by copy-paste has no
+    // recorded hash yet for the fetch step to compare against.
+    if (seenIds.has(id)) {
+      throw new Error(`Section ${id}: two sections share this id.`);
+    }
+    seenIds.add(id);
     const start = text.indexOf(locator.start);
     if (start === -1) {
       throw new Error(
@@ -98,8 +111,9 @@ export function extractSections(text, sections) {
 
   const byId = new Map();
   for (const [index, entry] of ordered.entries()) {
-    const nextStart = index + 1 < ordered.length ? ordered[index + 1].start : text.length;
-    const end = resolveEnd(text, entry, nextStart);
+    const next = index + 1 < ordered.length ? ordered[index + 1] : undefined;
+    const nextStart = next === undefined ? text.length : next.start;
+    const end = resolveEnd(text, entry, nextStart, next);
     const body = text.slice(entry.start, end).trim();
     if (body === "") {
       throw new Error(
@@ -115,7 +129,7 @@ export function extractSections(text, sections) {
   return sections.map((section) => ({ id: section.id, text: byId.get(section.id) }));
 }
 
-function resolveEnd(text, entry, nextStart) {
+function resolveEnd(text, entry, nextStart, next) {
   if (entry.locator.end === undefined) {
     return nextStart;
   }
@@ -124,6 +138,16 @@ function resolveEnd(text, entry, nextStart) {
     throw new Error(
       `Section ${entry.id}: end marker ${JSON.stringify(entry.locator.end)} does not appear after ` +
         "the start marker. The article changed, or the marker was mistyped.",
+    );
+  }
+  // An end marker that lands past the next section swallows it, and the same
+  // text is then indexed twice — retrieved for the same question, cited as if
+  // it were two independent pieces of evidence. Sections do not overlap.
+  if (next !== undefined && end > next.start) {
+    throw new Error(
+      `Section ${entry.id}: end marker ${JSON.stringify(entry.locator.end)} sits after the start ` +
+        `of section ${next.id}, so the two sections would overlap. ` +
+        "The article changed, or the marker belongs to a later section.",
     );
   }
   return end;
