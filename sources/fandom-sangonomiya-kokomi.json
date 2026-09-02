@@ -1,0 +1,21 @@
+{
+  "key": "fandom-sangonomiya-kokomi",
+  "source_kind": "fandom",
+  "source_url": "https://genshin-impact.fandom.com/zh/wiki/%E7%8F%8A%E7%91%9A%E5%AE%AE%E5%BF%83%E6%B5%B7",
+  "title": "珊瑚宮心海 - 原神 Wiki",
+  "retrieved_at": "2026-09-02T00:00:00Z",
+  "revision_id": 19638,
+  "sections": [
+    {
+      "id": "profile",
+      "locator": {
+        "start": "角色簡介[]",
+        "end": "角色形象[]"
+      },
+      "content_hash": "772c81f3d52f507a8c9c5cc12b15484b621009f0e9f5cd0eb5666c6fe967f6b6",
+      "entity_ids": [
+        "ent:sangonomiya-kokomi"
+      ]
+    }
+  ]
+}
