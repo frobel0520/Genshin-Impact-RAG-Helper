@@ -1,5 +1,10 @@
 # MVP E2E Release Gate (T31)
 
+> ⚠️ **This record describes a corpus that no longer exists.** T36 replaced the
+> hand-copied source text with the fetched verbatim article (2026-09-02), so
+> every number below was measured against a different dataset than the one the
+> repository now builds. See §0 before reading anything else.
+>
 > First run: 2026-08-29 · Second run (with generation): 2026-08-29 · Branch:
 > `dev` · Dataset version:
 > `4e87e7d5d3f251188cb94550eeb4d3afe588d2725a600802c14d13920b6d987b`
@@ -16,10 +21,60 @@ three machine-scored criteria still pass; the two human-judged ones now have 40
 real answers to judge, and that review is the one step this record cannot
 perform for itself.
 
+## 0. Why this record is stale
+
+T36 moved the project from hand-copied source text to pointers plus a local
+fetch (`docs/05-source-licensing.md`). The text the index is built from changed
+with it: the hand-copied sections were a human condensation of about 498
+characters per document, and the fetched sections are the verbatim article —
+4,608 characters for 5.0 and 3,430 for 2.1, roughly eight to nine times more.
+
+That is a different corpus, so this record measures something the repository no
+longer produces. What is known about the new one, from a re-run on 2026-09-02:
+
+| 準則 | 這份紀錄（舊語料） | 新語料重跑 |
+|---|---:|---:|
+| Retrieval Recall@5 | 100% (40/40) | 100% (40/40) |
+| 無資料正確拒答率 | 100% (10/10) | 100% (10/10) |
+| 非拒答答案附來源率 | 100% (40/40) | 100% (40/40) |
+| 回答正確率 | 97.5% (39/40) | **未重判** |
+| 引用支持答案率 / Groundedness | 100% (40/40) | **未重判** |
+
+The three machine-scored criteria still pass. The two human-judged ones do not
+carry over: **the 39/39 attestation in §6 was given for answers that no longer
+exist.** Nobody has read the answers the current corpus produces.
+
+Two other facts about the new corpus, both recorded rather than acted on:
+
+1. **Chunks went from 13 to 12**, and the 40-answered / 10-refused split is
+   unchanged.
+2. **A second case now falls back to the template.** `case:version-5-0-changes`
+   joins `case:natlan-sub-regions`, and its trace says why: the model, given the
+   richer article, invented a list of enemies —「回聲之子·雷」 and others — that
+   appears in no evidence, and the verbatim-name check rejected the answer. That
+   is the T32 guard doing exactly what it exists for. It is also a fabrication
+   that the thinner corpus never provoked, which is worth knowing.
+
+### What closing this properly needs
+
+1. `evaluation/eval-cases.json` still declares
+   `dataset_version: 4e87e7d5…`, which no longer describes the corpus. The
+   current pack hashes to `8d025829…`. The bank's declared binding has to be
+   updated as part of the re-run, not before it.
+2. Re-run `npm run evaluate` and re-judge the 40 answers on both human criteria.
+3. Rewrite §4 and §6 against the new numbers, and say who judged them.
+
+Until then §4 stands as a record of what was measured on 2026-08-29, not as a
+claim about the system as it is today.
+
 ## 1. How to reproduce
 
+These steps are the ones this record was produced with. T36 inserted a fetch
+step before them and moved the pack's input to `artifacts\sources`:
+
 ```powershell
-npm run make:pack -- sources --merge sources\_facts.json --out artifacts\source-pack.json
+npm run fetch:sources -- sources
+npm run make:pack -- artifacts\sources --merge sources\_facts.json --out artifacts\source-pack.json
 npm run ingest:validate -- artifacts\source-pack.json
 npm run ingest:build -- artifacts\source-pack.json
 npm start
