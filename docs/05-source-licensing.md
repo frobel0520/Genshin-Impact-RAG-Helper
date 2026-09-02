@@ -106,11 +106,19 @@ HoYoLAB 與 genshin-db 走方案 A 的指標路線。
 |---|---|---|
 | 1 | `docs/02-system-analysis.md` 的 OPEN-06 標記為已決議 | **完成** |
 | 2 | `DEFAULT_RIGHTS_NOTES` 換成實際結論 | **完成**——三條都改寫，HoYoLAB 的 "terms review pending" 已移除 |
-| 3 | `sources/README.md` 改為擷取設定流程 | **待第二階段**，見下 |
-| 4 | 現有兩篇 HoYoLAB 原文的處置 | **暫時保留**，見下 |
-| 5 | 第二階段匯入程式 | 未開始 |
+| 3 | `sources/README.md` 改為擷取設定流程 | **完成**（T36 第二階段） |
+| 4 | 現有兩篇 HoYoLAB 原文的處置 | **完成**——兩檔已轉為指標形式，repo 內不再有來源原文 |
+| 5 | genshin-db 與 Fandom 匯入 | 未開始，見 [#68](https://github.com/frobel0520/Genshin-Impact-RAG-Helper/issues/68) |
 
-### 為什麼第 3、4 項留到第二階段
+### 第 3、4 項的執行結果
+
+兩項都在 T36 第二階段完成，順序如當初所寫：先寫擷取器，再移除原文。`sources/` 下
+兩個檔案現在只有 URL、章節 locator 與 `content_hash`，**repo 內不再存有任何來源
+原文**，方案 A 的結構性保證成立。
+
+以下保留當初的判斷紀錄。
+
+#### 當初為什麼不先移除
 
 方案 A 要求 repo 不存來源原文，而現行的兩篇 HoYoLAB JSON 正是原文。**但在擷取器
 存在之前把它們移除，會讓整個資料集無法重建**——`npm run make:pack` 以下的每一步、

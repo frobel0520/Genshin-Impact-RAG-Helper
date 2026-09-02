@@ -8,18 +8,35 @@
   "sections": [
     {
       "id": "update-time",
-      "text": "〓更新時間〓\n\n2021/09/01 06:00 (UTC+8)開始，預計5個小時完成。"
+      "locator": {
+        "start": "〓更新時間〓",
+        "end": "〓遊戲更新方式〓"
+      },
+      "content_hash": "470cfddd42376f7c685fa7e136d936156c7b49ac26877dc81ad0d78db1f1ba34"
     },
     {
       "id": "new-islands",
-      "text": "一、稻妻地區全新島嶼——「清籟島」、「海祇島」\n\n◇新增島嶼：在2.1版本更新後中，稻妻地區將開放「清籟島」、「海祇島」兩個島嶼。\n\n◇解鎖條件：\n\n•冒險等階≥30級\n\n•完成魔神任務第二章·第一幕「不動鳴神，恆常樂土」",
+      "locator": {
+        "start": "一、稻妻地區全新島嶼"
+      },
+      "content_hash": "a7f097a8bc997fb63bdadf84f78b410997ebdefc98ba6e102e60c465fa0d7420",
       "entity_ids": [
         "ent:inazuma"
       ]
     },
     {
+      "id": "new-system-fishing",
+      "locator": {
+        "start": "二、全新系統——「釣魚」"
+      },
+      "content_hash": "381e8cb2dba5db62ed4ed4d76d83ebf8d78f905ecd8b361aff0dea49b04e98db"
+    },
+    {
       "id": "new-characters",
-      "text": "三、全新角色\n\n「一心淨土·雷電將軍(雷)」（★5）\n◇神之心：雷\n◇武器：長柄武器\n\n「黑羽鳴鏑·九條裟羅(雷)」（★4）\n◇神之眼：雷\n◇武器：弓\n\n「真珠之智·珊瑚宮心海(水)」（★5）\n◇神之眼：水\n◇武器：法器\n\n「『異界的救世主』·亞蘿伊(冰)」（★5）\n◇神之眼：冰\n◇武器：弓",
+      "locator": {
+        "start": "三、全新角色"
+      },
+      "content_hash": "080d31803bc75e537eacea9431fda18b97d3ab1eb2c5521166b63bc51743a68f",
       "entity_ids": [
         "ent:raiden-shogun",
         "ent:kujou-sara",
@@ -28,22 +45,12 @@
       ]
     },
     {
-      "id": "raiden-shogun-burst",
-      "text": "雷電將軍施放元素爆發「奧義·夢想真說」時，會耗盡諸願百眼之輪的願力，發動夢想一刀造成雷元素範圍傷害，並進入夢想一心狀態。",
-      "entity_ids": [
-        "ent:raiden-shogun"
-      ]
-    },
-    {
-      "id": "new-system-fishing",
-      "text": "二、全新系統——「釣魚」\n\n◇解鎖條件：\n\n•開啟「塵歌壺」系統\n\n•完成任務「魚群大爆發」",
-      "entity_ids": [
-        "ent:inazuma"
-      ]
-    },
-    {
       "id": "new-weapons",
-      "text": "四、全新裝備\n\n▌全新武器\n\n「長柄武器·薙草之稻光」（★5）\n\n「法器·不滅月華」（★5）\n\n「雙手劍·銜珠海皇」（★4）\n\n「長柄武器·『漁獲』」（★4）",
+      "locator": {
+        "start": "四、全新裝備",
+        "end": "五、全新活動"
+      },
+      "content_hash": "feb9f91d5dbe22a9234b3e1083a9bc8ad51bbd7c9a6901a7709aa215bc0a4919",
       "entity_ids": [
         "ent:engulfing-lightning",
         "ent:everlasting-moonglow",
@@ -53,7 +60,11 @@
     },
     {
       "id": "new-quest",
-      "text": "六、全新劇情\n\n1.全新魔神任務\n\n魔神任務第二章·第三幕「千手百眼，天下人間」\n\n◆開啟條件：\n\n•冒險等階≥30級\n\n•完成魔神任務第二章·第二幕「無念無想，泡影斷滅」",
+      "locator": {
+        "start": "六、全新劇情",
+        "end": "七、全新怪物"
+      },
+      "content_hash": "7153e1755deaa628c3735750c512efa422bac66054401099dce58f471dd0ac01",
       "entity_ids": [
         "ent:inazuma"
       ]
