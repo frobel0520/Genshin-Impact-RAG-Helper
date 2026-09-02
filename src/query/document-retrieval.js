@@ -1,4 +1,5 @@
 import {
+  QUERY_CATEGORIES,
   RETRIEVAL_MODES,
   SUPPORT_TYPES,
   VERSION_CONSTRAINTS,
@@ -27,11 +28,25 @@ export const DEFAULT_DOCUMENT_TOP_K = 8;
  */
 export const DEFAULT_DOCUMENT_MIN_SCORE = 0.47;
 
+/**
+ * How many chunks a version overview may take before it goes back to ranking.
+ *
+ * A 「這個版本更新了什麼」 question asks for the whole announcement, so ranking
+ * answers the wrong question: the top few sections are a correct summary of the
+ * sections that happen to resemble the question, and the reader asked for the
+ * update. The two imported announcements are 6 and 7 chunks, so taking all of
+ * them is cheap — but a corpus with a much longer notice must not silently push
+ * a hundred sections at the model, so past this many the ranked path takes over
+ * and the answer is a partial one that says so through its citations.
+ */
+export const DEFAULT_VERSION_DOCUMENT_MAX_CHUNKS = 24;
+
 const RETRIEVER_OPTION_FIELDS = new Set([
   "store",
   "embedQuery",
   "topK",
   "minScore",
+  "versionDocumentMaxChunks",
   "onBelowThreshold",
 ]);
 const RETRIEVAL_REQUEST_FIELDS = new Set([
@@ -60,12 +75,13 @@ const REQUIRED_STORE_METHODS = Object.freeze([
  *   embedQuery: Function,
  *   topK?: number,
  *   minScore?: number,
+ *   versionDocumentMaxChunks?: number,
  *   onBelowThreshold?: (report: object) => void,
  * }} options
  * @returns {{ retrieve: (request: object) => Promise<object> }}
  */
 export function createDocumentRetriever(options) {
-  const { store, embedQuery, topK, minScore, onBelowThreshold } =
+  const { store, embedQuery, topK, minScore, versionDocumentMaxChunks, onBelowThreshold } =
     validateRetrieverOptions(options);
 
   async function retrieve(request) {
@@ -78,6 +94,16 @@ export function createDocumentRetriever(options) {
 
     const exactGameVersion = resolveExactGameVersion(queryPlan, gameVersion);
     const entityIds = collectResolvedEntityIds(queryPlan);
+
+    // A version overview is answered from the whole announcement or not
+    // answered well: see DEFAULT_VERSION_DOCUMENT_MAX_CHUNKS.
+    if (isVersionOverview(queryPlan, entityIds) && exactGameVersion !== undefined) {
+      const whole = store.listDocumentChunks({ gameVersion: exactGameVersion });
+      if (whole.length > 0 && whole.length <= versionDocumentMaxChunks) {
+        return buildBundle(store, queryId, whole.map((chunk) => ({ chunk })));
+      }
+    }
+
     const chunks = collectCandidateChunks(store, entityIds, exactGameVersion);
     if (chunks.length === 0) {
       return createEmptyBundle(queryId);
@@ -109,19 +135,7 @@ export function createDocumentRetriever(options) {
       return createEmptyBundle(queryId);
     }
 
-    const sourceDocuments = new Map();
-    const items = relevant.slice(0, topK).map((entry, index) => ({
-      evidence_id: createEvidenceId(queryId, "chunk", entry.chunk.chunk_id),
-      ...sourceProjection(
-        getRequiredSource(store, sourceDocuments, entry.chunk.source_id),
-      ),
-      game_version: entry.chunk.game_version,
-      chunk_id: entry.chunk.chunk_id,
-      rank: index + 1,
-      support_type: SUPPORT_TYPES.CONTEXTUAL,
-    }));
-
-    return { query_id: queryId, items, conflict_groups: [] };
+    return buildBundle(store, queryId, relevant.slice(0, topK));
   }
 
   return Object.freeze({ retrieve });
@@ -135,6 +149,7 @@ export function createDocumentRetriever(options) {
  *   embedQuery: Function,
  *   topK?: number,
  *   minScore?: number,
+ *   versionDocumentMaxChunks?: number,
  *   onBelowThreshold?: (report: object) => void,
  *   queryId: string,
  *   queryPlan: object,
@@ -147,12 +162,14 @@ export function retrieveDocumentEvidence(options) {
   if (!isRecord(options)) {
     throw new TypeError("Document retrieval options must be a plain object.");
   }
-  const { store, embedQuery, topK, minScore, onBelowThreshold, ...request } = options;
+  const { store, embedQuery, topK, minScore, versionDocumentMaxChunks, onBelowThreshold, ...request } =
+    options;
   return createDocumentRetriever({
     store,
     embedQuery,
     ...(topK === undefined ? {} : { topK }),
     ...(minScore === undefined ? {} : { minScore }),
+    ...(versionDocumentMaxChunks === undefined ? {} : { versionDocumentMaxChunks }),
     ...(onBelowThreshold === undefined ? {} : { onBelowThreshold }),
   }).retrieve(request);
 }
@@ -185,6 +202,11 @@ function validateRetrieverOptions(options) {
   if (!Number.isFinite(minScore) || minScore < 0 || minScore > 1) {
     throw new TypeError("minScore must be a number between 0 and 1.");
   }
+  const versionDocumentMaxChunks =
+    options.versionDocumentMaxChunks ?? DEFAULT_VERSION_DOCUMENT_MAX_CHUNKS;
+  if (!Number.isInteger(versionDocumentMaxChunks) || versionDocumentMaxChunks < 1) {
+    throw new TypeError("versionDocumentMaxChunks must be a positive integer.");
+  }
   if (options.onBelowThreshold !== undefined && typeof options.onBelowThreshold !== "function") {
     throw new TypeError("onBelowThreshold must be a function.");
   }
@@ -193,8 +215,35 @@ function validateRetrieverOptions(options) {
     embedQuery: options.embedQuery,
     topK,
     minScore,
+    versionDocumentMaxChunks,
     onBelowThreshold: options.onBelowThreshold,
   };
+}
+
+/**
+ * Is the version itself the subject, or is it a filter on something else?
+ *
+ * A version question that resolves no entity has nothing to narrow by — the
+ * version is what is being asked about, and the answer is the announcement.
+ * 「5.0版本更新了哪些內容？」 is that. 「5.0版本神里綾華的更新內容是什麼？」 is
+ * not: it names a subject, the entity filter is the point, and handing it every
+ * section of the release would bury the one the reader asked for.
+ */
+function isVersionOverview(queryPlan, entityIds) {
+  return queryPlan.query_category === QUERY_CATEGORIES.VERSION && entityIds.length === 0;
+}
+
+function buildBundle(store, queryId, entries) {
+  const sourceDocuments = new Map();
+  const items = entries.map((entry, index) => ({
+    evidence_id: createEvidenceId(queryId, "chunk", entry.chunk.chunk_id),
+    ...sourceProjection(getRequiredSource(store, sourceDocuments, entry.chunk.source_id)),
+    game_version: entry.chunk.game_version,
+    chunk_id: entry.chunk.chunk_id,
+    rank: index + 1,
+    support_type: SUPPORT_TYPES.CONTEXTUAL,
+  }));
+  return { query_id: queryId, items, conflict_groups: [] };
 }
 
 function validateRetrievalRequest(request) {
