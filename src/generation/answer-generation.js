@@ -63,7 +63,13 @@ export function buildGenerationPrompt(request) {
       ? []
       : [`適用版本：${request.versionScope}`];
 
-  return [`問題：${request.question}`, "", "證據：", ...lines, "", ...versionLine].join("\n");
+  // The blank separator only belongs between the evidence and a version line
+  // that exists. Appended unconditionally it left a trailing newline, and the
+  // generator rejects a prompt with surrounding whitespace — so every answer
+  // whose version scope was unknown fell back to the template without anyone
+  // asking a model anything.
+  const body = [`問題：${request.question}`, "", "證據：", ...lines];
+  return (versionLine.length === 0 ? body : [...body, "", ...versionLine]).join("\n");
 }
 
 /**
@@ -106,7 +112,11 @@ export function createAnswerGenerator(options) {
       // worse outcome than answering in the template's words.
       recordFallback(
         request,
-        error?.code ?? "dependency_unavailable",
+        // Only the model adapter classifies its own failures. Anything else —
+        // a malformed prompt, a bug in this module — is a generation error, and
+        // filing it under an unreachable dependency sends whoever reads the log
+        // to the wrong place.
+        error?.code ?? "generation_error",
         `Answer generation fell back to the template: ${error?.message ?? "unknown error"}`,
       );
       return undefined;
