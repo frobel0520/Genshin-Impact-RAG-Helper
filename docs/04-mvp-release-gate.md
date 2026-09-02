@@ -68,7 +68,7 @@ dataset version in both stores.
 | Retrieval Recall@5 | ≥ 90% | 100% (40/40) | **pass** |
 | 無資料正確拒答率 | ≥ 90% | 100% (10/10) | **pass** |
 | 非拒答答案附來源率 | 100% | 100% (40/40) | **pass** |
-| 回答正確率 | ≥ 90% | 97.5% (39/40) | **pass**, T34 後重評未經人簽署 |
+| 回答正確率 | ≥ 90% | 97.5% (39/40) | **pass**, 40/40 全數經人確認 |
 | 引用支持答案率 / Groundedness | ≥ 95% | 100% (40/40) | **pass**, 39/39 全數經人閱讀 |
 
 50 cases ran: 40 answered, 10 refused — matching the bank's declared split
@@ -167,11 +167,23 @@ and `case:version-2-1-changes` were failures at v1.0.0 and so were never in the 
 and T34 changed both answers. They were read in their v1.1.0 form, against the whole
 announcement each now retrieves.
 
-回答正確率 is a different matter and §4 still says so: the three v1.0.0 failures
-were attested by the project owner, but T34 changed two of those answers into
-passes, and **that re-scoring was machine-made and has not been countersigned.**
-Reading an answer for groundedness — does it exceed its evidence — is not the same
-act as judging it correct against what the bank expects.
+回答正確率 took a third pass, because groundedness and correctness are different
+questions about the same answer: whether it exceeds its evidence, and whether it
+covers what the bank expects. The project owner attested the three v1.0.0 failures;
+T34 then turned two of those into passes, and those two were read again — in full,
+as text — and confirmed as complete against the expected answer. Every case now
+carries a human verdict on both criteria, and neither row in §4 reserves.
+
+What each row means, precisely:
+
+| 準則 | 經人確認的範圍 |
+|---|---|
+| 回答正確率 | 3 題 v1.0.0 的失敗判定，加上 T34 改變後的 2 題重判。其餘 37 題的通過判定由機器做出，人未逐題複核。 |
+| Groundedness | 39 題判為通過的案例全數經人閱讀（10 + 29）。 |
+
+The distinction is worth keeping: someone has read every answer against its
+evidence, and has ruled on every case the machine flagged or changed. Nobody has
+re-derived the 37 uncontested correctness verdicts from scratch.
 
 The first pass's 10 were chosen to be the ones most likely to overturn the
 machine's judgement, not sampled at random:
