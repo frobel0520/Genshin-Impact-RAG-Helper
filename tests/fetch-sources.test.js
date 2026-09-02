@@ -162,3 +162,24 @@ test("the command explains itself instead of guessing", async (context) => {
   );
   assert.match(stderr.join(""), /No directory at/);
 });
+
+test("a failed source leaves no output behind from an earlier run", async (context) => {
+  const { sourcesDir, outDir } = fixture(context);
+  const { streams } = capture();
+
+  // First run succeeds and writes the text.
+  assert.equal(await main([sourcesDir, "--out", outDir], streams, { fetchArticle: fakeFetch }), 0);
+  assert.deepEqual(readdirSync(outDir), ["hoyolab-5-0.json"]);
+
+  // The article then changes upstream, so the pointer's hash no longer matches.
+  const article = pointerFile();
+  article.sections[1].content_hash = hashText("what the article used to say");
+  writeFileSync(join(sourcesDir, "hoyolab-5-0.json"), JSON.stringify(article), "utf8");
+
+  assert.equal(await main([sourcesDir, "--out", outDir], streams, { fetchArticle: fakeFetch }), 1);
+
+  // Left in place, the stale file is text the current pointer no longer
+  // describes, and make:pack would build a dataset from it — which is the
+  // outcome the hash check exists to prevent.
+  assert.deepEqual(readdirSync(outDir), []);
+});

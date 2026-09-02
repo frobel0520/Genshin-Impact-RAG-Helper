@@ -111,3 +111,53 @@ test("malformed sections and locators fail closed", () => {
   );
   assert.throws(() => htmlToPlainText(null), /html must be a string/);
 });
+
+test("an end marker that would swallow the next section is refused", () => {
+  // Left unchecked this emits the same text inside two sections, and the pack
+  // turns it into two chunks that are retrieved and cited as if they were two
+  // independent pieces of evidence.
+  assert.throws(
+    () =>
+      extractSections(ARTICLE, [
+        { id: "region", locator: { start: "一、全新地區", end: "〓補償內容〓" } },
+        { id: "characters", locator: { start: "二、全新角色" } },
+      ]),
+    /sits after the start of section characters, so the two sections would overlap/,
+  );
+
+  // An end marker that stops before the next section is still fine.
+  const sections = extractSections(ARTICLE, [
+    { id: "region", locator: { start: "一、全新地區", end: "二、全新角色" } },
+    { id: "characters", locator: { start: "二、全新角色" } },
+  ]);
+  assert.ok(!sections[0].text.includes("二、全新角色"));
+});
+
+test("two sections cannot share an id", () => {
+  // Both would be handed the text of whichever was cut last, and the other
+  // section's text would never reach the pack — silently, because a section
+  // added by copy-paste has no recorded hash for the fetch step to check.
+  assert.throws(
+    () =>
+      extractSections(ARTICLE, [
+        { id: "same", locator: { start: "一、全新地區" } },
+        { id: "same", locator: { start: "二、全新角色" } },
+      ]),
+    /two sections share this id/,
+  );
+});
+
+test("a bare angle bracket in the body is content, not a tag", () => {
+  const text = htmlToPlainText("<p>生命值 <30% 時觸發，冷卻 >5 秒</p>");
+
+  // Stripping to the next ">" would delete the condition and leave a section
+  // that still extracts, still hashes, and reaches the index with a hole in it.
+  assert.equal(text, "生命值 <30% 時觸發，冷卻 >5 秒");
+});
+
+test("real tags and comments are still removed", () => {
+  assert.equal(
+    htmlToPlainText('<div class="a"><p>一</p><br/><span>二</span><!-- 註解 --></div>'),
+    "一\n\n二",
+  );
+});
