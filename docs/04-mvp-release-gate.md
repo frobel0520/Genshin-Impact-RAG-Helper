@@ -90,8 +90,8 @@ three fetched sources, not just files sitting in the repository.
 | Retrieval Recall@5 | ≥ 90% | 100% (58/58) | **pass** |
 | 無資料正確拒答率 | ≥ 90% | 100% (10/10) | **pass** |
 | 非拒答答案附來源率 | 100% | 100% (58/58) | **pass** |
-| 回答正確率 | ≥ 90% | — | **未評**（見 §6） |
-| 引用支持答案率 / Groundedness | ≥ 95% | — | **未評**（見 §6） |
+| 回答正確率 | ≥ 90% | 96.6% (56/58) | **pass**, 機器評分未經人簽署（見 §6） |
+| 引用支持答案率 / Groundedness | ≥ 95% | 100% (58/58) | **pass**, 機器評分未經人簽署（見 §6） |
 
 68 cases ran: 58 answered, 10 refused — matching the bank's declared split
 exactly, with no case landing in the wrong bucket.
@@ -197,17 +197,38 @@ not count as a pass.
 
 ### The review this record still needs
 
-**Nothing below has been re-judged on the current corpus.** The account that
-follows describes the review of a 40-answer run over two hand-copied
-announcements; the current run has 58 answers over nine documents from three
-sources, and two of the three previously-failing cases were changed by T34
-before the corpus changed again. §4 therefore reports 回答正確率 and
-Groundedness as 未評 rather than carrying the old numbers forward.
+The 58 answers of this run were judged by **Claude (claude-opus-5), not by a
+person**, at the project owner's instruction. `artifacts/human-review.json` and
+every stamped case carry that attribution verbatim, and §4 marks both rows
+accordingly. The model that wrote the answers is the model that graded them, so
+treat the numbers as a first pass rather than as the gate being closed.
 
-What re-judging needs: `artifacts/eval-report.json` holds the 58 answered cases,
-`npm run review:apply` records a verdict per case, and the `reviewer` field says
-who judged. The three machine-scored criteria do not need a person and already
-pass.
+| 準則 | 結果 |
+|---|---|
+| 回答正確率 | 96.6% (56/58) — 目標 ≥ 90% |
+| Groundedness | 100% (58/58) — 目標 ≥ 95% |
+
+Groundedness was unanimous, and this run checked it against the evidence the
+model was actually handed: no answer stated anything its evidence did not
+support. `case:version-2-1-changes` is the one worth naming — it lists four
+characters, two islands, two domains, three quest chapters, ten world quests and
+the fishing system, and **every proper noun in it appears verbatim in the 2.1
+announcement**, checked term by term rather than sampled.
+
+Two cases fail 回答正確率, both the same way and both for a good reason:
+
+1. `case:version-5-0-changes` — the guard rejected the model's prose, which had
+   invented a list of enemies, so the template answers and never names 納塔 or
+   the three new characters the bank expects.
+2. `case:natlan-sub-regions` — the guard rejected a corrupted place name, so the
+   template answers and never names the four regions the question asks for.
+
+**Refusing to ship a fabrication is the right behaviour and still counts as not
+answering the question.** Both are recorded as `fail` rather than excused, which
+is why 回答正確率 is 96.6% and not 100%.
+
+The account below is kept because it is where the three defects in §6 were found
+and why those guards exist.
 
 The rest of this section is kept as the record of the earlier review, because it
 is where the three defects in §6 below were found and why the guards exist.

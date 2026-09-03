@@ -1,19 +1,19 @@
 {
-  "dataset_version": "4e87e7d5d3f251188cb94550eeb4d3afe588d2725a600802c14d13920b6d987b",
-  "reviewed_at": "2026-09-02T01:53:57.123Z",
-  "reviewer": "claude-opus-5 (machine review); 專案擁有者已確認：Groundedness 全部 39 題判為通過的案例（v1.0.0 抽驗 10 題，v1.1.0 後補完 29 題），以及回答正確率的 3 題 v1.0.0 失敗判定與 T34 改變後的 2 題重判",
+  "dataset_version": "5c49fb1e6fc577c1780e16987e6fa34688ca9b4bbce7acab03b69076bdbb1a87",
+  "reviewed_at": "2026-09-03T12:14:34.703Z",
+  "reviewer": "claude-opus-5（機器評分，未經人簽署）",
   "report": "artifacts/eval-report.json",
   "metrics": {
     "answer_correctness": {
-      "passed": 39,
-      "scored": 40,
-      "rate": 97.5,
+      "passed": 56,
+      "scored": 58,
+      "rate": 96.6,
       "target": 90,
       "verdict": "pass"
     },
     "groundedness": {
-      "passed": 40,
-      "scored": 40,
+      "passed": 58,
+      "scored": 58,
       "rate": 100,
       "target": 95,
       "verdict": "pass"
@@ -232,21 +232,21 @@
     },
     {
       "case_id": "case:version-5-0-changes",
-      "answer_correctness": "pass",
+      "answer_correctness": "fail",
       "groundedness": "pass",
-      "note": "T34 後改由整份 5.0 公告作答，回答含瑪拉妮、基尼奇、卡齊娜三名新角色、秘境、劇情、納塔與四個子區域、武器與更新時間。題庫預期的項目全數涵蓋。所有專有名詞逐字出現在證據裡。 專案擁有者以全文閱讀確認：完整涵蓋題庫預期，判定通過。"
+      "note": "退回模板，通篇沒有說出題庫預期的納塔地區與三名新角色。守門攔下了模型捏造的敵人名單（回聲之子·雷等），退回是對的，但這一題不算答對。引用完整，Groundedness 通過。"
     },
     {
       "case_id": "case:version-2-1-changes",
       "answer_correctness": "pass",
       "groundedness": "pass",
-      "note": "T34 後改由整份 2.1 公告作答，回答含四名新角色、清籟島與海祇島、劇情、釣魚系統、武器與更新時間。題庫預期的項目全數涵蓋。所有專有名詞逐字出現在證據裡。 專案擁有者以全文閱讀確認：完整涵蓋題庫預期，判定通過。"
+      "note": ""
     },
     {
       "case_id": "case:natlan-sub-regions",
       "answer_correctness": "fail",
       "groundedness": "pass",
-      "note": "grounding 檢查擋下模型輸出後退回模板，答案沒有回答問題本身（沒說出四個區域名稱）。引用完整，但這題不算答對。"
+      "note": "退回模板，沒有說出題目問的四個區域名稱。守門攔下了被竄改的地名，退回是對的，但這一題不算答對。引用完整，Groundedness 通過。"
     },
     {
       "case_id": "case:inazuma-new-islands",
@@ -256,6 +256,114 @@
     },
     {
       "case_id": "case:raiden-shogun-burst-name",
+      "answer_correctness": "pass",
+      "groundedness": "pass",
+      "note": ""
+    },
+    {
+      "case_id": "case:mualani-profile",
+      "answer_correctness": "pass",
+      "groundedness": "pass",
+      "note": ""
+    },
+    {
+      "case_id": "case:mualani-affiliation",
+      "answer_correctness": "pass",
+      "groundedness": "pass",
+      "note": ""
+    },
+    {
+      "case_id": "case:kachina-title",
+      "answer_correctness": "pass",
+      "groundedness": "pass",
+      "note": ""
+    },
+    {
+      "case_id": "case:kachina-skill",
+      "answer_correctness": "pass",
+      "groundedness": "pass",
+      "note": ""
+    },
+    {
+      "case_id": "case:kujou-sara-role",
+      "answer_correctness": "pass",
+      "groundedness": "pass",
+      "note": ""
+    },
+    {
+      "case_id": "case:kujou-sara-family",
+      "answer_correctness": "pass",
+      "groundedness": "pass",
+      "note": ""
+    },
+    {
+      "case_id": "case:kokomi-position",
+      "answer_correctness": "pass",
+      "groundedness": "pass",
+      "note": ""
+    },
+    {
+      "case_id": "case:kokomi-strength",
+      "answer_correctness": "pass",
+      "groundedness": "pass",
+      "note": ""
+    },
+    {
+      "case_id": "case:aloy-origin",
+      "answer_correctness": "pass",
+      "groundedness": "pass",
+      "note": ""
+    },
+    {
+      "case_id": "case:zhongli-element",
+      "answer_correctness": "pass",
+      "groundedness": "pass",
+      "note": ""
+    },
+    {
+      "case_id": "case:zhongli-weapon-type",
+      "answer_correctness": "pass",
+      "groundedness": "pass",
+      "note": ""
+    },
+    {
+      "case_id": "case:hu-tao-element",
+      "answer_correctness": "pass",
+      "groundedness": "pass",
+      "note": ""
+    },
+    {
+      "case_id": "case:ganyu-weapon-type",
+      "answer_correctness": "pass",
+      "groundedness": "pass",
+      "note": ""
+    },
+    {
+      "case_id": "case:nahida-rarity",
+      "answer_correctness": "pass",
+      "groundedness": "pass",
+      "note": ""
+    },
+    {
+      "case_id": "case:furina-weapon-type",
+      "answer_correctness": "pass",
+      "groundedness": "pass",
+      "note": ""
+    },
+    {
+      "case_id": "case:furina-element",
+      "answer_correctness": "pass",
+      "groundedness": "pass",
+      "note": ""
+    },
+    {
+      "case_id": "case:xiao-element",
+      "answer_correctness": "pass",
+      "groundedness": "pass",
+      "note": ""
+    },
+    {
+      "case_id": "case:xiao-rarity",
       "answer_correctness": "pass",
       "groundedness": "pass",
       "note": ""
