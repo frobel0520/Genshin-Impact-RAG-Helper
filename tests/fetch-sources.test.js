@@ -183,3 +183,22 @@ test("a failed source leaves no output behind from an earlier run", async (conte
   // outcome the hash check exists to prevent.
   assert.deepEqual(readdirSync(outDir), []);
 });
+
+test("deleting a pointer takes its fetched text with it", async (context) => {
+  const { sourcesDir, outDir } = fixture(context);
+  const { stdout, streams } = capture();
+
+  assert.equal(await main([sourcesDir, "--out", outDir], streams, { fetchArticle: fakeFetch }), 0);
+
+  // A second pointer's output, left over from when that pointer existed.
+  writeFileSync(join(outDir, "hoyolab-2-1.json"), JSON.stringify({ key: "gone" }), "utf8");
+  // And a file another script owns, which must survive.
+  writeFileSync(join(outDir, "_facts-merged.json"), JSON.stringify({ facts: [] }), "utf8");
+
+  assert.equal(await main([sourcesDir, "--out", outDir], streams, { fetchArticle: fakeFetch }), 0);
+
+  // Left behind, the orphan is still a document make:pack would read, so
+  // removing a source from the repository would not remove it from the dataset.
+  assert.deepEqual(readdirSync(outDir).sort(), ["_facts-merged.json", "hoyolab-5-0.json"]);
+  assert.match(stdout.join(""), /1 orphaned output\(s\) removed: hoyolab-2-1\.json/);
+});
