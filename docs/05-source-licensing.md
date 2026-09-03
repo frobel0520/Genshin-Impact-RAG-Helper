@@ -108,7 +108,7 @@ HoYoLAB 與 genshin-db 走方案 A 的指標路線。
 | 2 | `DEFAULT_RIGHTS_NOTES` 換成實際結論 | **完成**——三條都改寫，HoYoLAB 的 "terms review pending" 已移除 |
 | 3 | `sources/README.md` 改為擷取設定流程 | **完成**（T36 第二階段） |
 | 4 | 現有兩篇 HoYoLAB 原文的處置 | **完成**——兩檔已轉為指標形式，repo 內不再有來源原文 |
-| 5 | genshin-db 與 Fandom 匯入 | 未開始，見 [#68](https://github.com/frobel0520/Genshin-Impact-RAG-Helper/issues/68) |
+| 5 | genshin-db 與 Fandom 匯入 | **完成**——Fandom 6 篇角色條目、genshin-db 20 筆記錄，都走指標形式 |
 
 ### 第 3、4 項的執行結果
 

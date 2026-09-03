@@ -67,8 +67,15 @@ export function main(argv, streams = {}) {
     reviews.set(entry.case_id, entry.human_review ?? {});
   }
 
+  // Every case that produced prose and citations needs both verdicts, and an
+  // `uncertain` answer produces both — it is an answer whose version scope is
+  // unknown, not an answer that was withheld. Reviewing only `answered` left
+  // most of a run unreviewed while reporting the rest as complete, once sources
+  // without a game version entered the corpus.
   const answered = (report.results ?? []).filter(
-    (result) => result.answer?.answer_status === "answered",
+    (result) =>
+      result.answer?.answer_status !== undefined &&
+      result.answer.answer_status !== "refused",
   );
   if (answered.length === 0) {
     err(`${reportPath} contains no answered case to review.\n`);
