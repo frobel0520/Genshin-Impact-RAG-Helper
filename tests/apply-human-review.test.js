@@ -220,3 +220,35 @@ test("who judged is recorded, and defaults to unattributed", (context) => {
   assert.equal(run(anonymous, streams), 0);
   assert.equal(JSON.parse(readFileSync(anonymous.outPath, "utf8")).reviewer, "unattributed");
 });
+
+test("an uncertain answer needs both verdicts, like any other answer", (context) => {
+  const directory = workspace(context);
+  // `uncertain` means the version scope is unknown, not that the answer was
+  // withheld: it carries prose and citations and can be wrong in both ways.
+  const paths = fixture(
+    directory,
+    report([{ caseId: "case:a", status: "uncertain" }, { caseId: "case:b", status: "answered" }]),
+    review([{ caseId: "case:a" }, { caseId: "case:b" }]),
+  );
+  const { streams } = capture();
+
+  assert.equal(run(paths, streams), 0);
+
+  const record = JSON.parse(readFileSync(paths.outPath, "utf8"));
+  assert.equal(record.metrics.answer_correctness.scored, 2);
+  const written = JSON.parse(readFileSync(paths.reportPath, "utf8"));
+  assert.equal(written.results[0].human_review.status, "reviewed");
+});
+
+test("an unreviewed uncertain answer blocks the write", (context) => {
+  const directory = workspace(context);
+  const paths = fixture(
+    directory,
+    report([{ caseId: "case:a", status: "uncertain" }]),
+    { dataset_version: "d", reviewed_at: "2026-09-02T00:00:00Z", reviews: [] },
+  );
+  const { stderr, streams } = capture();
+
+  assert.equal(run(paths, streams), 1);
+  assert.match(stderr.join(""), /case:a: missing from the review/);
+});
