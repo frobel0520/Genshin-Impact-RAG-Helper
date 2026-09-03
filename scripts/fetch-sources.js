@@ -132,7 +132,22 @@ export async function main(argv, streams = {}, dependencies = {}) {
     return 1;
   }
 
+  // A pointer that was deleted must take its fetched text with it. Left behind,
+  // the orphan is still a document make:pack will read, so removing a source
+  // from the repository would not remove it from the dataset — and the dataset
+  // would carry text no pointer describes any more.
+  const expected = new Set(files.map((file) => basenameOf(file)));
+  const orphans = readdirSync(resolve(outDir)).filter(
+    (name) => extname(name) === ".json" && !name.startsWith("_") && !expected.has(name),
+  );
+  for (const orphan of orphans) {
+    rmSync(join(resolve(outDir), orphan), { force: true });
+  }
+
   out(`\n${written} source(s) written to ${outDir}\n`);
+  if (orphans.length > 0) {
+    out(`${orphans.length} orphaned output(s) removed: ${orphans.join(", ")}\n`);
+  }
   return 0;
 }
 
