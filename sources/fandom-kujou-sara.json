@@ -1,0 +1,21 @@
+{
+  "key": "fandom-kujou-sara",
+  "source_kind": "fandom",
+  "source_url": "https://genshin-impact.fandom.com/zh/wiki/%E4%B9%9D%E6%A2%9D%E8%A3%9F%E7%BE%85",
+  "title": "九條裟羅 - 原神 Wiki",
+  "retrieved_at": "2026-09-02T00:00:00Z",
+  "revision_id": 19625,
+  "sections": [
+    {
+      "id": "profile",
+      "locator": {
+        "start": "角色簡介[]",
+        "end": "角色形象[]"
+      },
+      "content_hash": "d7ed9f4a8279e5de488802d29d8e549c3b82f6113a39fa71b1dd325af5d624b7",
+      "entity_ids": [
+        "ent:kujou-sara"
+      ]
+    }
+  ]
+}

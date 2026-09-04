@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "dataset_version": "4e87e7d5d3f251188cb94550eeb4d3afe588d2725a600802c14d13920b6d987b",
+  "dataset_version": "5c49fb1e6fc577c1780e16987e6fa34688ca9b4bbce7acab03b69076bdbb1a87",
   "target_counts": {
-    "total": 50,
-    "answerable": 40,
+    "total": 68,
+    "answerable": 58,
     "refuse": 10
   },
   "cases": [
@@ -976,8 +976,8 @@
       "notes": "範疇外請求，助手只回答可追溯的事實性問題。"
     },
     {
-      "case_id": "case:unknown-entity-nahida",
-      "question_zh_tw": "納西妲是什麼元素？",
+      "case_id": "case:unknown-entity-diluc",
+      "question_zh_tw": "迪盧克是什麼元素？",
       "category": "character",
       "query_type": "structured",
       "answerability": "refuse",
@@ -985,7 +985,7 @@
       "game_version": "unknown",
       "spoiler_level": "none",
       "refusal_reason": "insufficient_evidence",
-      "notes": "庫內沒有納西妲。分類器的規則是明確別名比對（fuzzyMatching: false），不會把未知的專有名詞認成「未解析實體」，因此 entity_unknown 這個理由目前產不出來；insufficient_evidence 才是這套規則下正確且誠實的理由。"
+      "notes": "庫內沒有迪盧克。分類器的規則是明確別名比對（fuzzyMatching: false），不會把未知的專有名詞認成「未解析實體」，因此 entity_unknown 這個理由目前產不出來；insufficient_evidence 才是這套規則下正確且誠實的理由。原本這題用納西妲，T36 把她從 genshin-db 匯入之後她不再是未知實體，故改用迪盧克。"
     },
     {
       "case_id": "case:unknown-region-fontaine",
@@ -1022,6 +1022,422 @@
       "spoiler_level": "none",
       "refusal_reason": "insufficient_evidence",
       "notes": "版本不存在於庫內；期望拒答。"
+    },
+    {
+      "case_id": "case:mualani-profile",
+      "question_zh_tw": "瑪拉妮是做什麼的？",
+      "category": "character",
+      "query_type": "narrative",
+      "answerability": "answerable",
+      "expected_answer": "瑪拉妮是來自「流泉之眾」的嚮導，在納塔以規劃路線聞名。",
+      "required_facts": [
+        {
+          "key": "occupation",
+          "expected_value": "嚮導"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "fandom",
+          "source_url": "https://genshin-impact.fandom.com/zh/wiki/%E7%91%AA%E6%8B%89%E5%A6%AE"
+        }
+      ],
+      "game_version": "unknown",
+      "spoiler_level": "none",
+      "notes": "Fandom 條目的角色簡介；沒有官方公告涵蓋這類敘事問題。"
+    },
+    {
+      "case_id": "case:mualani-affiliation",
+      "question_zh_tw": "瑪拉妮屬於哪個群體？",
+      "category": "character",
+      "query_type": "narrative",
+      "answerability": "answerable",
+      "expected_answer": "瑪拉妮是「流泉之眾」新生代的一員。",
+      "required_facts": [
+        {
+          "key": "affiliation",
+          "expected_value": "流泉之眾"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "fandom",
+          "source_url": "https://genshin-impact.fandom.com/zh/wiki/%E7%91%AA%E6%8B%89%E5%A6%AE"
+        }
+      ],
+      "game_version": "unknown",
+      "spoiler_level": "none",
+      "notes": "Fandom 條目的角色簡介；沒有官方公告涵蓋這類敘事問題。"
+    },
+    {
+      "case_id": "case:kachina-title",
+      "question_zh_tw": "卡齊娜被稱為什麼？",
+      "category": "character",
+      "query_type": "narrative",
+      "answerability": "answerable",
+      "expected_answer": "卡齊娜被譽為「烏沙博蒂」，是納茨卡延的年輕勇士。",
+      "required_facts": [
+        {
+          "key": "title",
+          "expected_value": "烏沙博蒂"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "fandom",
+          "source_url": "https://genshin-impact.fandom.com/zh/wiki/%E5%8D%A1%E9%BD%8A%E5%A8%9C"
+        }
+      ],
+      "game_version": "unknown",
+      "spoiler_level": "none",
+      "notes": "Fandom 條目的角色簡介；沒有官方公告涵蓋這類敘事問題。"
+    },
+    {
+      "case_id": "case:kachina-skill",
+      "question_zh_tw": "卡齊娜擅長什麼？",
+      "category": "character",
+      "query_type": "narrative",
+      "answerability": "answerable",
+      "expected_answer": "卡齊娜熟悉山間道路，擅長尋覓深埋於地底的礦藏。",
+      "required_facts": [
+        {
+          "key": "skill",
+          "expected_value": "尋覓深埋於地底的礦藏"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "fandom",
+          "source_url": "https://genshin-impact.fandom.com/zh/wiki/%E5%8D%A1%E9%BD%8A%E5%A8%9C"
+        }
+      ],
+      "game_version": "unknown",
+      "spoiler_level": "none",
+      "notes": "Fandom 條目的角色簡介；沒有官方公告涵蓋這類敘事問題。"
+    },
+    {
+      "case_id": "case:kujou-sara-role",
+      "question_zh_tw": "九條裟羅在稻妻擔任什麼職務？",
+      "category": "character",
+      "query_type": "narrative",
+      "answerability": "answerable",
+      "expected_answer": "九條裟羅是天領奉行的將領，被稱為「神的篤信者」，將忠心奉獻給雷電將軍。",
+      "required_facts": [
+        {
+          "key": "role",
+          "expected_value": "天領奉行的將領"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "fandom",
+          "source_url": "https://genshin-impact.fandom.com/zh/wiki/%E4%B9%9D%E6%A2%9D%E8%A3%9F%E7%BE%85"
+        }
+      ],
+      "game_version": "unknown",
+      "spoiler_level": "none",
+      "notes": "Fandom 條目的角色簡介；沒有官方公告涵蓋這類敘事問題。"
+    },
+    {
+      "case_id": "case:kujou-sara-family",
+      "question_zh_tw": "九條裟羅與九條家是什麼關係？",
+      "category": "character",
+      "query_type": "narrative",
+      "answerability": "answerable",
+      "expected_answer": "九條裟羅是九條家收養的成員。",
+      "required_facts": [
+        {
+          "key": "affiliation",
+          "expected_value": "九條家"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "fandom",
+          "source_url": "https://genshin-impact.fandom.com/zh/wiki/%E4%B9%9D%E6%A2%9D%E8%A3%9F%E7%BE%85"
+        }
+      ],
+      "game_version": "unknown",
+      "spoiler_level": "none",
+      "notes": "Fandom 條目的角色簡介；沒有官方公告涵蓋這類敘事問題。"
+    },
+    {
+      "case_id": "case:kokomi-position",
+      "question_zh_tw": "珊瑚宮心海在海祇島的身分是什麼？",
+      "category": "character",
+      "query_type": "narrative",
+      "answerability": "answerable",
+      "expected_answer": "珊瑚宮心海是海祇島的「現人神巫女」，也就是海祇島最高領袖。",
+      "required_facts": [
+        {
+          "key": "role",
+          "expected_value": "現人神巫女"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "fandom",
+          "source_url": "https://genshin-impact.fandom.com/zh/wiki/%E7%8F%8A%E7%91%9A%E5%AE%AE%E5%BF%83%E6%B5%B7"
+        }
+      ],
+      "game_version": "unknown",
+      "spoiler_level": "none",
+      "notes": "Fandom 條目的角色簡介；沒有官方公告涵蓋這類敘事問題。"
+    },
+    {
+      "case_id": "case:kokomi-strength",
+      "question_zh_tw": "珊瑚宮心海擅長什麼？",
+      "category": "character",
+      "query_type": "narrative",
+      "answerability": "answerable",
+      "expected_answer": "珊瑚宮心海自幼通讀各國兵書，軍略才能出色，擅以奇策算計對手。",
+      "required_facts": [
+        {
+          "key": "skill",
+          "expected_value": "軍略"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "fandom",
+          "source_url": "https://genshin-impact.fandom.com/zh/wiki/%E7%8F%8A%E7%91%9A%E5%AE%AE%E5%BF%83%E6%B5%B7"
+        }
+      ],
+      "game_version": "unknown",
+      "spoiler_level": "none",
+      "notes": "Fandom 條目的角色簡介；沒有官方公告涵蓋這類敘事問題。"
+    },
+    {
+      "case_id": "case:aloy-origin",
+      "question_zh_tw": "亞蘿伊來自哪個部族？",
+      "category": "character",
+      "query_type": "narrative",
+      "answerability": "answerable",
+      "expected_answer": "亞蘿伊是來自諾拉族的獵人。",
+      "required_facts": [
+        {
+          "key": "affiliation",
+          "expected_value": "諾拉族"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "fandom",
+          "source_url": "https://genshin-impact.fandom.com/zh/wiki/%E4%BA%9E%E8%98%BF%E4%BC%8A"
+        }
+      ],
+      "game_version": "unknown",
+      "spoiler_level": "none",
+      "notes": "Fandom 條目的角色簡介；沒有官方公告涵蓋這類敘事問題。"
+    },
+    {
+      "case_id": "case:zhongli-element",
+      "question_zh_tw": "鍾離是什麼元素？",
+      "category": "character",
+      "query_type": "structured",
+      "answerability": "answerable",
+      "expected_answer": "鍾離是岩元素角色。",
+      "required_facts": [
+        {
+          "key": "element",
+          "expected_value": "Geo"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "genshin-db",
+          "source_url": "https://github.com/theBowja/genshin-db/tree/8b15995fa220c88a4d0d7ffe1e21b041d0b32588"
+        }
+      ],
+      "game_version": "unknown",
+      "spoiler_level": "none",
+      "notes": "公告未涵蓋的實體，事實只有 genshin-db 一個來源。"
+    },
+    {
+      "case_id": "case:zhongli-weapon-type",
+      "question_zh_tw": "鍾離使用什麼武器類型？",
+      "category": "character",
+      "query_type": "structured",
+      "answerability": "answerable",
+      "expected_answer": "鍾離使用長柄武器。",
+      "required_facts": [
+        {
+          "key": "weapon_type",
+          "expected_value": "Polearm"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "genshin-db",
+          "source_url": "https://github.com/theBowja/genshin-db/tree/8b15995fa220c88a4d0d7ffe1e21b041d0b32588"
+        }
+      ],
+      "game_version": "unknown",
+      "spoiler_level": "none",
+      "notes": "公告未涵蓋的實體，事實只有 genshin-db 一個來源。"
+    },
+    {
+      "case_id": "case:hu-tao-element",
+      "question_zh_tw": "胡桃是什麼元素？",
+      "category": "character",
+      "query_type": "structured",
+      "answerability": "answerable",
+      "expected_answer": "胡桃是火元素角色。",
+      "required_facts": [
+        {
+          "key": "element",
+          "expected_value": "Pyro"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "genshin-db",
+          "source_url": "https://github.com/theBowja/genshin-db/tree/8b15995fa220c88a4d0d7ffe1e21b041d0b32588"
+        }
+      ],
+      "game_version": "unknown",
+      "spoiler_level": "none",
+      "notes": "公告未涵蓋的實體，事實只有 genshin-db 一個來源。"
+    },
+    {
+      "case_id": "case:ganyu-weapon-type",
+      "question_zh_tw": "甘雨使用什麼武器類型？",
+      "category": "character",
+      "query_type": "structured",
+      "answerability": "answerable",
+      "expected_answer": "甘雨使用弓。",
+      "required_facts": [
+        {
+          "key": "weapon_type",
+          "expected_value": "Bow"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "genshin-db",
+          "source_url": "https://github.com/theBowja/genshin-db/tree/8b15995fa220c88a4d0d7ffe1e21b041d0b32588"
+        }
+      ],
+      "game_version": "unknown",
+      "spoiler_level": "none",
+      "notes": "公告未涵蓋的實體，事實只有 genshin-db 一個來源。"
+    },
+    {
+      "case_id": "case:nahida-rarity",
+      "question_zh_tw": "納西妲的星級是多少？",
+      "category": "character",
+      "query_type": "structured",
+      "answerability": "answerable",
+      "expected_answer": "納西妲是5星角色。",
+      "required_facts": [
+        {
+          "key": "rarity",
+          "expected_value": 5,
+          "unit": "stars"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "genshin-db",
+          "source_url": "https://github.com/theBowja/genshin-db/tree/8b15995fa220c88a4d0d7ffe1e21b041d0b32588"
+        }
+      ],
+      "game_version": "unknown",
+      "spoiler_level": "none",
+      "notes": "公告未涵蓋的實體，事實只有 genshin-db 一個來源。"
+    },
+    {
+      "case_id": "case:furina-weapon-type",
+      "question_zh_tw": "芙寧娜使用什麼武器類型？",
+      "category": "character",
+      "query_type": "structured",
+      "answerability": "answerable",
+      "expected_answer": "芙寧娜使用單手劍。",
+      "required_facts": [
+        {
+          "key": "weapon_type",
+          "expected_value": "Sword"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "genshin-db",
+          "source_url": "https://github.com/theBowja/genshin-db/tree/8b15995fa220c88a4d0d7ffe1e21b041d0b32588"
+        }
+      ],
+      "game_version": "unknown",
+      "spoiler_level": "none",
+      "notes": "公告未涵蓋的實體，事實只有 genshin-db 一個來源。"
+    },
+    {
+      "case_id": "case:furina-element",
+      "question_zh_tw": "芙寧娜是什麼元素？",
+      "category": "character",
+      "query_type": "structured",
+      "answerability": "answerable",
+      "expected_answer": "芙寧娜是水元素角色。",
+      "required_facts": [
+        {
+          "key": "element",
+          "expected_value": "Hydro"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "genshin-db",
+          "source_url": "https://github.com/theBowja/genshin-db/tree/8b15995fa220c88a4d0d7ffe1e21b041d0b32588"
+        }
+      ],
+      "game_version": "unknown",
+      "spoiler_level": "none",
+      "notes": "公告未涵蓋的實體，事實只有 genshin-db 一個來源。"
+    },
+    {
+      "case_id": "case:xiao-element",
+      "question_zh_tw": "魈是什麼元素？",
+      "category": "character",
+      "query_type": "structured",
+      "answerability": "answerable",
+      "expected_answer": "魈是風元素角色。",
+      "required_facts": [
+        {
+          "key": "element",
+          "expected_value": "Anemo"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "genshin-db",
+          "source_url": "https://github.com/theBowja/genshin-db/tree/8b15995fa220c88a4d0d7ffe1e21b041d0b32588"
+        }
+      ],
+      "game_version": "unknown",
+      "spoiler_level": "none",
+      "notes": "公告未涵蓋的實體，事實只有 genshin-db 一個來源。"
+    },
+    {
+      "case_id": "case:xiao-rarity",
+      "question_zh_tw": "魈的星級是多少？",
+      "category": "character",
+      "query_type": "structured",
+      "answerability": "answerable",
+      "expected_answer": "魈是5星角色。",
+      "required_facts": [
+        {
+          "key": "rarity",
+          "expected_value": 5,
+          "unit": "stars"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "genshin-db",
+          "source_url": "https://github.com/theBowja/genshin-db/tree/8b15995fa220c88a4d0d7ffe1e21b041d0b32588"
+        }
+      ],
+      "game_version": "unknown",
+      "spoiler_level": "none",
+      "notes": "公告未涵蓋的實體，事實只有 genshin-db 一個來源。"
     }
   ]
 }

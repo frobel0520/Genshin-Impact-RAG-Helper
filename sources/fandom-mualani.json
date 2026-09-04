@@ -1,0 +1,21 @@
+{
+  "key": "fandom-mualani",
+  "source_kind": "fandom",
+  "source_url": "https://genshin-impact.fandom.com/zh/wiki/%E7%91%AA%E6%8B%89%E5%A6%AE",
+  "title": "瑪拉妮 - 原神 Wiki",
+  "retrieved_at": "2026-09-02T00:00:00Z",
+  "revision_id": 25358,
+  "sections": [
+    {
+      "id": "profile",
+      "locator": {
+        "start": "角色簡介[]",
+        "end": "角色形象[]"
+      },
+      "content_hash": "3f607636ed886b6b8d7ed1c5cec73c8c7130db93e230fb31b237bdb32a543a35",
+      "entity_ids": [
+        "ent:mualani"
+      ]
+    }
+  ]
+}
