@@ -1,18 +1,71 @@
-# Hand-copied sources
+# Source pointers
 
-One JSON file per article, copied by hand from the source page. Files whose
-name starts with `_` are templates and are skipped, so `_template.json` can sit
-next to the real articles.
+One JSON file per article. **A file names an article and the markers that bound
+each section; it does not contain the article's text.** The text is fetched onto
+your machine, into a git-ignored directory, and the pack is built from there —
+see [`../docs/05-source-licensing.md`](../docs/05-source-licensing.md) for why.
+
+Files whose name starts with `_` are skipped, so `_template.json` and
+`_facts.json` can sit next to the real articles.
 
 ```powershell
 Copy-Item sources\_template.json sources\hoyolab-5-0.json
-npm run make:pack -- sources --out artifacts\source-pack.json
+npm run fetch:sources -- sources
+npm run make:pack -- artifacts\sources --merge sources\_facts.json --out artifacts\source-pack.json
 npm run ingest:validate -- artifacts\source-pack.json
 ```
+
+`fetch:sources` writes to `artifacts/sources/` by default. That directory is
+git-ignored: the source text lives only on the machine that fetched it.
+
+## genshin-db is a different shape
+
+genshin-db is structured data, not prose: its fields become **StructuredFacts**,
+not chunks. It has its own pointer (`_genshin-db.json`, skipped by
+`fetch:sources` like every `_` file) and its own command:
+
+```powershell
+npm run fetch:genshin-db -- sources\_genshin-db.json --base sources\_facts.json --out artifacts\sources\_facts-merged.json
+npm run make:pack -- artifacts\sources --merge artifacts\sources\_facts-merged.json --out artifacts\source-pack.json
+```
+
+The pointer pins a **commit SHA**, not a branch — genshin-db moves, and an
+import that cannot say which revision it read cannot be reproduced. Enum values
+are mapped through a table in `src/ingest/genshin-db-mapping.js`; a value with
+no entry stops the import rather than passing the raw name through, because a
+guessed value would arrive as a fact with a source behind it.
 
 Pin `retrieved_at` in every article you keep. Without it the converter stamps
 the current time, so the same sources produce a different `dataset_version` on
 every run and a release gate can never be reproduced.
+
+## Locators
+
+Each section carries a `locator` instead of text:
+
+```json
+{
+  "id": "new-region-natlan",
+  "locator": { "start": "一、全新地區", "end": "二、全新敵人" },
+  "content_hash": "…",
+  "entity_ids": ["ent:natlan"]
+}
+```
+
+- `start` is included in the section and must appear **exactly once** in the
+  article. An ambiguous marker is refused rather than resolved by guessing.
+- `end` is excluded. Without it the section runs to the next section's `start`,
+  and the last section runs to the end of the article — which is why a section
+  followed by matter you do not want needs an explicit `end`.
+- `content_hash` is the SHA-256 of the extracted text. When it stops matching,
+  the fetch fails loudly: the article changed under a pointer written against an
+  older version of it, and a silently shorter section would reach the index as
+  evidence, be cited, and look exactly like evidence that was checked. Review
+  the difference, then update the hash deliberately.
+
+To record a hash for a new section, fetch once without one, read the text that
+lands in `artifacts/sources/`, and hash it after you have checked it is what you
+meant to point at.
 
 `make:pack` derives what a machine can derive — `source_id`, `chunk_id`,
 `document_locator`, `content_hash`, `token_hint`, `retrieved_at`, and the
@@ -26,19 +79,20 @@ nothing when that fails.
 |---|---|---|
 | `key` | yes (or `source_id`) | becomes `src:<key>` |
 | `source_kind` | yes | `hoyolab`, `genshin-db`, or `fandom` |
-| `source_url` | yes | the page the text was copied from |
+| `source_url` | yes | the article to fetch; for HoYoLAB, a `/article/<id>` URL |
 | `title` | yes | the article title, verbatim |
 | `published_at` | no | ISO 8601; omit when the page states none |
 | `game_version` | no | e.g. `5.0`; omitted means `unknown` |
-| `sections[].id` | no | anchor for `chunk_id` and the locator; defaults to `p1`, `p2`, … |
-| `sections[].text` | yes | source text, verbatim |
+| `sections[].id` | yes | anchor for `chunk_id` and the document locator |
+| `sections[].locator` | yes | `{ start, end? }` — see Locators above. A file that still carries `sections[].text` is refused |
 | `sections[].entity_ids` | no | only after the entity exists in the merged pack |
 | `retrieved_at` | no, but pin it | when the text was copied; leave it out and the run clock is used, which changes `dataset_version` on every rebuild |
 | `locale`, `rights_note` | no | defaults are `zh-TW` and the kind's licence note |
 
-Use `body` instead of `sections` to paste one long article: blank-line
-paragraphs are packed into chunks of at most 480 characters
-(`--max-chunk-chars`).
+`body` is still accepted by `make:pack` for a whole article in one field —
+blank-line paragraphs are packed into chunks of at most 480 characters
+(`--max-chunk-chars`). It is what `fetch:sources` writes into
+`artifacts/sources/`, not something a pointer file in this directory uses.
 
 ## Adding to an existing pack
 

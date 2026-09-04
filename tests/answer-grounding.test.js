@@ -3,6 +3,7 @@ import test from "node:test";
 
 import {
   checkAnswerGrounding,
+  readsAsCannotAnswer,
   collectQuotedTerms,
 } from "../src/generation/answer-grounding.js";
 import { createAnswerGenerator } from "../src/generation/answer-generation.js";
@@ -143,4 +144,52 @@ test("a grounded answer is returned untouched", async () => {
     await generator.composeAnswerText({ question: "問題", contents: natlanEvidence }),
     "納塔開放了「踞石山」。",
   );
+});
+
+test("a reply that is nothing but a statement of inability is recognised", () => {
+  for (const reply of [
+    "證據中沒有提到納塔的火神是誰。",
+    "資料中未提及她的生日。",
+    "無法根據現有證據回答這個問題。",
+    "來源不足以回答這個問題。",
+  ]) {
+    assert.equal(readsAsCannotAnswer(reply), true, reply);
+  }
+});
+
+test("a reply that names a gap and then answers is still an answer", () => {
+  // The point of the check is to stop a refusal being reported as an answer.
+  // Turning a real answer into a refusal would be the worse error, so anything
+  // that goes on to say something is left alone.
+  for (const reply of [
+    "證據中沒有提到她的生日，但瑪拉妮是水元素角色。",
+    "證據中沒有提到納塔的火神是誰。不過納塔在5.0版本開放。",
+    "瑪拉妮的元素是水。",
+    "資料中未提及生日，然而她使用法器。",
+  ]) {
+    assert.equal(readsAsCannotAnswer(reply), false, reply);
+  }
+});
+
+test("a long reply is prose, whatever phrases it contains", () => {
+  // Past the length limit the reply is no longer a bare statement of inability,
+  // and the check refuses to guess which half of it matters.
+  assert.equal(
+    readsAsCannotAnswer(
+      "證據中沒有提到納塔的火神是誰，這個問題需要更多來源才能回答，" +
+        "目前匯入的資料只涵蓋版本更新公告與角色簡介，兩者都不談論神明的身分與名號",
+    ),
+    false,
+  );
+  // Under the limit and saying nothing else, it is what it looks like.
+  assert.equal(
+    readsAsCannotAnswer("證據中沒有提到納塔的火神是誰，需要更多來源。"),
+    true,
+  );
+});
+
+test("the inability check is not fooled by non-strings", () => {
+  for (const value of [undefined, null, 42, "", "   "]) {
+    assert.equal(readsAsCannotAnswer(value), false);
+  }
 });

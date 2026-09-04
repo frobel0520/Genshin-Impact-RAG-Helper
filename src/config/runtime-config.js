@@ -6,7 +6,8 @@ export const RUNTIME_DEFAULTS = Object.freeze({
   embeddingModel: "bge-m3:latest",
   structuredDatabasePath: "artifacts/structured.db",
   documentDatabasePath: "artifacts/index.db",
-  documentMinScore: 0.47,
+  documentMinScore: 0.42,
+  enforceCoverage: false,
 });
 
 const MIN_PORT = 0;
@@ -43,6 +44,10 @@ export function loadRuntimeConfig(environment = process.env) {
   const documentMinScore = parseMinScore(
     environment.DOCUMENT_MIN_SCORE ?? String(RUNTIME_DEFAULTS.documentMinScore),
   );
+  const enforceCoverage = parseBoolean(
+    environment.ENFORCE_COVERAGE ?? String(RUNTIME_DEFAULTS.enforceCoverage),
+    "ENFORCE_COVERAGE",
+  );
 
   return Object.freeze({
     ...RUNTIME_DEFAULTS,
@@ -51,6 +56,7 @@ export function loadRuntimeConfig(environment = process.env) {
     structuredDatabasePath,
     documentDatabasePath,
     documentMinScore,
+    enforceCoverage,
   });
 }
 
@@ -69,6 +75,24 @@ function parseMinScore(rawScore) {
     throw new Error(DOCUMENT_MIN_SCORE_ERROR_MESSAGE);
   }
   return score;
+}
+
+/**
+ * The coverage check is recorded rather than enforced by default: it is right
+ * about the question the similarity floor can no longer catch and wrong about
+ * roughly one answerable question in fifty, and a false refusal costs a reader
+ * an answer. This switch exists so the trade can be measured, not so it can be
+ * flipped casually — see `docs/07-scale-test.md` §5.
+ */
+function parseBoolean(rawValue, variableName) {
+  const value = String(rawValue).trim().toLowerCase();
+  if (value === "true" || value === "1") {
+    return true;
+  }
+  if (value === "false" || value === "0") {
+    return false;
+  }
+  throw new Error(`${variableName} must be true or false.`);
 }
 
 function parseDatabasePath(rawPath, variableName) {
