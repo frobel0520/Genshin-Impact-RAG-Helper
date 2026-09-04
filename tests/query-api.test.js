@@ -39,7 +39,10 @@ function embedText(text) {
   return vector;
 }
 
-async function createService(context, { generateTraceId, composeAnswerText } = {}) {
+async function createService(
+  context,
+  { generateTraceId, composeAnswerText, judgeCoverage, enforceCoverage, logger } = {},
+) {
   const structuredStore = createStructuredStore();
   const documentStore = createDocumentStore();
   context.after(() => {
@@ -77,6 +80,9 @@ async function createService(context, { generateTraceId, composeAnswerText } = {
     }),
     ...(generateTraceId === undefined ? {} : { generateTraceId }),
     ...(composeAnswerText === undefined ? {} : { composeAnswerText }),
+    ...(judgeCoverage === undefined ? {} : { judgeCoverage }),
+    ...(enforceCoverage === undefined ? {} : { enforceCoverage }),
+    ...(logger === undefined ? {} : { logger }),
   });
 }
 
@@ -394,4 +400,84 @@ test("a generator that produces nothing leaves the deterministic template in pla
   assert.equal(response.answer_status, "answered");
   assert.match(response.answer_text, /依據 \d+ 筆來源佐證回答/);
   assert.ok(response.citations.length > 0);
+});
+
+test("a coverage verdict of not_covered is recorded, and the answer still goes out", async (context) => {
+  const records = [];
+  const service = await createService(context, {
+    judgeCoverage: async () => "not_covered",
+    composeAnswerText: async () => "雷電將軍是雷元素。",
+    logger: {
+      logQueryRun() {},
+      logEvidence() {},
+      logAnswerRun() {},
+      logFailure: (entry) => records.push(entry),
+    },
+  });
+
+  const response = await service.answer({ question: "雷電將軍的元素屬性是什麼？" });
+
+  // Measured at roughly one false refusal in fifty answerable questions, and
+  // unstable across seeds: too costly to gate on, worth recording.
+  assert.equal(response.answer_status, "answered");
+  assert.equal(response.answer_text, "雷電將軍是雷元素。");
+  assert.ok(records.some((entry) => entry.code === "evidence_may_not_cover_question"));
+});
+
+test("with enforcement on, uncovered evidence produces a refusal instead of prose", async (context) => {
+  const composed = [];
+  const records = [];
+  const service = await createService(context, {
+    judgeCoverage: async () => "not_covered",
+    enforceCoverage: true,
+    composeAnswerText: async (request) => {
+      composed.push(request);
+      return "一段看起來很有把握的答案。";
+    },
+    logger: {
+      logQueryRun() {},
+      logEvidence() {},
+      logAnswerRun() {},
+      logFailure: (entry) => records.push(entry),
+    },
+  });
+
+  const response = await service.answer({ question: "雷電將軍的元素屬性是什麼？" });
+
+  // Off by default; this is the opt-in behaviour for anyone measuring the trade.
+  assert.equal(response.answer_status, "refused");
+  assert.equal(response.uncertainty_reason, "insufficient_evidence");
+  assert.deepEqual(response.citations, []);
+  assert.deepEqual(composed, [], "no answer is written from evidence that does not answer");
+  assert.ok(records.some((entry) => entry.code === "evidence_does_not_cover_question"));
+});
+
+test("a coverage check that could not run leaves the answer alone", async (context) => {
+  const service = await createService(context, {
+    judgeCoverage: async () => "unknown",
+    composeAnswerText: async () => "雷電將軍是雷元素。",
+  });
+
+  // A broken check costs a missing check, never a refusal the reader did not
+  // earn.
+  const response = await service.answer({ question: "雷電將軍的元素屬性是什麼？" });
+
+  assert.equal(response.answer_status, "answered");
+  assert.equal(response.answer_text, "雷電將軍是雷元素。");
+  assert.ok(response.citations.length > 0);
+});
+
+test("a refused question never reaches the coverage check", async (context) => {
+  const judged = [];
+  const service = await createService(context, {
+    judgeCoverage: async (request) => {
+      judged.push(request);
+      return "covered";
+    },
+  });
+
+  const response = await service.answer({ question: "雷電將軍該配什麼隊伍？" });
+
+  assert.equal(response.answer_status, "refused");
+  assert.deepEqual(judged, [], "a refusal upstream must not cost a model call");
 });

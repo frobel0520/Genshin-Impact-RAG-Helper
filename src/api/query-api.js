@@ -13,6 +13,10 @@ import { applyConflictVersionPolicy } from "../policy/conflict-version-policy.js
 import { evaluateRefusalScope } from "../policy/refusal-scope-policy.js";
 import { createAnswerGenerator } from "../generation/answer-generation.js";
 import { readsAsCannotAnswer } from "../generation/answer-grounding.js";
+import {
+  COVERAGE_VERDICTS,
+  createCoverageJudge,
+} from "../generation/evidence-coverage.js";
 import { createOllamaGenerator } from "../generation/ollama-generator.js";
 import { createOllamaEmbedder } from "../ingest/ollama-embedder.js";
 import { createEvidenceContentResolver } from "../query/evidence-content.js";
@@ -57,6 +61,8 @@ const SERVICE_OPTION_FIELDS = new Set([
   "generateTraceId",
   "logger",
   "composeAnswerText",
+  "judgeCoverage",
+  "enforceCoverage",
 ]);
 
 /**
@@ -74,7 +80,7 @@ const SERVICE_OPTION_FIELDS = new Set([
  * @returns {{ answer: (request: object) => Promise<object> }}
  */
 export function createQueryService(options) {
-  const { orchestrator, generateTraceId, logger, composeAnswerText } =
+  const { orchestrator, generateTraceId, logger, composeAnswerText, judgeCoverage, enforceCoverage } =
     validateServiceOptions(options);
 
   async function answer(request, providedTraceId) {
@@ -100,8 +106,49 @@ export function createQueryService(options) {
     // its reason to a model to reword would be the one place a fabrication
     // could reach a reader who was told there was nothing to say. The evidence
     // offered is what the policy stage approved, never the raw bundle.
+    // Before an answer exists, ask whether the evidence answers the question at
+    // all. The similarity floor cannot tell any more (docs/07-scale-test.md
+    // §3.1), and writing prose from evidence that does not address the question
+    // produces exactly the failure this product cannot ship: fluent, cited, and
+    // about something else. `unknown` answers as before — a check that could not
+    // run must not cost the reader an answer.
+    const willAnswer = refusalDecision.answer_status !== ANSWER_STATUSES.REFUSED;
+    const coverage =
+      willAnswer && judgeCoverage !== undefined
+        ? await judgeCoverage({
+            question: request.question,
+            evidenceItems: policyDecision?.applicable_items ?? bundle.items,
+            traceId,
+            queryId,
+          })
+        : COVERAGE_VERDICTS.UNKNOWN;
+    // Recorded, not enforced — see docs/07-scale-test.md §5. The check is right
+    // about the case the similarity floor can no longer catch, and wrong about
+    // roughly one answerable question in fifty. Its mistakes are systematic,
+    // not noisy: a question about someone's role, answered by evidence that
+    // states the role without reusing the question's word for it, is judged NO
+    // under both prompts and both seeds tried. A false refusal costs a reader
+    // an answer they should have had, so until the judge is better than that,
+    // the verdict goes in the log and the answer proceeds. `enforceCoverage`
+    // turns it into a gate for anyone who wants to measure the trade.
+    const notCovered = coverage === COVERAGE_VERDICTS.NOT_COVERED;
+    if (notCovered) {
+      logger?.logFailure({
+        traceId,
+        queryId,
+        code: enforceCoverage
+          ? "evidence_does_not_cover_question"
+          : "evidence_may_not_cover_question",
+        message: enforceCoverage
+          ? "The coverage check found the approved evidence does not answer the question."
+          : "The coverage check thinks the approved evidence does not answer the question. Recorded only; the answer was not withheld.",
+      });
+    }
+    const uncovered = notCovered && enforceCoverage;
+
     const answerText =
       composeAnswerText === undefined ||
+      uncovered ||
       refusalDecision.answer_status === ANSWER_STATUSES.REFUSED
         ? undefined
         : await composeAnswerText({
@@ -117,7 +164,7 @@ export function createQueryService(options) {
     // both, sometimes says outright that the evidence does not — and reporting
     // that as an answer with a citation behind it is a false claim about what
     // happened, even though the prose itself misleads nobody.
-    const cannotAnswer = readsAsCannotAnswer(answerText);
+    const cannotAnswer = uncovered || readsAsCannotAnswer(answerText);
     const decision = cannotAnswer
       ? {
           ...refusalDecision,
@@ -191,6 +238,17 @@ export function createQueryServiceForStores(options) {
   });
 
   const contentResolver = createEvidenceContentResolver({ structuredStore, documentStore });
+  // One extra model call per answered query, before the answer exists: the
+  // similarity floor stopped separating answerable questions from unanswerable
+  // ones once the corpus grew (docs/07-scale-test.md §3.1), and reading is what
+  // still separates them.
+  const coverage = createCoverageJudge({
+    ...(logger === undefined ? {} : { logger }),
+    chat: createOllamaGenerator({
+      host: config.ollamaHost,
+      model: config.generationModel,
+    }).generate,
+  });
   const generator = createAnswerGenerator({
     ...(logger === undefined ? {} : { logger }),
     generate: createOllamaGenerator({
@@ -201,6 +259,14 @@ export function createQueryServiceForStores(options) {
 
   return createQueryService({
     ...(logger === undefined ? {} : { logger }),
+    enforceCoverage: config.enforceCoverage === true,
+    judgeCoverage: async ({ question, evidenceItems, traceId, queryId }) =>
+      coverage.judge({
+        question,
+        contents: contentResolver.resolve(evidenceItems),
+        traceId,
+        queryId,
+      }),
     composeAnswerText: ({ question, evidenceItems, versionScope, traceId, queryId }) =>
       generator.composeAnswerText({
         question,
@@ -360,11 +426,19 @@ function validateServiceOptions(options) {
   if (options.composeAnswerText !== undefined && typeof options.composeAnswerText !== "function") {
     throw new TypeError("composeAnswerText must be a function when provided.");
   }
+  if (options.judgeCoverage !== undefined && typeof options.judgeCoverage !== "function") {
+    throw new TypeError("judgeCoverage must be a function when provided.");
+  }
+  if (options.enforceCoverage !== undefined && typeof options.enforceCoverage !== "boolean") {
+    throw new TypeError("enforceCoverage must be a boolean when provided.");
+  }
   return {
     orchestrator: options.orchestrator,
     generateTraceId: options.generateTraceId ?? (() => randomUUID()),
     logger: options.logger,
     composeAnswerText: options.composeAnswerText,
+    judgeCoverage: options.judgeCoverage,
+    enforceCoverage: options.enforceCoverage === true,
   };
 }
 
