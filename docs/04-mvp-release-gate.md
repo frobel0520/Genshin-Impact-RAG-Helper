@@ -327,12 +327,20 @@ irrelevant evidence from being used; nothing yet notices *missing* evidence.
    `insufficient_evidence` and no citation. The three machine-scored criteria
    were re-run at 0.47 and all still pass at 100%.
 
-2. ~~**Nothing notices missing evidence.**~~ Closed for version overviews by T34
+2. **Nothing notices missing evidence.** Closed for version overviews by T34
    (issue #61). A version question that resolves no entity now takes the whole
    announcement instead of the top-ranked sections, and both version cases pass.
-   The general problem is untouched: no stage checks that retrieved evidence
-   covers what was asked. Only the one shape this corpus could demonstrate is
-   fixed.
+   The general problem now has a check, but not a gate. T35 (issue #65) asks
+   the model, before the answer is written, whether the approved evidence
+   answers the question at all. Measured on the 58-case bank it catches the
+   question the similarity floor no longer catches — and refuses one answerable
+   question it should not (`case:kujou-sara-role`, whose evidence states the
+   role verbatim). Two prompts and two seeds produced the same mistake, so it
+   is systematic, not noise. The verdict is therefore recorded
+   (`evidence_may_not_cover_question`) and the answer still goes out;
+   `ENFORCE_COVERAGE=true` turns it into a refusal for anyone measuring the
+   trade. **The gap is narrowed and documented, not closed** — see
+   `docs/03-system-design.md` §9.5 and `docs/07-scale-test.md` §5.
 3. **The grounding check reads names, not claims.** It verifies the terms an
    answer presents as copied; a fabrication stated in running prose still passes.
    It is narrow on purpose — a check that fires only on real problems is one
