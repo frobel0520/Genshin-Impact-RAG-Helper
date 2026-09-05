@@ -164,7 +164,8 @@ export function createQueryService(options) {
     // both, sometimes says outright that the evidence does not — and reporting
     // that as an answer with a citation behind it is a false claim about what
     // happened, even though the prose itself misleads nobody.
-    const cannotAnswer = uncovered || readsAsCannotAnswer(answerText);
+    const modelReportsNoEvidence = readsAsCannotAnswer(answerText);
+    const cannotAnswer = uncovered || modelReportsNoEvidence;
     const decision = cannotAnswer
       ? {
           ...refusalDecision,
@@ -172,7 +173,12 @@ export function createQueryService(options) {
           uncertainty_reason: UNCERTAINTY_REASONS.INSUFFICIENT_EVIDENCE,
         }
       : refusalDecision;
-    if (cannotAnswer) {
+    // Only when the model actually said it. An enforced coverage verdict
+    // refuses before any answer exists, and recording that under this code as
+    // well filed one refusal under two contradictory causes — with the model's
+    // words quoted as the literal string "undefined", because it was never
+    // asked. The coverage record above is the one that describes what happened.
+    if (modelReportsNoEvidence) {
       logger?.logFailure({
         traceId,
         queryId,
