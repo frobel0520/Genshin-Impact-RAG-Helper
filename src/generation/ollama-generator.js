@@ -51,50 +51,68 @@ export function createOllamaGenerator(options) {
     // HTTP request open until the client gives up on the whole query.
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
-    let response;
     try {
-      response = await fetchImpl(`${host}${OLLAMA_CHAT_PATH}`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        signal: controller.signal,
-        body: JSON.stringify({
-          model,
-          stream: false,
-          options: generationOptions,
-          messages: [
-            ...(isStableString(request.system)
-              ? [{ role: "system", content: request.system }]
-              : []),
-            { role: "user", content: request.prompt },
-          ],
-        }),
-      });
-    } catch (error) {
-      throw failure(
-        ERROR_CODES.DEPENDENCY_UNAVAILABLE,
-        `Ollama at ${host} could not be reached for generation.`,
-        error,
-      );
+      let response;
+      try {
+        response = await fetchImpl(`${host}${OLLAMA_CHAT_PATH}`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          signal: controller.signal,
+          body: JSON.stringify({
+            model,
+            stream: false,
+            options: generationOptions,
+            messages: [
+              ...(isStableString(request.system)
+                ? [{ role: "system", content: request.system }]
+                : []),
+              { role: "user", content: request.prompt },
+            ],
+          }),
+        });
+      } catch (error) {
+        throw failure(
+          ERROR_CODES.DEPENDENCY_UNAVAILABLE,
+          `Ollama at ${host} could not be reached for generation.`,
+          error,
+        );
+      }
+
+      if (!response.ok) {
+        throw failure(
+          ERROR_CODES.DEPENDENCY_UNAVAILABLE,
+          `Ollama at ${host} answered with HTTP ${response.status}.`,
+        );
+      }
+
+      // The body is read while the timer is still running. `fetch` resolves as
+      // soon as the headers arrive, so clearing the timeout here — which is
+      // where it used to be cleared — left the read below with nothing to abort
+      // it: a model that answered 200 and then stopped mid-stream held the
+      // query open for ever, and the fallback to the template that exists for
+      // exactly that failure was never reached.
+      let payload;
+      try {
+        payload = await response.json();
+      } catch (error) {
+        throw failure(
+          ERROR_CODES.DEPENDENCY_UNAVAILABLE,
+          `Ollama at ${host} sent a reply that could not be read.`,
+          error,
+        );
+      }
+
+      const content = payload?.message?.content;
+      if (!isRecord(payload) || typeof content !== "string") {
+        throw failure(
+          ERROR_CODES.DEPENDENCY_UNAVAILABLE,
+          "Ollama returned a response without an assistant message.",
+        );
+      }
+      return content;
     } finally {
       clearTimeout(timer);
     }
-
-    if (!response.ok) {
-      throw failure(
-        ERROR_CODES.DEPENDENCY_UNAVAILABLE,
-        `Ollama at ${host} answered with HTTP ${response.status}.`,
-      );
-    }
-
-    const payload = await response.json();
-    const content = payload?.message?.content;
-    if (!isRecord(payload) || typeof content !== "string") {
-      throw failure(
-        ERROR_CODES.DEPENDENCY_UNAVAILABLE,
-        "Ollama returned a response without an assistant message.",
-      );
-    }
-    return content;
   }
 
   return Object.freeze({ model, host, generate });

@@ -116,3 +116,46 @@ test("the caller's own arguments are checked", () => {
     /sourceId must be a non-empty string/,
   );
 });
+
+test("an entity_type this mapper does not read stops the import", () => {
+  // It used to be compared against the literal "character" and nothing else, so
+  // a typo did not fail — it silently produced a character with no element
+  // fact, which is the fact the whole import exists to supply.
+  for (const entityType of ["Character", "charater", "material", "", undefined]) {
+    assert.throws(
+      () =>
+        factsFromGenshinDb({
+          entityId: "ent:mualani",
+          entityType,
+          record: CHARACTER,
+          sourceId: "src:genshin-db",
+        }),
+      /entity_type .* is not one this mapper reads/,
+      `entity_type ${JSON.stringify(entityType)} must be refused`,
+    );
+  }
+});
+
+test("a character keeps its element fact, and a weapon never had one", () => {
+  const character = factsFromGenshinDb({
+    entityId: "ent:mualani",
+    entityType: "character",
+    record: CHARACTER,
+    sourceId: "src:genshin-db",
+  }).facts;
+  const weapon = factsFromGenshinDb({
+    entityId: "ent:surfs-up",
+    entityType: "weapon",
+    record: { weaponType: "WEAPON_CATALYST", rarity: 5 },
+    sourceId: "src:genshin-db",
+  }).facts;
+
+  assert.deepEqual(
+    character.map((entry) => entry.field_key),
+    ["element", "weapon_type", "rarity"],
+  );
+  assert.deepEqual(
+    weapon.map((entry) => entry.field_key),
+    ["weapon_type", "rarity"],
+  );
+});
