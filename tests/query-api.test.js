@@ -449,7 +449,39 @@ test("with enforcement on, uncovered evidence produces a refusal instead of pros
   assert.equal(response.uncertainty_reason, "insufficient_evidence");
   assert.deepEqual(response.citations, []);
   assert.deepEqual(composed, [], "no answer is written from evidence that does not answer");
-  assert.ok(records.some((entry) => entry.code === "evidence_does_not_cover_question"));
+  assert.deepEqual(
+    records.map((entry) => entry.code),
+    ["evidence_does_not_cover_question"],
+    "one refusal is one record: the coverage verdict, and nothing else",
+  );
+  // The refusal used to be recorded a second time as `model_reports_no_evidence`
+  // with the model's words quoted as the literal string "undefined" — the model
+  // never wrote any, because enforcement refuses before generation runs.
+  assert.equal(
+    records.some((entry) => String(entry.message).includes("undefined")),
+    false,
+  );
+});
+
+test("a model that says the evidence does not answer is recorded as having said so", async (context) => {
+  const records = [];
+  const service = await createService(context, {
+    composeAnswerText: async () => "證據中沒有提到這件事。",
+    logger: {
+      logQueryRun() {},
+      logEvidence() {},
+      logAnswerRun() {},
+      logFailure: (entry) => records.push(entry),
+    },
+  });
+
+  const response = await service.answer({ question: "雷電將軍的元素屬性是什麼？" });
+
+  assert.equal(response.answer_status, "refused");
+  assert.equal(response.uncertainty_reason, "insufficient_evidence");
+  const reported = records.filter((entry) => entry.code === "model_reports_no_evidence");
+  assert.equal(reported.length, 1);
+  assert.match(reported[0].message, /證據中沒有提到這件事。/);
 });
 
 test("a coverage check that could not run leaves the answer alone", async (context) => {
