@@ -83,14 +83,14 @@ guessed value would arrive as a fact with a source behind it. See
 
 ## Release gate
 
-68 evaluation cases (58 answerable, 10 must-refuse), re-run 2026-09-06 on
+74 evaluation cases (64 answerable, 10 must-refuse), re-run 2026-09-06 on
 dataset `f49336564cad6162` (14 documents, 89 chunks):
 
 | Criterion | Target | Result | Signed off by |
 |---|---:|---:|---|
-| Retrieval Recall@5 | >= 90% | 100% (58/58) | machine |
+| Retrieval Recall@5 | >= 90% | 100% (64/64) | machine |
 | Correct refusal rate | >= 90% | 100% (10/10) | machine |
-| Citation rate on non-refused answers | 100% | 100% (58/58) | machine |
+| Citation rate on non-refused answers | 100% | 100% (64/64) | machine |
 | Answer correctness | >= 90% | **not scored** | — |
 | Groundedness | >= 95% | **not scored** | — |
 
@@ -100,7 +100,13 @@ The last two criteria are human-judged by design, and the runner reports them
 model that wrote the answers was the model that graded them. That corpus no
 longer exists, so those numbers describe a system this repository no longer
 builds and have not been carried forward. Full record:
-[`docs/04-mvp-release-gate.md`](docs/04-mvp-release-gate.md) §8.
+[`docs/04-mvp-release-gate.md`](docs/04-mvp-release-gate.md) §8–9.
+
+**These three criteria measure retrieval and structure, not prose.** Six version
+-overview cases added on 2026-09-06 all pass all three — and five of the six
+produce a bad answer, three falling back to the citation-only template and two
+answering a different question than the one asked. Nothing automated turns red
+for them yet; see limitation 1.
 
 ```powershell
 npm run evaluate -- evaluation\eval-cases.json --report artifacts\eval-report.json
@@ -162,7 +168,7 @@ Module dependencies are one-directional and enforced by
 | [`07-scale-test.md`](docs/07-scale-test.md) | what a 5x corpus did to retrieval |
 | [`08-version-section-shapes.md`](docs/08-version-section-shapes.md) | section-shape statistics behind #83 |
 | [`09-demo-script.md`](docs/09-demo-script.md) | a 10-minute walkthrough |
-| [`10-generation-on-multi-section-evidence.md`](docs/10-generation-on-multi-section-evidence.md) | why prompting does not fix limitation 1 |
+| [`10-generation-on-multi-section-evidence.md`](docs/10-generation-on-multi-section-evidence.md) | why prompting does not fix limitation 1, and what the six new cases exposed |
 
 ## Configuration
 
