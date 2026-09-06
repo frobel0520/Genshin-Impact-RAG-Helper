@@ -115,6 +115,47 @@ export function orderByImportance(chunks) {
     .map((entry) => entry.chunk);
 }
 
+/**
+ * Words that make the housekeeping the subject rather than the noise.
+ *
+ * 「5.3修正了什麼問題？」 and 「5.0什麼時候更新？」 are version questions that
+ * name no entity, so they take the same whole-announcement route as
+ * 「更新了哪些內容？」 — and for them the tail and the preamble *are* the answer.
+ */
+const HOUSEKEEPING_QUESTION =
+  /修正|問題|調整|改善|平衡|修復|bug|補償|更新時間|什麼時候|何時|幾點/iu;
+
+/**
+ * Choose the sections a version overview answers from.
+ *
+ * Ordering the whole announcement by importance was not enough, and the run
+ * that showed it is worth recording: with the sections correctly ordered, the
+ * model still opened 5.5 with the letter-collection search box. Given 18
+ * sections and 8,596 characters it writes from the longest, most list-shaped
+ * ones, and the bug-fix list is exactly that. **The lever is what the model is
+ * given, not what order it is given in.**
+ *
+ * So a question about content gets the content: the numbered body, including
+ * its catch-all section. A question about fixes, adjustments or update times
+ * gets everything, because for that reader the tail is the answer. A version
+ * whose sections are all unrecognised gets everything too — this must never be
+ * the reason a question has no evidence.
+ *
+ * @param {object[]} chunks every chunk of the announcement
+ * @param {string} question the question as asked
+ * @returns {object[]} the chunks to answer from, in importance order
+ */
+export function selectOverviewSections(chunks, question) {
+  const ordered = orderByImportance(chunks);
+  if (typeof question === "string" && HOUSEKEEPING_QUESTION.test(question)) {
+    return ordered;
+  }
+  const content = ordered.filter(
+    (chunk) => classifySection(chunk?.text).tier <= SECTION_TIERS.OTHER,
+  );
+  return content.length === 0 ? ordered : content;
+}
+
 function readNumeral(value) {
   if (NUMERALS[value] !== undefined) {
     return NUMERALS[value];

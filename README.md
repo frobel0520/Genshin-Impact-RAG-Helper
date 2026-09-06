@@ -8,7 +8,8 @@ evidence does not support an answer.
 Every non-refused answer carries citations. Nothing costs money to run: the
 embedding model, the generation model and both stores are local.
 
-- **Status:** v1.2.0. All five release-gate criteria met — with one caveat, in
+- **Status:** v1.2.0 plus an unreleased corpus change. The three machine gate
+  criteria pass; the two human-judged ones are unscored on the current corpus —
   [Release gate](#release-gate) below.
 - **Docs:** the full SDLC record lives in [`docs/`](docs/); see
   [Documents](#documents).
@@ -82,23 +83,24 @@ guessed value would arrive as a fact with a source behind it. See
 
 ## Release gate
 
-68 evaluation cases (58 answerable, 10 must-refuse), re-run 2026-09-02 on
-dataset `5c49fb1e6fc577c1`:
+68 evaluation cases (58 answerable, 10 must-refuse), re-run 2026-09-06 on
+dataset `f49336564cad6162` (14 documents, 89 chunks):
 
 | Criterion | Target | Result | Signed off by |
 |---|---:|---:|---|
 | Retrieval Recall@5 | >= 90% | 100% (58/58) | machine |
 | Correct refusal rate | >= 90% | 100% (10/10) | machine |
 | Citation rate on non-refused answers | 100% | 100% (58/58) | machine |
-| Answer correctness | >= 90% | 96.6% (56/58) | **machine-scored, not signed by a person** |
-| Groundedness | >= 95% | 100% (58/58) | **machine-scored, not signed by a person** |
+| Answer correctness | >= 90% | **not scored** | — |
+| Groundedness | >= 95% | **not scored** | — |
 
-The last two criteria are human-judged by design. The current run was graded by
-Claude (claude-opus-5) at the project owner's instruction, not by a person — the
-model that wrote the answers is the model that graded them, so treat those two
-numbers as a first pass. `artifacts/human-review.json` and every stamped case
-carry that attribution verbatim. Full record:
-[`docs/04-mvp-release-gate.md`](docs/04-mvp-release-gate.md).
+The last two criteria are human-judged by design, and the runner reports them
+`not_scored` rather than guessing. The previous corpus was graded by Claude
+(claude-opus-5) at the project owner's instruction — not by a person, and the
+model that wrote the answers was the model that graded them. That corpus no
+longer exists, so those numbers describe a system this repository no longer
+builds and have not been carried forward. Full record:
+[`docs/04-mvp-release-gate.md`](docs/04-mvp-release-gate.md) §8.
 
 ```powershell
 npm run evaluate -- evaluation\eval-cases.json --report artifacts\eval-report.json
@@ -115,7 +117,7 @@ while any case is still unreviewed.
 npm run check
 ```
 
-421 tests, syntax check and module-boundary check, all under an offline guard —
+437 tests, syntax check and module-boundary check, all under an offline guard —
 CI needs neither a model nor a live source, because both fetchers and the
 generation stage are tested with their network calls replaced by fakes.
 
@@ -125,12 +127,12 @@ Module dependencies are one-directional and enforced by
 
 ## Known limitations
 
-1. **Version-overview answers can open with trivia.** A "what changed in this
-   version" question takes the whole announcement, and every section carries
-   equal weight, so the answer can begin with a UI tweak from the tail of the
-   notice. Measured and analysed in
-   [`docs/08-version-section-shapes.md`](docs/08-version-section-shapes.md);
-   tracked as [#83](https://github.com/frobel0520/Genshin-Impact-RAG-Helper/issues/83).
+1. **A long version overview often answers in the template.** Section selection
+   fixed the trivia openings (`docs/08-version-section-shapes.md` §8), but on 10
+   to 15 sections the model tends to invent a name — or drift into Simplified
+   Chinese — and the verbatim-name guard then falls the answer back to the
+   citation-only template. The citations are intact and nothing fabricated
+   ships, but the reader gets less than the evidence supports.
 2. **The similarity floor has topped out.** At 89 chunks the question the corpus
    cannot answer scores inside the band of questions it can, so no threshold
    separates them. What refuses it now is the model reporting the gap itself —
@@ -140,7 +142,8 @@ Module dependencies are one-directional and enforced by
    question the floor misses and misjudges roughly one answerable question in
    fifty, systematically. `ENFORCE_COVERAGE=true` turns it into a gate for
    anyone measuring the trade. [`docs/07-scale-test.md`](docs/07-scale-test.md) §5.
-4. **The corpus is small** — 9 documents, 18 chunks, 22 entities, 91 facts. It
+4. **The corpus is small** — 14 documents, 89 chunks, 22 entities, 91 facts:
+   seven HoYoLAB announcements, six Fandom profiles and one genshin-db tree. It
    is a demonstrable pipeline, not a complete Genshin knowledge base.
 
 ## Documents

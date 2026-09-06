@@ -5,6 +5,7 @@ import {
   SECTION_TIERS,
   classifySection,
   orderByImportance,
+  selectOverviewSections,
 } from "../src/query/section-importance.js";
 
 function chunk(text) {
@@ -133,5 +134,72 @@ test("chunks the classifier cannot place keep the order they arrived in", () => 
   assert.deepEqual(
     orderByImportance(stored).map((entry) => entry.text),
     ["第一段沒有標題", "第二段也沒有", "第三段還是沒有"],
+  );
+});
+
+test("a question about content is answered from the content, not the fix list", () => {
+  // Ordering was not enough: given all 18 sections in the right order, the model
+  // still wrote 5.5's answer from the letter-collection search box, because it
+  // writes from the longest, most list-shaped sections and the bug-fix list is
+  // exactly that. What the model is given is the lever, not what order.
+  const announcement = [
+    chunk("〓補償內容〓\n原石×600"),
+    chunk("〓調整及改善〓\n「信件珍藏盒」增加了搜尋功能。"),
+    chunk("〓問題修正〓\n修正了…"),
+    chunk("一、全新地區\n…"),
+    chunk("二、全新角色\n…"),
+    chunk("十、其他更新內容\n…"),
+  ];
+
+  const selected = selectOverviewSections(announcement, "5.5版本更新了哪些內容？");
+
+  assert.deepEqual(
+    selected.map((entry) => entry.text.split("\n", 1)[0]),
+    ["一、全新地區", "二、全新角色", "十、其他更新內容"],
+  );
+});
+
+test("a question about fixes keeps the tail, because there the tail is the answer", () => {
+  const announcement = [
+    chunk("〓問題修正〓\n修正了…"),
+    chunk("一、全新角色\n…"),
+    chunk("〓補償內容〓\n原石×600"),
+  ];
+
+  for (const question of [
+    "5.3版本修正了什麼問題？",
+    "5.3版本調整了什麼？",
+    "5.3版本改善了哪些體驗？",
+    "5.3版本的七聖召喚平衡性調整是什麼？",
+    "5.0版本什麼時候更新？",
+    "5.0版本的更新時間是什麼時候？",
+    "5.0版本補償多少原石？",
+  ]) {
+    assert.equal(
+      selectOverviewSections(announcement, question).length,
+      announcement.length,
+      `${question} keeps every section`,
+    );
+  }
+});
+
+test("a housekeeping question still opens with the main line", () => {
+  // Keeping the tail is not the same as leading with it.
+  const announcement = [chunk("〓問題修正〓\n…"), chunk("一、全新角色\n…")];
+  assert.deepEqual(
+    selectOverviewSections(announcement, "5.3版本修正了什麼問題？").map(
+      (entry) => entry.text.split("\n", 1)[0],
+    ),
+    ["一、全新角色", "〓問題修正〓"],
+  );
+});
+
+test("an announcement with no recognisable main line is never left without evidence", () => {
+  // 2.1 and 5.0 are pointed at by hand and carry no tail at all; a notice whose
+  // headings this module cannot place must not produce an empty bundle.
+  const announcement = [chunk("〓補償內容〓\n原石×600"), chunk("〓問題修正〓\n…")];
+  assert.equal(
+    selectOverviewSections(announcement, "5.9版本更新了哪些內容？").length,
+    announcement.length,
   );
 });
