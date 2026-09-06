@@ -9,6 +9,7 @@ import {
   SPOILER_NOTICES,
   createAnswerFormatter,
   formatAnswer,
+  isTemplateAnswerText,
 } from "../src/policy/answer-formatter.js";
 import { applyConflictVersionPolicy } from "../src/policy/conflict-version-policy.js";
 import {
@@ -534,4 +535,43 @@ test("the out-of-scope fixture scenario formats a refusal with the scope wording
   assert.equal(response.query_category, "out_of_scope");
   assert.deepEqual(response.citations, []);
   assert.equal(response.answer_text, ANSWER_TEXT_TEMPLATES.out_of_scope);
+});
+
+test("a rendered template is recognised as one, whatever filled its placeholders", () => {
+  // The observation this backs is only useful if it never confuses the model's
+  // prose with the template's: docs/10 §8.
+  for (const answerText of [
+    "依據 10 筆來源佐證回答，適用版本範圍：5.5；詳細內容請見引用來源。",
+    "依據 1 筆來源佐證回答，適用版本範圍：unknown；詳細內容請見引用來源。",
+    "以下內容的適用版本無法確認，請自行依來源時間判斷是否仍然適用；共 2 筆來源佐證。",
+    "現有資料不足以回答這個問題，因此不提供回答，以免給出無來源的內容。",
+    "本次查詢無法提供可佐證的回答。",
+  ]) {
+    assert.equal(isTemplateAnswerText(answerText), true, answerText.slice(0, 20));
+  }
+});
+
+test("prose from the model is not a template, including prose that says little", () => {
+  for (const answerText of [
+    "5.4版本更新了以下內容：全新角色「綺夢繾綣·夢見月瑞希(風)」。",
+    // The 5.5 answer that described its evidence instead of answering: it is a
+    // bad answer, but it is the model's, and calling it a template would hide
+    // a different failure inside this one.
+    "這段文字是關於《原神》遊戲5.5版本更新的詳細說明，內容涵蓋了多個遊戲玩法和功能的更新。",
+    "依據來源，5.5版本新增了角色「悠暇豪勁·瓦雷莎(雷)」。",
+    "",
+    "   ",
+  ]) {
+    assert.equal(isTemplateAnswerText(answerText), false, JSON.stringify(answerText.slice(0, 24)));
+  }
+  for (const value of [undefined, null, 42, {}]) {
+    assert.equal(isTemplateAnswerText(value), false);
+  }
+});
+
+test("a template is still recognised with surrounding whitespace", () => {
+  assert.equal(
+    isTemplateAnswerText("\n  本次查詢無法提供可佐證的回答。  \n"),
+    true,
+  );
 });
