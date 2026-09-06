@@ -1,0 +1,94 @@
+{
+  "key": "hoyolab-version-5-4",
+  "source_kind": "hoyolab",
+  "source_url": "https://www.hoyolab.com/article/37005353",
+  "title": "「夢間見月明」5.4版本更新說明",
+  "retrieved_at": "2026-09-06T00:00:00Z",
+  "game_version": "5.4",
+  "sections": [
+    {
+      "id": "s01-compensation",
+      "locator": {
+        "start": "〓補償內容〓"
+      },
+      "content_hash": "b13af35a3c8ce7fe8ce3b15db3123c303293f69b1cc49aa5b692a54d6b5bfddf"
+    },
+    {
+      "id": "s02-compensation-scope",
+      "locator": {
+        "start": "〓補償範圍〓"
+      },
+      "content_hash": "7fca42cf70d12b433b18ade1219384ea81d4545dea2a01e0b559231ec6ef28ed"
+    },
+    {
+      "id": "s03-update-time",
+      "locator": {
+        "start": "〓更新時間〓"
+      },
+      "content_hash": "5f21423f2d7e1b54d68b3898e992eb5c63192e519c135f9ea1d9e3df17a3ddf7"
+    },
+    {
+      "id": "s04-update-method",
+      "locator": {
+        "start": "〓遊戲更新方式〓"
+      },
+      "content_hash": "ccae5e13e382d1a3777cf5a9a74ca138c7fae5de6ae1cd9955fd5271000d9866"
+    },
+    {
+      "id": "s05-contents-index",
+      "locator": {
+        "start": "〓本次更新內容〓"
+      },
+      "content_hash": "44bee97bdb8fce65f4c95c5ff4ab3010ca8eb1bf8d69ed4d6b9bfd557817f4c4"
+    },
+    {
+      "id": "s06-new-characters",
+      "locator": {
+        "start": "一、全新角色"
+      },
+      "content_hash": "1f816b64312bbf11cd168cd577b0f08d8c09966fa479fdd4d4bfed7a8e048316"
+    },
+    {
+      "id": "s07-new-weapons",
+      "locator": {
+        "start": "二、全新裝備"
+      },
+      "content_hash": "2a122eeb8f261b6083276dd44a74e987e22d0ccffcc0c9415b197e4e519e8441"
+    },
+    {
+      "id": "s08-new-quest",
+      "locator": {
+        "start": "三、全新劇情"
+      },
+      "content_hash": "ff78993888067211926b1620d812b550c9c9163cb9f28c68292865d812adb18d"
+    },
+    {
+      "id": "s09-other-updates",
+      "locator": {
+        "start": "四、其他更新內容"
+      },
+      "content_hash": "da6518daeda8db392846880d704cd727e984a6013ff301a923f1d8bd1b9422cf"
+    },
+    {
+      "id": "s10-adjustments",
+      "locator": {
+        "start": "〓調整及改善〓"
+      },
+      "content_hash": "9d268ed5069ea37d806c113dd289dd4ae7e992475521e702cf966b50a97e13e6"
+    },
+    {
+      "id": "s11-bug-fixes",
+      "locator": {
+        "start": "〓問題修正〓"
+      },
+      "content_hash": "20735cb48f87689c0a5371b8e4d0130b424b37fd5026197c027c835c32705733"
+    },
+    {
+      "id": "s12-tcg-balance",
+      "locator": {
+        "start": "〓七聖召喚平衡性調整〓"
+      },
+      "content_hash": "f9ce026952e4c1dd50ae2caf41895cd5d638344d69c59891276b9f1d46f86a8c"
+    }
+  ]
+}
