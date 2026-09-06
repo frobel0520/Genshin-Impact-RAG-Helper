@@ -1,6 +1,11 @@
 # MVP E2E Release Gate (T31)
 
-> Re-run: 2026-09-02 · Branch: `dev` · Dataset version:
+> **Latest re-run: 2026-09-06 · Dataset version `f49336564cad6162` (14 documents,
+> 89 chunks). See §8 — the three machine criteria still pass; the two
+> human-judged criteria are `not_scored` again, because the corpus they were
+> judged on no longer exists.**
+>
+> Previous run: 2026-09-02 · Branch: `dev` · Dataset version:
 > `5c49fb1e6fc577c1780e16987e6fa34688ca9b4bbce7acab03b69076bdbb1a87`
 >
 > Earlier runs: 2026-08-29 (first, no generation stage) and 2026-08-29 (with
@@ -352,3 +357,68 @@ irrelevant evidence from being used; nothing yet notices *missing* evidence.
 5. **Source coverage is two announcements.** genshin-db and Fandom are still
    unimported, so the bank cannot yet grow toward the 100-question target in the
    plan, and OPEN-06 (terms review) remains open.
+
+---
+
+## 8. 2026-09-06 重跑：語料加入 5.1–5.5
+
+> `dataset_version` `f49336564cad616201faeed46de5dde48a5e01c154b70fa776b6920df5cb16c7`
+> ・14 份來源文件、89 個切塊、22 個實體、91 筆結構化事實
+> ・`index.db` `467b9b7d91c5d954`、`structured.db` `6ca924e9c48dcc53`
+
+T38 把 5.1–5.5 五份公告加回語料（`docs/08-version-section-shapes.md` §8），
+切塊數從 18 變成 89。**這使 2026-09-02 那份 58 題評分失效**，本節是重跑的結果。
+
+### 8.1 機器指標
+
+| 準則 | 目標 | 2026-09-02（18 切塊） | 2026-09-06（89 切塊） | 判定 |
+|---|---:|---:|---:|---|
+| Retrieval Recall@5 | ≥ 90% | 100% (58/58) | **100% (58/58)** | pass |
+| 無資料正確拒答率 | ≥ 90% | 100% (10/10) | **100% (10/10)** | pass |
+| 非拒答答案附來源率 | 100% | 100% (58/58) | **100% (58/58)** | pass |
+| 回答正確率 | ≥ 90% | 96.6%（機器評分） | **not_scored** | 未評 |
+| Groundedness | ≥ 95% | 100%（機器評分） | **not_scored** | 未評 |
+
+68 題狀態分佈：answered 40、uncertain 18、refused 10——與前一次完全相同，
+沒有任何一題掉到錯的分類。評估耗時 2 分 25 秒。
+
+### 8.2 兩項人判指標為什麼是未評
+
+2026-09-02 那份評分由 Claude（claude-opus-5）在專案負責人指示下完成，描述的是
+18 個切塊的系統。語料換掉之後，那份判定不再描述現在這個系統。
+
+本次執行**沒有自動補上**：runner 照設計把它們留在 `not_scored`，
+`review:apply` 也沒有跑。沒有人評過的指標不應該顯示為綠燈——這是 §6 就寫下的原則，
+在對自己不利的時候同樣適用。
+
+### 8.3 端到端證據
+
+於 `http://127.0.0.1:3000` 收集，2026-09-06。
+
+| 問題 | 狀態 | 理由 | 引用 |
+|---|---|---|---|
+| 瑪拉妮是什麼元素？ | uncertain | version_unknown | hoyolab + genshin-db |
+| 鍾離是什麼元素？ | uncertain | version_unknown | genshin-db |
+| 5.0版本更新了哪些內容？ | answered | — | hoyolab（5 節，退回模板） |
+| 5.3版本更新了哪些內容？ | answered | — | hoyolab（6 節，生成散文） |
+| 5.5版本更新了哪些內容？ | answered | — | hoyolab（10 節，退回模板） |
+| 5.3版本修正了什麼問題？ | answered | — | hoyolab（15 節，退回模板） |
+| 雷電將軍該配什麼隊伍？ | refused | out_of_scope | 無 |
+| 納塔的火神是誰？ | refused | insufficient_evidence | 無 |
+| 迪盧克是什麼元素？ | refused | insufficient_evidence | 無 |
+
+三個退回模板的原因都是 §6 的逐字姓名檢查擋下了模型，各不相同：
+
+1. **5.0** — 編造敵人清單（「回聲之子·雷」等 14 個名字）。這題從 T32 起就一直如此，
+   不是本次造成的。
+2. **5.5** — 寫出「誦韜諍言·艾爾海森(草)」，證據裡沒有這個名字。
+3. **5.3 修正題** — 模型輸出**簡體字**（极低、镜璧山、烟谜主、龙脊雪山），與繁體
+   證據對不上。**這個失效模式先前沒有被觀測到**，因為先前沒有這麼長的清單進過證據。
+
+三個都是守門正確運作：答案退回引用版模板，引用完整保留。
+
+### 8.4 這次重跑沒有回答的事
+
+**退回模板的答案，讀者拿到的東西變少了。** 守門擋住編造是對的，但一份
+「依據 10 筆來源佐證回答」的模板，對問「5.5更新了什麼」的人幫助有限。
+讓模型在 10–15 節的證據上寫出可用且不編造的答案，是下一個 task，不在本次範圍。

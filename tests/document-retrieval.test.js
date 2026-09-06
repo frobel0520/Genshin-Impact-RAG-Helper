@@ -626,18 +626,38 @@ test("a version overview opens with the main line, not with the bug fixes", asyn
       "chunk:hoyolab-5-9-s05-new-region",
       "chunk:hoyolab-5-9-s04-new-characters",
       "chunk:hoyolab-5-9-s06-other-updates",
-      "chunk:hoyolab-5-9-s02-adjustments",
-      "chunk:hoyolab-5-9-s03-bug-fixes",
-      "chunk:hoyolab-5-9-s01-compensation",
     ],
-    "the release's subject first, its housekeeping last",
+    "the release's subject, and not its housekeeping",
   );
-  // Every section is still evidence: a reader asking about a fix must be able
-  // to reach one. Only the order changed.
-  assert.equal(bundle.items.length, stored.length);
   assert.deepEqual(
     bundle.items.map((item) => item.rank),
-    [1, 2, 3, 4, 5, 6],
+    [1, 2, 3],
+  );
+  assertEvidenceBundle(bundle);
+});
+
+test("a version question about fixes is answered from the fix list", async (context) => {
+  const store = await createAnnouncementStore(context);
+  const question = "5.9版本修正了什麼問題？";
+  const queryPlan = createFixtureClassifier().classify({ question, game_version: "5.9" });
+
+  const bundle = await retrieveDocumentEvidence({
+    store,
+    embedQuery: embedText,
+    minScore: 1,
+    queryId: "qry:version-fixes",
+    queryPlan,
+    question,
+    gameVersion: "5.9",
+  });
+
+  // Every section, because for this reader the tail is the answer — but still
+  // led by the main line rather than by the compensation notice.
+  assert.equal(bundle.items.length, 6);
+  assert.equal(bundle.items[0].chunk_id, "chunk:hoyolab-5-9-s05-new-region");
+  assert.ok(
+    bundle.items.some((item) => item.chunk_id === "chunk:hoyolab-5-9-s03-bug-fixes"),
+    "the fix list is evidence for a question about fixes",
   );
   assertEvidenceBundle(bundle);
 });
