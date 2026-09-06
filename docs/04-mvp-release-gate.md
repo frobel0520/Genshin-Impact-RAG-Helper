@@ -1,7 +1,7 @@
 # MVP E2E Release Gate (T31)
 
-> **Latest re-run: 2026-09-06 · Dataset version `f49336564cad6162` (14 documents,
-> 89 chunks). See §8 — the three machine criteria still pass; the two
+> **Latest re-run: 2026-09-06 · 74 cases · Dataset version `f49336564cad6162`
+> (14 documents, 89 chunks). See §8 and §9 — the three machine criteria still pass; the two
 > human-judged criteria are `not_scored` again, because the corpus they were
 > judged on no longer exists.**
 >
@@ -422,3 +422,30 @@ T38 把 5.1–5.5 五份公告加回語料（`docs/08-version-section-shapes.md`
 **退回模板的答案，讀者拿到的東西變少了。** 守門擋住編造是對的，但一份
 「依據 10 筆來源佐證回答」的模板，對問「5.5更新了什麼」的人幫助有限。
 讓模型在 10–15 節的證據上寫出可用且不編造的答案，是下一個 task，不在本次範圍。
+
+---
+
+## 9. 題庫擴充到 74 題（2026-09-06）
+
+`evaluation/eval-cases.json` 加入六題版本總覽，題庫從 68 題變成 **74 題
+（64 可回答 + 10 拒答）**，`dataset_version` 同步更新為 `f49336564cad6162`。
+
+加這六題的理由寫在 [`docs/10`](10-generation-on-multi-section-evidence.md) §7：
+先前的 68 題**量不到多節版本總覽的生成品質**——兩種 prompt 下三項指標都是 100%，
+退回模板的也是同樣兩題。
+
+| 準則 | 目標 | 68 題 | 74 題 | 判定 |
+|---|---:|---:|---:|---|
+| Retrieval Recall@5 | ≥ 90% | 100% (58/58) | **100% (64/64)** | pass |
+| 無資料正確拒答率 | ≥ 90% | 100% (10/10) | **100% (10/10)** | pass |
+| 非拒答答案附來源率 | 100% | 100% (58/58) | **100% (64/64)** | pass |
+| 回答正確率 | ≥ 90% | not_scored | **not_scored** | 未評 |
+| Groundedness | ≥ 95% | not_scored | **not_scored** | 未評 |
+
+狀態分佈：answered 46、uncertain 18、refused 10。執行時間 5 分 54 秒。
+
+**三項指標全過，而新加的六題有五題答案是壞的**（三題退回模板、兩題答非所問，
+見 `docs/10` §8）。這不是指標算錯——它們衡量的是檢索與結構，不是生成品質。
+兩項人判指標仍然是 `not_scored`，所以目前**沒有任何自動化的東西會因為這五題而變紅**。
+
+補上那個訊號需要在評估報告裡記錄每題是否退回模板，尚未實作。
