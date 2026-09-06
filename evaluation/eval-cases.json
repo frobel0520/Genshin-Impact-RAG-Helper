@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "dataset_version": "5c49fb1e6fc577c1780e16987e6fa34688ca9b4bbce7acab03b69076bdbb1a87",
+  "dataset_version": "f49336564cad616201faeed46de5dde48a5e01c154b70fa776b6920df5cb16c7",
   "target_counts": {
-    "total": 68,
-    "answerable": 58,
+    "total": 74,
+    "answerable": 64,
     "refuse": 10
   },
   "cases": [
@@ -1438,6 +1438,144 @@
       "game_version": "unknown",
       "spoiler_level": "none",
       "notes": "公告未涵蓋的實體，事實只有 genshin-db 一個來源。"
+    },
+    {
+      "case_id": "case:version-5-4-changes",
+      "question_zh_tw": "5.4版本更新了哪些內容？",
+      "category": "version",
+      "query_type": "version",
+      "answerability": "answerable",
+      "expected_answer": "5.4「夢間見月明」新增五星角色「綺夢繾綣·夢見月瑞希(風)」、法器「寢正月初晴」，以及夢見月瑞希傳說任務「貘枕之章·第一幕『食夢者的憂鬱』」。",
+      "required_facts": [
+        {
+          "key": "release_version",
+          "expected_value": "5.4"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "hoyolab",
+          "source_url": "https://www.hoyolab.com/article/37005353"
+        }
+      ],
+      "game_version": "5.4",
+      "spoiler_level": "none",
+      "notes": "多節版本總覽的最短一端：內容章節 4 節。與 5.3／5.5 構成節數梯度，見 docs/10 §5。"
+    },
+    {
+      "case_id": "case:version-5-1-changes",
+      "question_zh_tw": "5.1版本更新了哪些內容？",
+      "category": "version",
+      "query_type": "version",
+      "answerability": "answerable",
+      "expected_answer": "5.1「命定將焚的虹光」新增五星角色「焮火鑄魂·希諾寧(岩)」、單手劍「岩峰巡歌」、魔神任務第五章·第三幕「鏡與謎煙的彼方」，以及敵人「秘源機兵·構型械」。",
+      "required_facts": [
+        {
+          "key": "release_version",
+          "expected_value": "5.1"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "hoyolab",
+          "source_url": "https://www.hoyolab.com/article/34066691"
+        }
+      ],
+      "game_version": "5.1",
+      "spoiler_level": "none",
+      "notes": "內容章節 5 節。"
+    },
+    {
+      "case_id": "case:version-5-3-changes",
+      "question_zh_tw": "5.3版本更新了哪些內容？",
+      "category": "version",
+      "query_type": "version",
+      "answerability": "answerable",
+      "expected_answer": "5.3「熾烈的還魂詩」新增五星角色「焚夜以炎·瑪薇卡(火)」、雙手劍「焚曜千陽」、胡桃衣裝「宿雪桃紅」、魔神任務第五章·第五幕「熾烈的還魂詩」、敵人「蝕滅的源焰之主」，以及全新玩法「千音雅集」。",
+      "required_facts": [
+        {
+          "key": "release_version",
+          "expected_value": "5.3"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "hoyolab",
+          "source_url": "https://www.hoyolab.com/article/35997833"
+        }
+      ],
+      "game_version": "5.3",
+      "spoiler_level": "none",
+      "notes": "內容章節 7 節、約 4,722 字。2026-09-06 觀測到這題寫得出散文，而字數幾乎相同的 5.5 寫不出來（docs/10 §5）。"
+    },
+    {
+      "case_id": "case:version-5-5-changes",
+      "question_zh_tw": "5.5版本更新了哪些內容？",
+      "category": "version",
+      "query_type": "version",
+      "answerability": "answerable",
+      "expected_answer": "5.5「眾火溯還之日」在納塔開放「安饒之野」與「遠古聖山」，新增五星角色「悠暇豪勁·瓦雷莎(雷)」、祝聖秘境「荒廢砌造塢」、法器「溢彩心念」、部族紀聞任務「蘑境菌奇」，以及敵人「熔岩輝龍像」。",
+      "required_facts": [
+        {
+          "key": "release_version",
+          "expected_value": "5.5"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "hoyolab",
+          "source_url": "https://www.hoyolab.com/article/37843579"
+        }
+      ],
+      "game_version": "5.5",
+      "spoiler_level": "none",
+      "notes": "內容章節 10 節、約 4,779 字。2026-09-06 觀測到模型在這題編出「誦韜諍言·艾爾海森(草)」，逐字檢查擋下、退回引用版模板（docs/10 §3）。"
+    },
+    {
+      "case_id": "case:version-5-5-new-characters",
+      "question_zh_tw": "5.5版本新增了什麼角色？",
+      "category": "version",
+      "query_type": "version",
+      "answerability": "answerable",
+      "expected_answer": "5.5版本新增五星角色「悠暇豪勁·瓦雷莎(雷)」，神之眼為雷。",
+      "required_facts": [
+        {
+          "key": "release_version",
+          "expected_value": "5.5"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "hoyolab",
+          "source_url": "https://www.hoyolab.com/article/37843579"
+        }
+      ],
+      "game_version": "5.5",
+      "spoiler_level": "none",
+      "notes": "與 case:version-5-5-changes 同一份證據、不同問題：問的是單一章節，答案卻仍由整份內容章節產生。#87 方向 2（依問題細分到章節層級）要用這題量。"
+    },
+    {
+      "case_id": "case:version-5-3-fixes",
+      "question_zh_tw": "5.3版本修正了什麼問題？",
+      "category": "version",
+      "query_type": "version",
+      "answerability": "answerable",
+      "expected_answer": "5.3修正了敵人、角色、任務與系統等多項問題，例如首領敵人復生位置異常受岩元素創造物影響、角色「巡宇翦定·恰斯卡(風)」施放元素爆發時模型異常變大等。",
+      "required_facts": [
+        {
+          "key": "release_version",
+          "expected_value": "5.3"
+        }
+      ],
+      "expected_sources": [
+        {
+          "source_kind": "hoyolab",
+          "source_url": "https://www.hoyolab.com/article/35997833"
+        }
+      ],
+      "game_version": "5.3",
+      "spoiler_level": "none",
+      "notes": "問修正的題目要拿到〓問題修正〓與〓調整及改善〓，共 15 節——目前最長的一題。2026-09-06 觀測到模型在這題輸出簡體字（蒲公英领域、场上、杀生樱），逐字檢查擋下、退回模板（docs/10 §3）。"
     }
   ]
 }
