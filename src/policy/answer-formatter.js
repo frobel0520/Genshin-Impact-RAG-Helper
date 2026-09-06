@@ -44,6 +44,48 @@ export const ANSWER_TEXT_TEMPLATES = Object.freeze({
   fallback: "本次查詢無法提供可佐證的回答。",
 });
 
+/**
+ * Placeholders are the only part of a template that varies, so a rendered
+ * template is the literal text with something in their place.
+ */
+const TEMPLATE_PATTERNS = Object.freeze(
+  Object.values(ANSWER_TEXT_TEMPLATES).map(
+    (template) =>
+      new RegExp(
+        `^${template
+          .split(/\{count\}|\{version_scope\}/u)
+          .map((literal) => literal.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&"))
+          .join("(.+?)")}$`,
+        "u",
+      ),
+  ),
+);
+
+/**
+ * Did this answer come from the template rather than from the model?
+ *
+ * The template speaks whenever generation is unavailable, times out, or is
+ * rejected by the grounding guard — which is the safe outcome and also a
+ * silent one: the answer is `answered`, it carries its citations, and every
+ * machine metric passes. Six version-overview cases added on 2026-09-06 pass
+ * all three machine criteria while three of them say nothing but this
+ * (`docs/10-generation-on-multi-section-evidence.md` §8).
+ *
+ * Recognising it is therefore an observation worth recording. It is not a
+ * metric: falling back is correct behaviour, and a run must not fail because
+ * the system refused to ship a fabrication.
+ *
+ * @param {unknown} answerText
+ * @returns {boolean}
+ */
+export function isTemplateAnswerText(answerText) {
+  if (typeof answerText !== "string") {
+    return false;
+  }
+  const trimmed = answerText.trim();
+  return TEMPLATE_PATTERNS.some((pattern) => pattern.test(trimmed));
+}
+
 export const SPOILER_NOTICES = Object.freeze({
   [SPOILER_LEVELS.NOTICE]: "提醒：以下內容可能包含劇情透露。",
   [SPOILER_LEVELS.EXPLICIT]: "劇透警告：以下內容包含明確的劇情內容，你已選擇顯示。",

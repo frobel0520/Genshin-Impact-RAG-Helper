@@ -73,7 +73,14 @@ export const EVAL_RESULT_REQUIRED_FIELDS = Object.freeze([
   "human_review",
 ]);
 
-export const EVAL_RESULT_OPTIONAL_FIELDS = Object.freeze([]);
+/**
+ * `answered_with_template` records that the deterministic template spoke
+ * instead of the model. It is an observation, never a metric: falling back is
+ * the safe outcome, and a run must not fail because the system refused to ship
+ * a fabrication. It is absent on a refused case, where the template always
+ * speaks and saying so would carry no information.
+ */
+export const EVAL_RESULT_OPTIONAL_FIELDS = Object.freeze(["answered_with_template"]);
 
 export const EVAL_RESULT_FIELDS = Object.freeze([
   ...EVAL_RESULT_REQUIRED_FIELDS,
@@ -167,6 +174,7 @@ export const EVALUATION_VALIDATION_CODES = Object.freeze({
   UNKNOWN_METRIC_LABEL: "unknown_metric_label",
   INVALID_METRIC_LABEL: "invalid_metric_label",
   INVALID_HUMAN_REVIEW: "invalid_human_review",
+  INVALID_ANSWERED_WITH_TEMPLATE: "invalid_answered_with_template",
   INVALID_REVIEW_STATUS: "invalid_review_status",
   INVALID_REVIEW_DECISION: "invalid_review_decision",
   INVALID_REVIEWED_AT: "invalid_reviewed_at",
@@ -415,6 +423,19 @@ export function validateEvalResult(result) {
         EVALUATION_VALIDATION_CODES.INVALID_CASE_ID,
         "case_id",
         "case_id must be a typed case domain ID (case:<key>).",
+      ),
+    );
+  }
+
+  if (
+    result.answered_with_template !== undefined &&
+    typeof result.answered_with_template !== "boolean"
+  ) {
+    errors.push(
+      createError(
+        EVALUATION_VALIDATION_CODES.INVALID_ANSWERED_WITH_TEMPLATE,
+        "answered_with_template",
+        "answered_with_template must be a boolean when present.",
       ),
     );
   }

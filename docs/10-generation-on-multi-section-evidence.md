@@ -152,3 +152,30 @@ prompt、兩個 seed，跑出完全相同的一張表。** 這個模型在這類
 
 68 題 2 分 22 秒 → 74 題 **5 分 54 秒**。多的六題證據都在 4–15 節之間，而且每題
 都要跑涵蓋度檢查與生成兩次模型呼叫。這是題庫成本，不是回歸。
+
+## 9. 訊號接上了：評估報告現在會說有幾題是模板寫的（T42）
+
+§8.3 寫「要讓這個問題自動看得見，需要的是第四件事：記錄每一題是否退回模板」。
+做了。
+
+- `isTemplateAnswerText()`（`src/policy/answer-formatter.js`）把 `ANSWER_TEXT_TEMPLATES`
+  轉成樣式比對，佔位符填了什麼都認得，模型的散文則一律不算——包括 §8.2 那句
+  答非所問的散文，因為把它算成模板會把兩個不同的失效模式混成一個。
+- 每題結果多一個 `answered_with_template`（拒答題不帶這個欄位：那裡本來就是模板
+  在講話，記了也沒有資訊）。
+- 執行摘要多一個計數，`npm run evaluate` 會把是哪幾題列出來。
+
+**它是觀察，不是指標。** 退回模板是安全行為，一次執行不該因為系統拒絕輸出編造
+而失敗。所以它不進 `metrics`、不影響 `meets_target`、不改變離開碼。
+
+2026-09-06 在 74 題上的第一次執行：
+
+```
+4 of 74 answers came from the template, not the model.
+  case:natlan-sub-regions
+  case:version-5-1-changes
+  case:version-5-5-changes
+  case:version-5-3-fixes
+```
+
+先前這四題在報告裡與一個好答案完全無法區分。現在跑一次就看得到。
