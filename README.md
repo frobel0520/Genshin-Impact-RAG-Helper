@@ -37,12 +37,17 @@ a deterministic template **with the citations intact**.
   `qwen2.5-coder:14b` (generation)
 - Windows PowerShell examples below; the commands are the same elsewhere
 
-Generation runs at temperature 0 with a fixed seed. That is **not** enough to
-make it reproducible in practice: three runs of the same 74 cases over the same
-dataset differed on 4 answers, and the template-fallback count varied between 4
-and 9. The machine metrics and the answer statuses were identical across all
-three — only the prose moved. Measured in
-[`docs/10-generation-on-multi-section-evidence.md`](docs/10-generation-on-multi-section-evidence.md) §10.2.
+Generation runs at temperature 0 with a fixed seed, and a single call is
+reproducible once the model is warm. A whole evaluation run is not quite: two
+runs of the same 74 cases over the same dataset still differ on 2 answers, both
+version overviews, from a cold-start effect on the first call. The machine
+metrics and every answer status were identical across five runs — only the prose
+moves. Measured in
+[`docs/10-generation-on-multi-section-evidence.md`](docs/10-generation-on-multi-section-evidence.md) §10.2 and §11.
+
+Generation takes 44–111 seconds per answer on the baseline hardware, so the
+timeout is 180 seconds. It was 60, which silently turned slow answers into
+template fallbacks and was the dominant source of run-to-run variance (§11.3).
 
 ## Build the dataset and run
 
