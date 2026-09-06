@@ -37,9 +37,12 @@ a deterministic template **with the citations intact**.
   `qwen2.5-coder:14b` (generation)
 - Windows PowerShell examples below; the commands are the same elsewhere
 
-Generation runs at temperature 0 with a fixed seed, so the same question over
-the same dataset produces the same answer — an evaluation report describes the
-system rather than one sampling of it.
+Generation runs at temperature 0 with a fixed seed. That is **not** enough to
+make it reproducible in practice: three runs of the same 74 cases over the same
+dataset differed on 4 answers, and the template-fallback count varied between 4
+and 9. The machine metrics and the answer statuses were identical across all
+three — only the prose moved. Measured in
+[`docs/10-generation-on-multi-section-evidence.md`](docs/10-generation-on-multi-section-evidence.md) §10.2.
 
 ## Build the dataset and run
 
