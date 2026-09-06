@@ -448,4 +448,10 @@ T38 把 5.1–5.5 五份公告加回語料（`docs/08-version-section-shapes.md`
 見 `docs/10` §8）。這不是指標算錯——它們衡量的是檢索與結構，不是生成品質。
 兩項人判指標仍然是 `not_scored`，所以目前**沒有任何自動化的東西會因為這五題而變紅**。
 
-補上那個訊號需要在評估報告裡記錄每題是否退回模板，尚未實作。
+補上那個訊號需要在評估報告裡記錄每題是否退回模板。**已於 T42 實作**
+（`docs/10` §9）：報告的執行摘要多一個 `answered_with_template` 計數，
+`npm run evaluate` 會列出是哪幾題。74 題上的第一次執行報 **4 題**——
+`natlan-sub-regions`、`version-5-1-changes`、`version-5-5-changes`、
+`version-5-3-fixes`。
+
+它是觀察不是指標：退回模板是安全行為，不影響 `meets_target`，也不改變離開碼。
