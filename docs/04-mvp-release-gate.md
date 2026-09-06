@@ -484,3 +484,19 @@ T38 把 5.1–5.5 五份公告加回語料（`docs/08-version-section-shapes.md`
 `ENFORCE_COVERAGE=true` 在這份題庫上不改變任何一題的狀態（沒有一題被判
 NOT_COVERED），所以 B 與 A 的差異也是執行間變動，不是開關造成的。詳見
 [`docs/10`](10-generation-on-multi-section-evidence.md) §10。
+
+### 10.1 變動的主因是逾時，已修（T44）
+
+生成在這台機器上要 **44–111 秒**，而 `DEFAULT_GENERATION_TIMEOUT_MS` 是 60 秒——
+慢的答案被靜靜地變成模板。改成 180 秒之後：
+
+| | 60 秒（C） | 180 秒（D1） | 180 秒（D2） |
+|---|---:|---:|---:|
+| 逾時（`dependency_unavailable`） | 3 | 1 | **0** |
+| 守門擋下（`ungrounded_answer`） | 3 | 5 | 4 |
+| `answered_with_template` | 6 | 6 | **4** |
+| 同設定兩次執行答案不同 | 4 / 74 | — | **2 / 74** |
+
+D2 的四題模板**全部**是守門真的擋下編造。變動沒有歸零（冷啟動效應仍在），
+所以本節開頭那句「散文不穩定」維持成立，只是幅度變小。量測見
+[`docs/10`](10-generation-on-multi-section-evidence.md) §11。
