@@ -9,6 +9,7 @@ import {
 import { isRecord, isStableString } from "../domain/contract-validation.js";
 import { FIXED_EMBEDDING_DIMENSIONS } from "../data/document-store.js";
 import { assertQueryPlan } from "./query-contract.js";
+import { orderByImportance } from "./section-importance.js";
 
 export const DEFAULT_DOCUMENT_TOP_K = 8;
 
@@ -97,11 +98,19 @@ export function createDocumentRetriever(options) {
     const entityIds = collectResolvedEntityIds(queryPlan);
 
     // A version overview is answered from the whole announcement or not
-    // answered well: see DEFAULT_VERSION_DOCUMENT_MAX_CHUNKS.
+    // answered well: see DEFAULT_VERSION_DOCUMENT_MAX_CHUNKS. The whole
+    // announcement is not the same as the announcement in any order, though —
+    // `listDocumentChunks` returns chunk_id order, which is neither relevance
+    // nor the order the notice is written in, so the sections are put back into
+    // importance order before anything downstream reads a rank off them.
     if (isVersionOverview(queryPlan, entityIds) && exactGameVersion !== undefined) {
       const whole = store.listDocumentChunks({ gameVersion: exactGameVersion });
       if (whole.length > 0 && whole.length <= versionDocumentMaxChunks) {
-        return buildBundle(store, queryId, whole.map((chunk) => ({ chunk })));
+        return buildBundle(
+          store,
+          queryId,
+          orderByImportance(whole).map((chunk) => ({ chunk })),
+        );
       }
     }
 
