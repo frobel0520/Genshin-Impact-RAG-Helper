@@ -9,10 +9,15 @@ const GENERATOR_OPTION_FIELDS = new Set(["host", "model", "fetchImpl", "timeoutM
 /**
  * Deterministic decoding for the fixed local baseline.
  *
- * The same question over the same dataset must produce the same answer, or an
+ * The same question over the same dataset should produce the same answer, or an
  * evaluation report describes one run rather than the system. Temperature is
  * therefore zero and the seed fixed; this is a knowledge assistant, not a
  * writing aid.
+ *
+ * It is not sufficient. Three runs of the same 74 cases differed on 4 answers
+ * with these options set — see `docs/10-generation-on-multi-section-evidence.md`
+ * §10.2. The statuses and every machine metric held; the prose did not. Treat a
+ * single run's prose as one sample, not as the system's behaviour.
  */
 export const DEFAULT_GENERATION_OPTIONS = Object.freeze({
   temperature: 0,
