@@ -105,8 +105,10 @@ builds and have not been carried forward. Full record:
 **These three criteria measure retrieval and structure, not prose.** Six version
 -overview cases added on 2026-09-06 all pass all three — and five of the six
 produce a bad answer, three falling back to the citation-only template and two
-answering a different question than the one asked. Nothing automated turns red
-for them yet; see limitation 1.
+answering a different question than the one asked. `npm run evaluate` now
+reports how many answers came from the template and names them — an
+observation, not a metric, because falling back is the safe outcome. See
+limitation 1.
 
 ```powershell
 npm run evaluate -- evaluation\eval-cases.json --report artifacts\eval-report.json

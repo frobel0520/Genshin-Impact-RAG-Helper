@@ -363,3 +363,56 @@ test("the fixture dataset is evaluated through the real query service", async (c
   assert.equal(metrics.citation_coverage.score, 1);
   assert.equal(metrics.retrieval_recall_at_5.score, 1);
 });
+
+test("an answer written by the template is recorded as one, and counted", async () => {
+  // Every machine criterion passes here: the answer is not a refusal, it
+  // carries the expected source, and it is not scored for correctness. What it
+  // does not do is tell the reader anything — docs/10 §8.
+  const { results, cases } = await runEvaluation({
+    cases: [
+      answerable(),
+      answerable({ case_id: "case:eval-prose", question_zh_tw: "鍾離的元素屬性是什麼？" }),
+    ],
+    runId: "run:eval-template",
+    answer: async (request) =>
+      request.question === "雷電將軍的元素屬性是什麼？"
+        ? answerResponse({
+            answer_text: "依據 1 筆來源佐證回答，適用版本範圍：5.0；詳細內容請見引用來源。",
+          })
+        : answerResponse({ answer_text: "雷電將軍是雷元素角色。" }),
+  });
+
+  assert.deepEqual(
+    results.map((result) => result.answered_with_template),
+    [true, false],
+  );
+  assert.equal(cases.answered_with_template, 1);
+  // It is an observation, not a metric: nothing about it fails the run.
+  assert.equal(results[0].metric_labels.citation_coverage, "pass");
+  for (const result of results) {
+    assert.equal(assertEvalResult(result), result);
+  }
+});
+
+test("a refused case carries no template flag, because there it says nothing", async () => {
+  const { results, cases } = await runEvaluation({
+    cases: [refusalCase()],
+    runId: "run:eval-template-refusal",
+    answer: async () => refusal(),
+  });
+
+  assert.equal("answered_with_template" in results[0], false);
+  assert.equal(cases.answered_with_template, 0);
+  assert.equal(assertEvalResult(results[0]), results[0]);
+});
+
+test("the template flag must be a boolean when present", () => {
+  assert.throws(
+    () =>
+      assertEvalResult({
+        ...evaluationFixture.results[0],
+        answered_with_template: "yes",
+      }),
+    /answered_with_template/,
+  );
+});

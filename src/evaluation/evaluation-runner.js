@@ -20,6 +20,7 @@ import {
   assertEvalCase,
   assertEvalResult,
 } from "./evaluation-contract.js";
+import { isTemplateAnswerText } from "../policy/answer-formatter.js";
 
 export const EVALUATION_RUNNER_VERSION = 1;
 export const RECALL_CUTOFF = 5;
@@ -147,6 +148,11 @@ async function evaluateCase(evalCase, answer, runId) {
     answer: response,
     citations: response.citations,
     metric_labels: scoreCase(evalCase, response),
+    // Recorded only for an answer: on a refusal the template always speaks, so
+    // the flag would say nothing. See `isTemplateAnswerText`.
+    ...(response.answer_status === ANSWER_STATUSES.REFUSED
+      ? {}
+      : { answered_with_template: isTemplateAnswerText(response.answer_text) }),
     human_review: { status: HUMAN_REVIEW_STATUSES.PENDING },
   });
 }
@@ -234,6 +240,13 @@ function summarizeRun(cases, results) {
       declared: cases.length,
       evaluated: results.length,
       pending_human_review: results.length,
+      // Not a metric — an observation. An answer in the template's words passes
+      // every machine criterion above while telling the reader nothing, which
+      // is exactly how three bad version overviews stayed invisible
+      // (`docs/10-generation-on-multi-section-evidence.md` §8).
+      answered_with_template: results.filter(
+        (result) => result.answered_with_template === true,
+      ).length,
     },
   };
 }
