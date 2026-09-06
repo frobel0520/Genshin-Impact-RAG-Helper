@@ -132,7 +132,10 @@ Module dependencies are one-directional and enforced by
    to 15 sections the model tends to invent a name — or drift into Simplified
    Chinese — and the verbatim-name guard then falls the answer back to the
    citation-only template. The citations are intact and nothing fabricated
-   ships, but the reader gets less than the evidence supports.
+   ships, but the reader gets less than the evidence supports. Prompting does
+   not fix it — measured in
+   [`docs/10-generation-on-multi-section-evidence.md`](docs/10-generation-on-multi-section-evidence.md);
+   tracked as [#87](https://github.com/frobel0520/Genshin-Impact-RAG-Helper/issues/87).
 2. **The similarity floor has topped out.** At 89 chunks the question the corpus
    cannot answer scores inside the band of questions it can, so no threshold
    separates them. What refuses it now is the model reporting the gap itself —
@@ -159,6 +162,7 @@ Module dependencies are one-directional and enforced by
 | [`07-scale-test.md`](docs/07-scale-test.md) | what a 5x corpus did to retrieval |
 | [`08-version-section-shapes.md`](docs/08-version-section-shapes.md) | section-shape statistics behind #83 |
 | [`09-demo-script.md`](docs/09-demo-script.md) | a 10-minute walkthrough |
+| [`10-generation-on-multi-section-evidence.md`](docs/10-generation-on-multi-section-evidence.md) | why prompting does not fix limitation 1 |
 
 ## Configuration
 
