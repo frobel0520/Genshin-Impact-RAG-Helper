@@ -157,6 +157,10 @@ only. The stage is built so a model failure costs prose and never correctness:
 - It is given no URLs. Citations are attached by the formatter afterwards.
 - Any failure, timeout, empty reply, or runaway reply falls back to the
   deterministic template, with the citations intact.
+- Temperature 0 and a fixed seed — which turned out **not** to be enough: three
+  runs of the same 74 cases differed on 4 answers (`docs/10` §10.2). Statuses and
+  machine metrics held across all three; only the prose moved. The line below was
+  written before that was measured and is kept as it stood.
 - Temperature 0 and a fixed seed, so an evaluation report describes the system
   rather than one sampling of it.
 
@@ -455,3 +459,28 @@ T38 把 5.1–5.5 五份公告加回語料（`docs/08-version-section-shapes.md`
 `version-5-3-fixes`。
 
 它是觀察不是指標：退回模板是安全行為，不影響 `meets_target`，也不改變離開碼。
+
+---
+
+## 10. 執行之間的變動（T43，2026-09-06）
+
+同一份語料 `f49336564cad6162`、同一份 74 題題庫，跑了三次：
+**A** 預設、**B** `ENFORCE_COVERAGE=true`、**C** 與 A 設定完全相同。
+
+| | A | B | C |
+|---|---:|---:|---:|
+| Retrieval Recall@5 | 100% (64/64) | 100% (64/64) | 100% (64/64) |
+| 無資料正確拒答率 | 100% (10/10) | 100% (10/10) | 100% (10/10) |
+| 非拒答答案附來源率 | 100% (64/64) | 100% (64/64) | 100% (64/64) |
+| 狀態分佈 | 46/18/10 | 46/18/10 | 46/18/10 |
+| `answered_with_template` | **4** | **9** | **6** |
+
+**三項機器指標與狀態分佈完全穩定；散文不穩定。** A 與 C 設定相同卻有 4 題答案不同。
+
+這對本文件的意義：**§8、§9 記錄的機器指標可以照樣讀**，它們在三次執行下沒有動。
+但 §9 引用的 `answered_with_template = 4` 是**一次抽樣**，不是系統的性質——
+真實範圍至少是 4–9。
+
+`ENFORCE_COVERAGE=true` 在這份題庫上不改變任何一題的狀態（沒有一題被判
+NOT_COVERED），所以 B 與 A 的差異也是執行間變動，不是開關造成的。詳見
+[`docs/10`](10-generation-on-multi-section-evidence.md) §10。
