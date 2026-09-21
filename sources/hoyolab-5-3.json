@@ -1,0 +1,115 @@
+{
+  "key": "hoyolab-version-5-3",
+  "source_kind": "hoyolab",
+  "source_url": "https://www.hoyolab.com/article/35997833",
+  "title": "「熾烈的還魂詩」5.3版本更新說明",
+  "retrieved_at": "2026-09-06T00:00:00Z",
+  "game_version": "5.3",
+  "sections": [
+    {
+      "id": "s01-compensation",
+      "locator": {
+        "start": "〓補償內容〓"
+      },
+      "content_hash": "b13af35a3c8ce7fe8ce3b15db3123c303293f69b1cc49aa5b692a54d6b5bfddf"
+    },
+    {
+      "id": "s02-compensation-scope",
+      "locator": {
+        "start": "〓補償範圍〓"
+      },
+      "content_hash": "092c919c3c05bffc69677b0a0befef32030ea858f6b5027bf99afcffbab0d478"
+    },
+    {
+      "id": "s03-update-time",
+      "locator": {
+        "start": "〓更新時間〓"
+      },
+      "content_hash": "d8e54762bb848973ee4e1cdd7faf3335cfe4ab9dd5151fe378d58b2f11f38332"
+    },
+    {
+      "id": "s04-update-method",
+      "locator": {
+        "start": "〓遊戲更新方式〓"
+      },
+      "content_hash": "a1198e1d7607071b10d3933471e92ff2726e0b1e56e8018f0608c5342ed3d54e"
+    },
+    {
+      "id": "s05-contents-index",
+      "locator": {
+        "start": "〓本次更新内容〓"
+      },
+      "content_hash": "41ef12cb4971a2b3a3918c32ce588ba6e4aeea8d584314add1d80d229a4db888"
+    },
+    {
+      "id": "s06-new-characters",
+      "locator": {
+        "start": "一、全新角色"
+      },
+      "content_hash": "f8e6205cea6907810ee0e6790cf2f66b9a802b6e699e57393f3443adfd0bd62e"
+    },
+    {
+      "id": "s07-new-weapons",
+      "locator": {
+        "start": "二、全新裝備"
+      },
+      "content_hash": "cbb1495e99f05afdec0063ff836037078ec2d1da88c5bdb56dea39150ee0a9f2"
+    },
+    {
+      "id": "s08-new-outfits",
+      "locator": {
+        "start": "三、全新衣裝"
+      },
+      "content_hash": "ad444085b75a9b62fa73a73eda118b77de98d1037d1151c6aaf0d21adc9a8ae0"
+    },
+    {
+      "id": "s09-new-quest",
+      "locator": {
+        "start": "四、全新劇情"
+      },
+      "content_hash": "3014b59b797e421222f7b45b2c3391f3134c2f3ed607579b57c9a361ed5f16d6"
+    },
+    {
+      "id": "s10-new-enemies",
+      "locator": {
+        "start": "五、全新敵人"
+      },
+      "content_hash": "d929c07e4750c9ebf910a478db712440abf586efe07d5286ea0932563dd70fba"
+    },
+    {
+      "id": "s11-new-gameplay",
+      "locator": {
+        "start": "六、全新玩法"
+      },
+      "content_hash": "db4c38a45f1fb8c7f429cae556957b1400af691e131a33e5ae4bfc2184abf6a0"
+    },
+    {
+      "id": "s12-other-updates",
+      "locator": {
+        "start": "七、其他更新內容"
+      },
+      "content_hash": "20032ffee2c6c08569906bee4c00dd01d08b3f39f80ea1ba578f65b8bc2503af"
+    },
+    {
+      "id": "s13-adjustments",
+      "locator": {
+        "start": "〓調整及改善〓"
+      },
+      "content_hash": "7373e02ce8b8bf1f6398bc6da335e8d84474563d099431c0a8104dcaac1aa9e5"
+    },
+    {
+      "id": "s14-bug-fixes",
+      "locator": {
+        "start": "〓問題修正〓"
+      },
+      "content_hash": "037726039fdee0ffe5be33ebf47e35725a3a187012f363b582a5a735e27cdfd3"
+    },
+    {
+      "id": "s15-tcg-balance",
+      "locator": {
+        "start": "〓七聖召喚平衡性調整〓"
+      },
+      "content_hash": "b18abd4259ffff9d1154466f350cd6787a32e6d0357425af22614afd9dc8de7a"
+    }
+  ]
+}

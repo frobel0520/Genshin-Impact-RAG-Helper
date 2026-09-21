@@ -206,7 +206,17 @@ function compareByAuthorityThenRecency(left, right) {
   if (retrievedDifference !== 0) {
     return retrievedDifference;
   }
-  return left.evidence_id.localeCompare(right.evidence_id);
+  // Two items this policy cannot separate keep the order they arrived in. The
+  // sort is stable, so that is still deterministic — and it is the retrieval
+  // stage's order, which means something, where `evidence_id` means only how
+  // the chunk id happens to spell.
+  //
+  // This mattered: every section of one announcement has the same kind, the
+  // same publication date and the same retrieval date, so ordering by
+  // evidence_id put 〓調整及改善〓 near the top of a version overview and the
+  // model opened its answer with a voice-over fix. Sorting by an id is not
+  // determinism, it is an arbitrary order that happens to be reproducible.
+  return 0;
 }
 
 function authorityRankOf(item) {
