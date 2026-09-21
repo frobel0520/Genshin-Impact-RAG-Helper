@@ -1,10 +1,19 @@
-export const ANSWER_GROUNDING_RULESET_VERSION = 1;
+export const ANSWER_GROUNDING_RULESET_VERSION = 2;
 
 export const MIN_CHECKED_TERM_LENGTH = 2;
 
 const QUOTED_TERM_PATTERN = /[「『]([^」』\n]{1,40})[」』]/gu;
 const LIST_LINE_PATTERN = /^[\s　]*(?:[-•*·]|\d+[.、)])[\s　]*(.+)$/gmu;
 const HAN_RUN_PATTERN = /[\p{Script=Han}]{2,}/gu;
+const ELEMENTS = "風雷水火冰草岩";
+const CHARACTER_ELEMENT_PATTERN = new RegExp(
+  `「([^」\\n]{2,80})[（(]([${ELEMENTS}])[）)]」`,
+  "gu",
+);
+const CHARACTER_VISION_PATTERN = new RegExp(
+  `(?:神之眼|神之心)\\s*[:：]\\s*([${ELEMENTS}])`,
+  "gu",
+);
 
 /**
  * What this checker is, and what it deliberately is not.
@@ -29,6 +38,7 @@ export const ANSWER_GROUNDING_RULES = Object.freeze({
   checksQuotedTerms: true,
   checksStandaloneListNames: true,
   checksRunningProse: false,
+  checksCharacterElementConsistency: true,
   minTermLength: MIN_CHECKED_TERM_LENGTH,
 });
 
@@ -62,7 +72,7 @@ export function collectQuotedTerms(answerText) {
  * Find the copied-looking terms that no evidence actually contains.
  *
  * @param {{ answerText: string, contents: object[] }} request
- * @returns {{ grounded: boolean, unsupportedTerms: string[] }}
+ * @returns {{ grounded: boolean, unsupportedTerms: string[], diagnostics: { elementContradictions: object[] } }}
  */
 export function checkAnswerGrounding(request) {
   const answerText = request?.answerText;
@@ -74,8 +84,106 @@ export function checkAnswerGrounding(request) {
   const unsupportedTerms = collectQuotedTerms(answerText).filter(
     (term) => !evidenceText.includes(term),
   );
+  const elementContradictions = findElementContradictions(answerText, contents);
 
-  return { grounded: unsupportedTerms.length === 0, unsupportedTerms };
+  return {
+    grounded: unsupportedTerms.length === 0 && elementContradictions.length === 0,
+    unsupportedTerms,
+    diagnostics: { elementContradictions },
+  };
+}
+
+/**
+ * Check only an explicit character-element claim against an unambiguous,
+ * same-character evidence block. This intentionally does not infer an
+ * element from damage, resistance, reactions, or a mention of another role.
+ *
+ * @param {string} answerText
+ * @param {object[]} contents
+ * @returns {object[]}
+ */
+function findElementContradictions(answerText, contents) {
+  if (typeof answerText !== "string") {
+    return [];
+  }
+
+  const evidenceBySubject = collectEvidenceElements(contents);
+  const contradictions = [];
+  for (const [subject, evidenceElements] of evidenceBySubject) {
+    if (evidenceElements.length !== 1) {
+      continue;
+    }
+    for (const assertedElement of collectAnswerElements(answerText, subject)) {
+      if (assertedElement !== evidenceElements[0]) {
+        contradictions.push({ subject, assertedElement, evidenceElements });
+      }
+    }
+  }
+  return contradictions;
+}
+
+function collectEvidenceElements(contents) {
+  const elementsBySubject = new Map();
+  for (const content of contents) {
+    const text = typeof content?.text === "string" ? content.text : "";
+    const descriptors = [...text.matchAll(CHARACTER_ELEMENT_PATTERN)];
+    for (let index = 0; index < descriptors.length; index += 1) {
+      const descriptor = descriptors[index];
+      const subject = descriptor[1].trim();
+      const inlineElement = descriptor[2];
+      const blockEnd = descriptors[index + 1]?.index ?? text.length;
+      const block = text.slice(descriptor.index, blockEnd);
+      const visionElements = [...block.matchAll(CHARACTER_VISION_PATTERN)].map((match) => match[1]);
+      if (visionElements.length === 0 || visionElements.some((element) => element !== inlineElement)) {
+        continue;
+      }
+      const elements = elementsBySubject.get(subject) ?? new Set();
+      elements.add(inlineElement);
+      elementsBySubject.set(subject, elements);
+    }
+  }
+  return new Map([...elementsBySubject].map(([subject, elements]) => [subject, [...elements]]));
+}
+
+function collectAnswerElements(answerText, subject) {
+  const elements = [];
+  const subjectPattern = new RegExp(`[「『]${escapeRegExp(subject)}[」』]`, "gu");
+  for (const match of answerText.matchAll(subjectPattern)) {
+    const lineStart = answerText.lastIndexOf("\n", match.index) + 1;
+    const lineEnd = answerText.indexOf("\n", match.index);
+    const line = answerText.slice(lineStart, lineEnd === -1 ? answerText.length : lineEnd);
+    const subjectOffset = match.index - lineStart;
+    const prefix = line.slice(0, subjectOffset);
+    if (/(?:不是|並非|不像|而非)\s*$/u.test(prefix)) {
+      continue;
+    }
+    const afterSubject = line.slice(subjectOffset + match[0].length);
+    const details = afterSubject.match(/^[」』）)\s:：，,；;]*[（(]([^\n）)]*)[）)]/u);
+    if (details) {
+      const detailFields = details[1]
+        .split(/[，,、；;]/u)
+        .map((field) => field.trim())
+        .filter(Boolean);
+      const detailElements = detailFields
+        .map((field) => field.match(new RegExp(`^([${ELEMENTS}])元素(?:角色|屬性)?$`, "u")))
+        .filter(Boolean)
+        .map((entry) => entry[1]);
+      if (detailElements.length === 1) {
+        addUnique(elements, detailElements[0]);
+      }
+    }
+  }
+  return elements;
+}
+
+function addUnique(values, value) {
+  if (!values.includes(value)) {
+    values.push(value);
+  }
+}
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
 }
 
 function addTerm(terms, rawTerm) {

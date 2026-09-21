@@ -44,7 +44,7 @@
 被問到實作時，照這個順序開，不要一次全開：
 
 1. [`docs/04-mvp-release-gate.md`](04-mvp-release-gate.md) §8 — 五項指標與 68 題的最新結果
-2. [`src/generation/answer-grounding.js`](../src/generation/answer-grounding.js) — 逐字姓名檢查：答案裡「引號括起來」或「單獨成為列表項」的名字，必須逐字出現在證據裡，否則整段退回引用版模板
+2. [`src/generation/answer-grounding.js`](../src/generation/answer-grounding.js) — 逐字姓名檢查：答案裡「引號括起來」或「單獨成為列表項」的名字，必須逐字出現在證據裡；另檢查證據有明確角色標頭與神之眼／神之心時，答案同一完整角色名稱後的屬性括號欄位不可矛盾，否則整段退回引用版模板
 3. [`docs/07-scale-test.md`](../docs/07-scale-test.md) §3.1 — 門檻到頂的那張表
 4. [`src/README.md`](../src/README.md) — 模組邊界，由 `scripts/check-boundaries.js` 強制
 

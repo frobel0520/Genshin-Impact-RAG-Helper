@@ -333,3 +333,20 @@ RTX 3060、12 GB，對真實的版本總覽 prompt：
 所以 README／SD／gate 文件裡「報告描述的是系統而不是一次抽樣」的修正**維持**：
 情況變好了，但沒有回到「足夠」。三項機器指標與狀態分佈在全部五次執行下都沒有動
 （100%/100%/100%、46/18/10）。
+
+## 12. T44 probe 使用方式與限制
+
+執行 `node scripts/t44-generation-probe.js`，或設定 `T44_REPEATS=1`、`2`、`3` 控制每題最多重複次數。輸出寫入 `artifacts/t44-generation-probe.json`。工具只在明確執行時讀取 evaluation cases 與 source pack，使用 production 的 section selector 與 prompt builder，保存完整 prompt、evidence、raw output、hash、耗時、Ollama timing metadata 與錯誤。
+
+probe 沒有重新執行完整 retrieval、conflict/version policy 或 API pipeline，因此不能稱為完整正式 pipeline 重現。`cold_after_confirmed_unload` 只表示 `/api/ps` 確認 Ollama 不再載入模型，不代表作業系統或 GPU cache 已清除。`subsequent_unknown` 表示後續呼叫未具備可證明的 residency 狀態，不能據此宣稱 warm。
+
+### 12.1 T44 實測紀錄（2026-09-08）
+
+本輪以同一模型、seed、temperature 與固定 prompt 各跑兩題、每題三次，共 6 calls，結果保存在本機 ignored artifact `artifacts/t44-generation-probe.json`。Ollama timing 與原始輸出也都在該報告中。
+
+| case | 正式選取 | prompt 字數 | 第一次 | 後兩次 | 後兩次 raw hash |
+|---|---:|---:|---:|---:|---|
+| 5.0 version changes | 5 節 | 4,544 | 28.853s / 401 字 | 33.011s、32.887s / 628 字 | `9a7e...`（相同） |
+| 5.4 version changes | 4 節 | 2,155 | 25.606s / 404 字 | 14.287s、14.677s / 322 字 | `2b24...`（相同） |
+
+兩題的首次輸出都與後兩次不同，後兩次各自相同。這是兩題的觀測，不能推廣成全系統的 deterministic 或 warmup 結論，也不能把 Ollama 模型卸載等同於清除 OS/GPU cache。5.4 的後兩次 composer replay 觸發 `ungrounded_answer`；5.0 的後兩次則觀測到一個守門漏網：輸出把卡齊娜寫成「火元素」，但同一份 evidence 明寫「卡齊娜(岩)／神之眼：岩」。現在的 `answer-grounding` 只在同一完整角色名稱後第一組括號中有明確 `X元素`、`X元素角色` 或 `X元素屬性` 欄位，且證據同一角色標頭與神之眼／神之心一致時判斷矛盾；傷害、抗性、否定、比較、缺證據或多元素證據都略過。這個狹窄檢查已由 replay 驗證 5.0 後兩次新增 fallback，5.4 的既有 fallback 維持。

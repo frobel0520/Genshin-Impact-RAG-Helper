@@ -21,6 +21,8 @@ artifacts/source-pack.json
 
 # Generated evaluation report (rebuild with npm run evaluate)
 artifacts/eval-report.json
+artifacts/t44-generation-probe.json
+artifacts/t44-check.log
 
 # Local agent transcripts (not a repository deliverable)
 .agents/
