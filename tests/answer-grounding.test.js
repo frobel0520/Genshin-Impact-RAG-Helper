@@ -14,6 +14,135 @@ const natlanEvidence = [
   },
 ];
 
+const kachinaEvidence = [
+  {
+    text: "「斑金礦樸·卡齊娜(岩)」（四星）\n◇神之眼：岩\n◇武器：長柄武器",
+  },
+];
+
+test("an explicit character element contradiction is reported separately from unsupported names", () => {
+  const result = checkAnswerGrounding({
+    answerText: "新增角色：\n- 「斑金礦樸·卡齊娜」（四星，火元素，長柄武器）",
+    contents: kachinaEvidence,
+  });
+
+  assert.equal(result.grounded, false);
+  assert.deepEqual(result.unsupportedTerms, []);
+  assert.deepEqual(result.diagnostics.elementContradictions, [
+    {
+      subject: "斑金礦樸·卡齊娜",
+      assertedElement: "火",
+      evidenceElements: ["岩"],
+    },
+  ]);
+});
+
+test("a character element matching evidence is grounded in the same answer shape", () => {
+  const result = checkAnswerGrounding({
+    answerText: "新增角色：\n- 「斑金礦樸·卡齊娜」（四星，岩元素，長柄武器）",
+    contents: kachinaEvidence,
+  });
+
+  assert.equal(result.grounded, true);
+  assert.deepEqual(result.diagnostics.elementContradictions, []);
+});
+
+test("an element contradiction uses the existing composer fallback and logger code", async () => {
+  const failures = [];
+  const generator = createAnswerGenerator({
+    logger: { logFailure: (record) => failures.push(record) },
+    generate: async () => "新增角色：\n- 「斑金礦樸·卡齊娜」（四星，火元素，長柄武器）",
+  });
+
+  const text = await generator.composeAnswerText({
+    question: "5.0版本新增了哪些角色？",
+    contents: kachinaEvidence,
+    traceId: "trace:kachina-element",
+  });
+
+  assert.equal(text, undefined);
+  assert.equal(failures.length, 1);
+  assert.equal(failures[0].code, "ungrounded_answer");
+  assert.match(failures[0].message, /斑金礦樸·卡齊娜/);
+  assert.match(failures[0].message, /火/);
+  assert.match(failures[0].message, /岩/);
+});
+
+test("element evidence stays attached to its own character", () => {
+  const result = checkAnswerGrounding({
+    answerText: "「斑金礦樸·卡齊娜」（岩元素）；「回火之狩·基尼奇」（草元素）",
+    contents: [{
+      text: "「斑金礦樸·卡齊娜(岩)」（四星）\n◇神之眼：岩\n\n「回火之狩·基尼奇(草)」（五星）\n◇神之眼：草",
+    }],
+  });
+
+  assert.equal(result.grounded, true);
+  assert.deepEqual(result.diagnostics.elementContradictions, []);
+
+  const crossValue = checkAnswerGrounding({
+    answerText: "「斑金礦樸·卡齊娜」（草元素）；「回火之狩·基尼奇」（草元素）",
+    contents: [{
+      text: "「斑金礦樸·卡齊娜(岩)」（四星）\n◇神之眼：岩\n\n「回火之狩·基尼奇(草)」（五星）\n◇神之眼：草",
+    }],
+  });
+
+  assert.equal(crossValue.grounded, false);
+  assert.deepEqual(crossValue.diagnostics.elementContradictions, [
+    { subject: "斑金礦樸·卡齊娜", assertedElement: "草", evidenceElements: ["岩"] },
+  ]);
+});
+
+test("damage and resistance elements are not treated as a character element", () => {
+  const result = checkAnswerGrounding({
+    answerText: "「斑金礦樸·卡齊娜」（造成火元素傷害、降低火元素抗性）",
+    contents: [{
+      text: "「斑金礦樸·卡齊娜(岩)」（四星）\n◇神之眼：岩\n◇武器：長柄武器",
+    }],
+  });
+
+  assert.equal(result.grounded, true);
+  assert.deepEqual(result.diagnostics.elementContradictions, []);
+});
+
+test("negation, comparison, and missing or ambiguous element evidence do not guess", () => {
+  const answers = [
+    "不是「斑金礦樸·卡齊娜」（火元素）",
+    "並非「斑金礦樸·卡齊娜」（火元素）",
+    "不像「斑金礦樸·卡齊娜」（火元素）",
+    "「斑金礦樸·卡齊娜」（不像火元素，而是未知）",
+    "「斑金礦樸·卡齊娜」（元素是什麼，證據沒有說明）",
+  ];
+
+  for (const answerText of answers) {
+    const result = checkAnswerGrounding({ answerText, contents: kachinaEvidence });
+    assert.equal(result.grounded, true, answerText);
+    assert.deepEqual(result.diagnostics.elementContradictions, [], answerText);
+  }
+
+  const noElement = checkAnswerGrounding({
+    answerText: "「斑金礦樸·卡齊娜」（火元素）",
+    contents: [{ text: "角色「斑金礦樸·卡齊娜」是四星長柄武器角色。" }],
+  });
+  assert.equal(noElement.grounded, true);
+  assert.deepEqual(noElement.diagnostics.elementContradictions, []);
+
+  const unquotedPrefix = checkAnswerGrounding({
+    answerText: "仿斑金礦樸·卡齊娜（火元素）",
+    contents: kachinaEvidence,
+  });
+  assert.equal(unquotedPrefix.grounded, true);
+  assert.deepEqual(unquotedPrefix.diagnostics.elementContradictions, []);
+
+  const conflictingEvidence = checkAnswerGrounding({
+    answerText: "「斑金礦樸·卡齊娜」（火元素）",
+    contents: [{
+      text: "「斑金礦樸·卡齊娜(岩)」（四星）\n◇神之眼：岩\n\n「斑金礦樸·卡齊娜(火)」（四星）\n◇神之眼：火",
+    }],
+  });
+  assert.equal(conflictingEvidence.grounded, true);
+  assert.deepEqual(conflictingEvidence.diagnostics.elementContradictions, []);
+});
+
 test("a name the evidence never contains is reported", () => {
   // The case this checker exists for: 踞石山 came back as 蓋石山, in a list, with
   // an official announcement cited behind it.
