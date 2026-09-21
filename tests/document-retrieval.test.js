@@ -542,3 +542,122 @@ test("an unusable chunk ceiling fails closed", async (context) => {
     );
   }
 });
+
+/**
+ * A store carrying one announcement-shaped release notice.
+ *
+ * The fixture pack's 5.0 chunks are prose without headings, which is the right
+ * shape for the cases above and the wrong shape for this one: importance is
+ * read off the heading a section starts with.
+ */
+async function createAnnouncementStore(context) {
+  const store = createDocumentStore();
+  context.after(() => {
+    if (store.getStatus().isOpen) store.close();
+  });
+  const sourceId = "src:hoyolab-version-5-9";
+  const sourceUrl = "https://www.hoyolab.com/article/99999999";
+  // Deliberately listed in chunk_id order, which is what the store returns and
+  // what put a voice-over fix at the top of a 5.3 answer.
+  const headings = [
+    ["s01-compensation", "〓補償內容〓\n原石×600"],
+    ["s02-adjustments", "〓調整及改善〓\n「信件」介面，「信件珍藏盒」增加了搜尋功能。"],
+    ["s03-bug-fixes", "〓問題修正〓\n修正了部分任務中的華語語音錯誤。"],
+    ["s04-new-characters", "二、全新角色\n五星角色「測試角色」將在本版本登場。"],
+    ["s05-new-region", "一、全新地區\n全新地區「測試之地」正式開放。"],
+    ["s06-other-updates", "九、其他更新內容\n新增了若干成就。"],
+  ];
+  await buildFixedIndex({
+    store,
+    data: {
+      source_documents: [
+        {
+          source_id: sourceId,
+          source_kind: "hoyolab",
+          source_url: sourceUrl,
+          title: "「測試」5.9版本更新說明",
+          retrieved_at: "2026-09-06T00:00:00Z",
+          game_version: "5.9",
+          locale: "zh-TW",
+          rights_note: "Personal non-commercial use; retain official attribution and URL.",
+          content_hash: "a".repeat(64),
+        },
+      ],
+      canonical_entities: [],
+      document_chunks: headings.map(([id, text]) => ({
+        chunk_id: `chunk:hoyolab-5-9-${id}`,
+        source_id: sourceId,
+        document_locator: `${sourceUrl}#${id}`,
+        text,
+        token_hint: text.length,
+        game_version: "5.9",
+        entity_ids: [],
+      })),
+    },
+    embedDocuments: (texts) => texts.map((text) => embedText(text)),
+  });
+  return store;
+}
+
+test("a version overview opens with the main line, not with the bug fixes", async (context) => {
+  const store = await createAnnouncementStore(context);
+  const question = "5.9版本更新了哪些內容？";
+  const queryPlan = createFixtureClassifier().classify({ question, game_version: "5.9" });
+  assert.equal(queryPlan.query_category, "version");
+
+  // What the store hands over, and why the order it hands it over in is not an
+  // order: chunk_id is alphabetical, so the adjustments section is second.
+  const stored = store.listDocumentChunks({ gameVersion: "5.9" });
+  assert.equal(stored[1].text.split("\n", 1)[0], "〓調整及改善〓");
+
+  const bundle = await retrieveDocumentEvidence({
+    store,
+    embedQuery: embedText,
+    minScore: 1,
+    queryId: "qry:version-importance",
+    queryPlan,
+    question,
+    gameVersion: "5.9",
+  });
+
+  assert.deepEqual(
+    bundle.items.map((item) => item.chunk_id),
+    [
+      "chunk:hoyolab-5-9-s05-new-region",
+      "chunk:hoyolab-5-9-s04-new-characters",
+      "chunk:hoyolab-5-9-s06-other-updates",
+    ],
+    "the release's subject, and not its housekeeping",
+  );
+  assert.deepEqual(
+    bundle.items.map((item) => item.rank),
+    [1, 2, 3],
+  );
+  assertEvidenceBundle(bundle);
+});
+
+test("a version question about fixes is answered from the fix list", async (context) => {
+  const store = await createAnnouncementStore(context);
+  const question = "5.9版本修正了什麼問題？";
+  const queryPlan = createFixtureClassifier().classify({ question, game_version: "5.9" });
+
+  const bundle = await retrieveDocumentEvidence({
+    store,
+    embedQuery: embedText,
+    minScore: 1,
+    queryId: "qry:version-fixes",
+    queryPlan,
+    question,
+    gameVersion: "5.9",
+  });
+
+  // Every section, because for this reader the tail is the answer — but still
+  // led by the main line rather than by the compensation notice.
+  assert.equal(bundle.items.length, 6);
+  assert.equal(bundle.items[0].chunk_id, "chunk:hoyolab-5-9-s05-new-region");
+  assert.ok(
+    bundle.items.some((item) => item.chunk_id === "chunk:hoyolab-5-9-s03-bug-fixes"),
+    "the fix list is evidence for a question about fixes",
+  );
+  assertEvidenceBundle(bundle);
+});

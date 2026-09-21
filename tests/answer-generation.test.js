@@ -224,3 +224,47 @@ test("a prompt without a version scope is still usable by the model", () => {
   assert.equal(scoped, scoped.trim());
   assert.match(scoped, /\n\n適用版本：5\.0$/);
 });
+
+test("a reply that stalls after its headers still times out", async () => {
+  // `fetch` resolves as soon as the headers arrive, so a timer cleared there
+  // leaves the body read unguarded: Ollama answers 200, stops mid-stream, and
+  // the query hangs for ever instead of falling back to the template.
+  let bodyAborted = false;
+  const stalling = createOllamaGenerator({
+    host: "http://127.0.0.1:11434",
+    model: "m",
+    timeoutMs: 1,
+    fetchImpl: async (url, init) => ({
+      ok: true,
+      status: 200,
+      json: () =>
+        new Promise((resolve, reject) => {
+          init.signal.addEventListener("abort", () => {
+            bodyAborted = true;
+            reject(Object.assign(new Error("aborted"), { name: "AbortError" }));
+          });
+        }),
+    }),
+  });
+
+  await assert.rejects(stalling.generate({ prompt: "問題" }), (error) => {
+    assert.equal(error.code, "dependency_unavailable");
+    assert.match(error.message, /could not be read/);
+    return true;
+  });
+  assert.equal(bodyAborted, true, "the timeout has to reach the body read, not just the headers");
+});
+
+test("the timer is cleared once a reply has been read", async () => {
+  const generator = createOllamaGenerator({
+    host: "http://127.0.0.1:11434",
+    model: "m",
+    timeoutMs: 5,
+    fetchImpl: async () => ({ ok: true, status: 200, json: async () => ({ message: { content: "答案" } }) }),
+  });
+
+  assert.equal(await generator.generate({ prompt: "問題" }), "答案");
+  // A timer left running would keep the process alive past the test; the
+  // assertion that matters is that nothing throws once it would have fired.
+  await new Promise((resolve) => setTimeout(resolve, 10));
+});

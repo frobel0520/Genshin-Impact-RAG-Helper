@@ -68,11 +68,26 @@ export async function main(argv, streams = {}) {
     if (flags.report !== undefined) {
       writeFileSync(
         resolve(flags.report),
-        `${JSON.stringify({ run, metrics, results }, null, 2)}\n`,
+        `${JSON.stringify({ run, metrics, cases: caseSummary, results }, null, 2)}\n`,
         "utf8",
       );
     }
-    out(`${JSON.stringify({ run, metrics }, null, 2)}\n`);
+    out(`${JSON.stringify({ run, metrics, cases: caseSummary }, null, 2)}\n`);
+
+    // Every machine criterion can pass while an answer says nothing but "see
+    // the sources". That is the safe outcome, not a failure, so it is reported
+    // here rather than folded into a metric — but it is reported, because a run
+    // where it happens is not the same as a run where it does not.
+    if (caseSummary.answered_with_template > 0) {
+      out(
+        `\n${caseSummary.answered_with_template} of ${caseSummary.evaluated} answers came from ` +
+          "the template, not the model. They carry their citations and pass every machine " +
+          "criterion; they also tell the reader nothing. Cases:\n",
+      );
+      for (const result of results.filter((entry) => entry.answered_with_template === true)) {
+        out(`  ${result.case_id}\n`);
+      }
+    }
 
     return run.status === "passed" && meetsAllTargets(metrics) ? 0 : 1;
   } finally {

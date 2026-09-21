@@ -1,0 +1,101 @@
+{
+  "key": "hoyolab-version-5-2",
+  "source_kind": "hoyolab",
+  "source_url": "https://www.hoyolab.com/article/35049952",
+  "title": "「靈與火的織卷」5.2版本更新說明",
+  "retrieved_at": "2026-09-06T00:00:00Z",
+  "game_version": "5.2",
+  "sections": [
+    {
+      "id": "s01-compensation",
+      "locator": {
+        "start": "〓補償內容〓"
+      },
+      "content_hash": "b13af35a3c8ce7fe8ce3b15db3123c303293f69b1cc49aa5b692a54d6b5bfddf"
+    },
+    {
+      "id": "s02-compensation-scope",
+      "locator": {
+        "start": "〓補償範圍〓"
+      },
+      "content_hash": "34793d03316c332d619960652e9e80fd397839402872e6ba599be6c58d412410"
+    },
+    {
+      "id": "s03-update-time",
+      "locator": {
+        "start": "〓更新時間〓"
+      },
+      "content_hash": "b41a425603f3a644b08d962966b8fbc3841f38452dee4829c83f1d41eccce346"
+    },
+    {
+      "id": "s04-update-method",
+      "locator": {
+        "start": "〓遊戲更新方式〓"
+      },
+      "content_hash": "21dd019edf1c929be81c80a8101d0aad8649b0555675d8fd63a1610fa19e07ac"
+    },
+    {
+      "id": "s05-contents-index",
+      "locator": {
+        "start": "〓本次更新内容〓"
+      },
+      "content_hash": "41ef12cb4971a2b3a3918c32ce588ba6e4aeea8d584314add1d80d229a4db888"
+    },
+    {
+      "id": "s06-new-region",
+      "locator": {
+        "start": "一、全新地區"
+      },
+      "content_hash": "334e7fcff9fb4ae8f2f63681360e5b1fdc0fe2299b77ea10eb459dd4135c1306"
+    },
+    {
+      "id": "s07-new-characters",
+      "locator": {
+        "start": "二、全新角色"
+      },
+      "content_hash": "fb88d29e34eb235e6b73df5afe181422568b9b50a8b1fc63e2036c0c3a78f5c4"
+    },
+    {
+      "id": "s08-new-weapons",
+      "locator": {
+        "start": "三、全新裝備"
+      },
+      "content_hash": "fae0a99d8b3bb56345629892e8ec7206d40892c601e25937df9bf03ad70f3ff0"
+    },
+    {
+      "id": "s09-new-quest",
+      "locator": {
+        "start": "四、全新劇情"
+      },
+      "content_hash": "3c4a7c628f59fd8985e20959c633fe819dc91a73b049fbbe712e12d0cd6a0167"
+    },
+    {
+      "id": "s10-new-enemies",
+      "locator": {
+        "start": "五、全新敵人"
+      },
+      "content_hash": "dea2c1f474281ca41e268187cac054409f8ef24e37b14f3bce05d2dcf78584e8"
+    },
+    {
+      "id": "s11-other-updates",
+      "locator": {
+        "start": "六、其他更新內容"
+      },
+      "content_hash": "ce9fd6984681ef295a14e608ae6f9824b77b32a0307663b146ad1f2ef18707d7"
+    },
+    {
+      "id": "s12-adjustments",
+      "locator": {
+        "start": "〓調整及改善〓"
+      },
+      "content_hash": "386018391f217c3f249f4a3e7b942f322f8b7535b5ec074845ac05915ede4a2f"
+    },
+    {
+      "id": "s13-bug-fixes",
+      "locator": {
+        "start": "〓問題修正〓"
+      },
+      "content_hash": "607c0a74e75004e2c0a297d5f25f47b54ee02fe0549fdedabad47e77a6557f63"
+    }
+  ]
+}

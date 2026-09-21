@@ -1,0 +1,101 @@
+{
+  "key": "hoyolab-version-5-1",
+  "source_kind": "hoyolab",
+  "source_url": "https://www.hoyolab.com/article/34066691",
+  "title": "「命定將焚的虹光」5.1版本更新說明",
+  "retrieved_at": "2026-09-06T00:00:00Z",
+  "game_version": "5.1",
+  "sections": [
+    {
+      "id": "s01-compensation",
+      "locator": {
+        "start": "〓補償內容〓"
+      },
+      "content_hash": "90b3988f58000e99b27153854092fb125a8f8f1a8231061a7fefcd7e9b13525f"
+    },
+    {
+      "id": "s02-compensation-scope",
+      "locator": {
+        "start": "〓補償範圍〓"
+      },
+      "content_hash": "6ad5482607d46c80b14ef6bc2090642d616330a6633f0ecd6268d9fed2bb6462"
+    },
+    {
+      "id": "s03-update-time",
+      "locator": {
+        "start": "〓更新時間〓"
+      },
+      "content_hash": "78ccd2baf8d068e915dca2aa78de9c6aeb1acd4ba122eded0f8c551d5227fad3"
+    },
+    {
+      "id": "s04-update-method",
+      "locator": {
+        "start": "〓遊戲更新方式〓"
+      },
+      "content_hash": "21dd019edf1c929be81c80a8101d0aad8649b0555675d8fd63a1610fa19e07ac"
+    },
+    {
+      "id": "s05-contents-index",
+      "locator": {
+        "start": "〓本次更新内容〓"
+      },
+      "content_hash": "41ef12cb4971a2b3a3918c32ce588ba6e4aeea8d584314add1d80d229a4db888"
+    },
+    {
+      "id": "s06-new-characters",
+      "locator": {
+        "start": "一、全新角色"
+      },
+      "content_hash": "8273f6ae04ec8416177b24f955666035883944a88c15e10c29e9c992e56fb06c"
+    },
+    {
+      "id": "s07-new-weapons",
+      "locator": {
+        "start": "二、全新裝備"
+      },
+      "content_hash": "1462130c6f9d80e784cba139e1f2a0a11d3b983f8cdf25990b5c9d63a2d87b84"
+    },
+    {
+      "id": "s08-new-quest",
+      "locator": {
+        "start": "三、全新劇情"
+      },
+      "content_hash": "5bc6361972ea51b92409e25ba7dd5bb5cf472ac83788810c1640b307bdd98e94"
+    },
+    {
+      "id": "s09-new-enemies",
+      "locator": {
+        "start": "四、全新敵人"
+      },
+      "content_hash": "03549f2eb40eb1f9868f921068f0f5d53373040df5c50acdfee8d188e533ad18"
+    },
+    {
+      "id": "s10-other-updates",
+      "locator": {
+        "start": "五、其他更新內容"
+      },
+      "content_hash": "2df6dcd8644f1f73ee68b0e56af381860da128bd9cfd51cbea9f902376d3916f"
+    },
+    {
+      "id": "s11-adjustments",
+      "locator": {
+        "start": "〓調整及改善〓"
+      },
+      "content_hash": "e228c03103e750e75dca901f69084172db71db8161bb80d49e8e8e6b1c060f31"
+    },
+    {
+      "id": "s12-bug-fixes",
+      "locator": {
+        "start": "〓問題修正〓"
+      },
+      "content_hash": "ab3f2bcc1d9d145155da9b2610570b29238f39dd0cc88ae52626c4993f2df464"
+    },
+    {
+      "id": "s13-tcg-balance",
+      "locator": {
+        "start": "〓「七聖召喚」平衡性調整〓"
+      },
+      "content_hash": "232d5cf593bea70fab588fe9b3dbb768e7e77e7b7cb5dbc8250c20f372a4fba9"
+    }
+  ]
+}

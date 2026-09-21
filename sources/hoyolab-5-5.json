@@ -1,0 +1,136 @@
+{
+  "key": "hoyolab-version-5-5",
+  "source_kind": "hoyolab",
+  "source_url": "https://www.hoyolab.com/article/37843579",
+  "title": "「眾火溯還之日」5.5版本更新說明",
+  "retrieved_at": "2026-09-06T00:00:00Z",
+  "game_version": "5.5",
+  "sections": [
+    {
+      "id": "s01-compensation",
+      "locator": {
+        "start": "〓補償內容〓"
+      },
+      "content_hash": "b13af35a3c8ce7fe8ce3b15db3123c303293f69b1cc49aa5b692a54d6b5bfddf"
+    },
+    {
+      "id": "s02-compensation-scope",
+      "locator": {
+        "start": "〓補償範圍〓"
+      },
+      "content_hash": "51341c6ae643d5fcaec048e2e2c47dd753860ef04c05491da1a88685329e9cbc"
+    },
+    {
+      "id": "s03-update-time",
+      "locator": {
+        "start": "〓更新時間〓"
+      },
+      "content_hash": "772e5aae85d540821af5dc6dc88e77e57a6e42055e81e2362c671403e9d4d049"
+    },
+    {
+      "id": "s04-update-method",
+      "locator": {
+        "start": "〓遊戲更新方式〓"
+      },
+      "content_hash": "a1198e1d7607071b10d3933471e92ff2726e0b1e56e8018f0608c5342ed3d54e"
+    },
+    {
+      "id": "s05-contents-index",
+      "locator": {
+        "start": "〓本次更新内容〓"
+      },
+      "content_hash": "41ef12cb4971a2b3a3918c32ce588ba6e4aeea8d584314add1d80d229a4db888"
+    },
+    {
+      "id": "s06-new-region",
+      "locator": {
+        "start": "一、全新地區"
+      },
+      "content_hash": "4f1a7268b075be69adff2f0a21971e4da0831f219ff4a985727e196a7b7c5c9d"
+    },
+    {
+      "id": "s07-new-characters",
+      "locator": {
+        "start": "二、全新角色"
+      },
+      "content_hash": "84bd2c801664dd56851964055e1c8522903108d0bec5f074b72d03c87cd2eedc"
+    },
+    {
+      "id": "s08-new-domains",
+      "locator": {
+        "start": "三、全新秘境"
+      },
+      "content_hash": "dc3d94e91a2e70a716cfe04374fe096bea9f31382a48466d286e42fe57947079"
+    },
+    {
+      "id": "s09-new-weapons",
+      "locator": {
+        "start": "四、全新裝備"
+      },
+      "content_hash": "4d7ddd226e0d9cb9ab782da2ef86afb26441697e8bb2291e5e4a591b4eca1ac7"
+    },
+    {
+      "id": "s10-new-quest",
+      "locator": {
+        "start": "五、全新劇情"
+      },
+      "content_hash": "428ffef922c3a0e836ec0bce1a9bd153a02861dc7a57ebf945164e6fd5a5eb32"
+    },
+    {
+      "id": "s11-new-enemies",
+      "locator": {
+        "start": "六、全新敵人"
+      },
+      "content_hash": "198c0368e62c925be92f3a1ffa539eac9583119e4fb7be1af09b0fc20bae5d7e"
+    },
+    {
+      "id": "s12-tcg",
+      "locator": {
+        "start": "七、七聖召喚"
+      },
+      "content_hash": "289bf91b7a0dbbe18aac446bd4e6b569bc335bf17b332f74a29ed337413e7359"
+    },
+    {
+      "id": "s13-imaginarium-theater",
+      "locator": {
+        "start": "八、幻想真境劇詩"
+      },
+      "content_hash": "d2faac7c5e8c8f20a084290fd3b70e237bf46fe03c5c4d479a0d0c1c5a03dc0e"
+    },
+    {
+      "id": "s14-spiral-abyss",
+      "locator": {
+        "start": "九、深境螺旋"
+      },
+      "content_hash": "55296a92175a998e16ea71e51642002036d329c1c0047206cf4b749bd8873fbc"
+    },
+    {
+      "id": "s15-other-updates",
+      "locator": {
+        "start": "十、其他更新內容"
+      },
+      "content_hash": "4dcb0675556b1fb406670d800e96ec1df64bcb27c92fc295f10828ad7a0de414"
+    },
+    {
+      "id": "s16-adjustments",
+      "locator": {
+        "start": "〓調整及改善〓"
+      },
+      "content_hash": "9ee36e0a1e97d02404ba7f14ea109b3133e98eb7bc66eef77bdcfec4e382423c"
+    },
+    {
+      "id": "s17-bug-fixes",
+      "locator": {
+        "start": "〓問題修正〓"
+      },
+      "content_hash": "9e8bd12995afc15bad2874534536ec5612f285c84d0951f251ed9d6a65cb05da"
+    },
+    {
+      "id": "s18-tcg-balance",
+      "locator": {
+        "start": "〓七聖召喚平衡性調整〓"
+      },
+      "content_hash": "583c59ea313c14b1ca33b117f1d15ca3e1840908ca44b8cd2fe5b4d2959e6264"
+    }
+  ]
+}
