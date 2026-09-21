@@ -1,6 +1,11 @@
 # MVP E2E Release Gate (T31)
 
-> Re-run: 2026-09-02 · Branch: `dev` · Dataset version:
+> **Latest re-run: 2026-09-06 · 74 cases · Dataset version `f49336564cad6162`
+> (14 documents, 89 chunks). See §8 and §9 — the three machine criteria still pass; the two
+> human-judged criteria are `not_scored` again, because the corpus they were
+> judged on no longer exists.**
+>
+> Previous run: 2026-09-02 · Branch: `dev` · Dataset version:
 > `5c49fb1e6fc577c1780e16987e6fa34688ca9b4bbce7acab03b69076bdbb1a87`
 >
 > Earlier runs: 2026-08-29 (first, no generation stage) and 2026-08-29 (with
@@ -152,6 +157,10 @@ only. The stage is built so a model failure costs prose and never correctness:
 - It is given no URLs. Citations are attached by the formatter afterwards.
 - Any failure, timeout, empty reply, or runaway reply falls back to the
   deterministic template, with the citations intact.
+- Temperature 0 and a fixed seed — which turned out **not** to be enough: three
+  runs of the same 74 cases differed on 4 answers (`docs/10` §10.2). Statuses and
+  machine metrics held across all three; only the prose moved. The line below was
+  written before that was measured and is kept as it stood.
 - Temperature 0 and a fixed seed, so an evaluation report describes the system
   rather than one sampling of it.
 
@@ -352,3 +361,142 @@ irrelevant evidence from being used; nothing yet notices *missing* evidence.
 5. **Source coverage is two announcements.** genshin-db and Fandom are still
    unimported, so the bank cannot yet grow toward the 100-question target in the
    plan, and OPEN-06 (terms review) remains open.
+
+---
+
+## 8. 2026-09-06 重跑：語料加入 5.1–5.5
+
+> `dataset_version` `f49336564cad616201faeed46de5dde48a5e01c154b70fa776b6920df5cb16c7`
+> ・14 份來源文件、89 個切塊、22 個實體、91 筆結構化事實
+> ・`index.db` `467b9b7d91c5d954`、`structured.db` `6ca924e9c48dcc53`
+
+T38 把 5.1–5.5 五份公告加回語料（`docs/08-version-section-shapes.md` §8），
+切塊數從 18 變成 89。**這使 2026-09-02 那份 58 題評分失效**，本節是重跑的結果。
+
+### 8.1 機器指標
+
+| 準則 | 目標 | 2026-09-02（18 切塊） | 2026-09-06（89 切塊） | 判定 |
+|---|---:|---:|---:|---|
+| Retrieval Recall@5 | ≥ 90% | 100% (58/58) | **100% (58/58)** | pass |
+| 無資料正確拒答率 | ≥ 90% | 100% (10/10) | **100% (10/10)** | pass |
+| 非拒答答案附來源率 | 100% | 100% (58/58) | **100% (58/58)** | pass |
+| 回答正確率 | ≥ 90% | 96.6%（機器評分） | **not_scored** | 未評 |
+| Groundedness | ≥ 95% | 100%（機器評分） | **not_scored** | 未評 |
+
+68 題狀態分佈：answered 40、uncertain 18、refused 10——與前一次完全相同，
+沒有任何一題掉到錯的分類。評估耗時 2 分 25 秒。
+
+### 8.2 兩項人判指標為什麼是未評
+
+2026-09-02 那份評分由 Claude（claude-opus-5）在專案負責人指示下完成，描述的是
+18 個切塊的系統。語料換掉之後，那份判定不再描述現在這個系統。
+
+本次執行**沒有自動補上**：runner 照設計把它們留在 `not_scored`，
+`review:apply` 也沒有跑。沒有人評過的指標不應該顯示為綠燈——這是 §6 就寫下的原則，
+在對自己不利的時候同樣適用。
+
+### 8.3 端到端證據
+
+於 `http://127.0.0.1:3000` 收集，2026-09-06。
+
+| 問題 | 狀態 | 理由 | 引用 |
+|---|---|---|---|
+| 瑪拉妮是什麼元素？ | uncertain | version_unknown | hoyolab + genshin-db |
+| 鍾離是什麼元素？ | uncertain | version_unknown | genshin-db |
+| 5.0版本更新了哪些內容？ | answered | — | hoyolab（5 節，退回模板） |
+| 5.3版本更新了哪些內容？ | answered | — | hoyolab（6 節，生成散文） |
+| 5.5版本更新了哪些內容？ | answered | — | hoyolab（10 節，退回模板） |
+| 5.3版本修正了什麼問題？ | answered | — | hoyolab（15 節，退回模板） |
+| 雷電將軍該配什麼隊伍？ | refused | out_of_scope | 無 |
+| 納塔的火神是誰？ | refused | insufficient_evidence | 無 |
+| 迪盧克是什麼元素？ | refused | insufficient_evidence | 無 |
+
+三個退回模板的原因都是 §6 的逐字姓名檢查擋下了模型，各不相同：
+
+1. **5.0** — 編造敵人清單（「回聲之子·雷」等 14 個名字）。這題從 T32 起就一直如此，
+   不是本次造成的。
+2. **5.5** — 寫出「誦韜諍言·艾爾海森(草)」，證據裡沒有這個名字。
+3. **5.3 修正題** — 模型輸出**簡體字**（极低、镜璧山、烟谜主、龙脊雪山），與繁體
+   證據對不上。**這個失效模式先前沒有被觀測到**，因為先前沒有這麼長的清單進過證據。
+
+三個都是守門正確運作：答案退回引用版模板，引用完整保留。
+
+### 8.4 這次重跑沒有回答的事
+
+**退回模板的答案，讀者拿到的東西變少了。** 守門擋住編造是對的，但一份
+「依據 10 筆來源佐證回答」的模板，對問「5.5更新了什麼」的人幫助有限。
+讓模型在 10–15 節的證據上寫出可用且不編造的答案，是下一個 task，不在本次範圍。
+
+---
+
+## 9. 題庫擴充到 74 題（2026-09-06）
+
+`evaluation/eval-cases.json` 加入六題版本總覽，題庫從 68 題變成 **74 題
+（64 可回答 + 10 拒答）**，`dataset_version` 同步更新為 `f49336564cad6162`。
+
+加這六題的理由寫在 [`docs/10`](10-generation-on-multi-section-evidence.md) §7：
+先前的 68 題**量不到多節版本總覽的生成品質**——兩種 prompt 下三項指標都是 100%，
+退回模板的也是同樣兩題。
+
+| 準則 | 目標 | 68 題 | 74 題 | 判定 |
+|---|---:|---:|---:|---|
+| Retrieval Recall@5 | ≥ 90% | 100% (58/58) | **100% (64/64)** | pass |
+| 無資料正確拒答率 | ≥ 90% | 100% (10/10) | **100% (10/10)** | pass |
+| 非拒答答案附來源率 | 100% | 100% (58/58) | **100% (64/64)** | pass |
+| 回答正確率 | ≥ 90% | not_scored | **not_scored** | 未評 |
+| Groundedness | ≥ 95% | not_scored | **not_scored** | 未評 |
+
+狀態分佈：answered 46、uncertain 18、refused 10。執行時間 5 分 54 秒。
+
+**三項指標全過，而新加的六題有五題答案是壞的**（三題退回模板、兩題答非所問，
+見 `docs/10` §8）。這不是指標算錯——它們衡量的是檢索與結構，不是生成品質。
+兩項人判指標仍然是 `not_scored`，所以目前**沒有任何自動化的東西會因為這五題而變紅**。
+
+補上那個訊號需要在評估報告裡記錄每題是否退回模板。**已於 T42 實作**
+（`docs/10` §9）：報告的執行摘要多一個 `answered_with_template` 計數，
+`npm run evaluate` 會列出是哪幾題。74 題上的第一次執行報 **4 題**——
+`natlan-sub-regions`、`version-5-1-changes`、`version-5-5-changes`、
+`version-5-3-fixes`。
+
+它是觀察不是指標：退回模板是安全行為，不影響 `meets_target`，也不改變離開碼。
+
+---
+
+## 10. 執行之間的變動（T43，2026-09-06）
+
+同一份語料 `f49336564cad6162`、同一份 74 題題庫，跑了三次：
+**A** 預設、**B** `ENFORCE_COVERAGE=true`、**C** 與 A 設定完全相同。
+
+| | A | B | C |
+|---|---:|---:|---:|
+| Retrieval Recall@5 | 100% (64/64) | 100% (64/64) | 100% (64/64) |
+| 無資料正確拒答率 | 100% (10/10) | 100% (10/10) | 100% (10/10) |
+| 非拒答答案附來源率 | 100% (64/64) | 100% (64/64) | 100% (64/64) |
+| 狀態分佈 | 46/18/10 | 46/18/10 | 46/18/10 |
+| `answered_with_template` | **4** | **9** | **6** |
+
+**三項機器指標與狀態分佈完全穩定；散文不穩定。** A 與 C 設定相同卻有 4 題答案不同。
+
+這對本文件的意義：**§8、§9 記錄的機器指標可以照樣讀**，它們在三次執行下沒有動。
+但 §9 引用的 `answered_with_template = 4` 是**一次抽樣**，不是系統的性質——
+真實範圍至少是 4–9。
+
+`ENFORCE_COVERAGE=true` 在這份題庫上不改變任何一題的狀態（沒有一題被判
+NOT_COVERED），所以 B 與 A 的差異也是執行間變動，不是開關造成的。詳見
+[`docs/10`](10-generation-on-multi-section-evidence.md) §10。
+
+### 10.1 變動的主因是逾時，已修（T44）
+
+生成在這台機器上要 **44–111 秒**，而 `DEFAULT_GENERATION_TIMEOUT_MS` 是 60 秒——
+慢的答案被靜靜地變成模板。改成 180 秒之後：
+
+| | 60 秒（C） | 180 秒（D1） | 180 秒（D2） |
+|---|---:|---:|---:|
+| 逾時（`dependency_unavailable`） | 3 | 1 | **0** |
+| 守門擋下（`ungrounded_answer`） | 3 | 5 | 4 |
+| `answered_with_template` | 6 | 6 | **4** |
+| 同設定兩次執行答案不同 | 4 / 74 | — | **2 / 74** |
+
+D2 的四題模板**全部**是守門真的擋下編造。變動沒有歸零（冷啟動效應仍在），
+所以本節開頭那句「散文不穩定」維持成立，只是幅度變小。量測見
+[`docs/10`](10-generation-on-multi-section-evidence.md) §11。

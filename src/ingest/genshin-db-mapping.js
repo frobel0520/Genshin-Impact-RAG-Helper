@@ -45,6 +45,20 @@ const VALID_ELEMENTS = new Set(Object.keys(FIELD_VALUE_LABELS_ZH_TW.element));
 const VALID_WEAPON_TYPES = new Set(Object.keys(FIELD_VALUE_LABELS_ZH_TW.weapon_type));
 
 /**
+ * The entity types this mapper knows how to read.
+ *
+ * It is checked rather than merely branched on. `entityType` used to be
+ * compared against the literal "character" and nothing else, so a pointer that
+ * said "Character" — or "charater" — imported cleanly and simply wrote no
+ * element fact: the one fact that made importing genshin-db worth doing, gone
+ * from a run that reported success. Everything else in this module treats a
+ * value it cannot place as an error, and so does this.
+ */
+export const SUPPORTED_ENTITY_TYPES = Object.freeze(["character", "weapon"]);
+
+const ENTITY_TYPES_WITH_ELEMENT = new Set(["character"]);
+
+/**
  * Read the facts this project stores out of one genshin-db record.
  *
  * Unknown enum values are an error, never a pass-through: a value this project
@@ -64,11 +78,17 @@ export function factsFromGenshinDb({ entityId, entityType, record, sourceId }) {
   if (typeof sourceId !== "string" || sourceId.trim() === "") {
     throw new TypeError("sourceId must be a non-empty string.");
   }
+  if (!SUPPORTED_ENTITY_TYPES.includes(entityType)) {
+    throw new Error(
+      `${entityId}: entity_type ${JSON.stringify(entityType)} is not one this mapper reads. ` +
+        `Known types: ${SUPPORTED_ENTITY_TYPES.join(", ")}.`,
+    );
+  }
 
   const key = entityId.slice(entityId.indexOf(":") + 1);
   const facts = [];
 
-  if (entityType === "character") {
+  if (ENTITY_TYPES_WITH_ELEMENT.has(entityType)) {
     facts.push(
       fact(key, entityId, "element", mapped(ELEMENT_BY_GENSHIN_DB, VALID_ELEMENTS, record.elementType, entityId, "element"), null, sourceId),
     );

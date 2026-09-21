@@ -2,17 +2,43 @@ import { ERROR_CODES } from "../domain/domain-contract.js";
 import { isRecord, isStableString } from "../domain/contract-validation.js";
 
 export const OLLAMA_CHAT_PATH = "/api/chat";
-export const DEFAULT_GENERATION_TIMEOUT_MS = 60_000;
+/**
+ * How long a generation may take before the template speaks instead.
+ *
+ * 60 seconds was a guess, and it was under the actual cost. Measured on the
+ * baseline hardware (RTX 3060, 12 GB) against real version-overview prompts:
+ *
+ * | prompt | sections | cold | warm |
+ * |---|---:|---:|---:|
+ * | 5.4 overview | 4 | 52.5s | 43.7s |
+ * | 5.5 overview | 10 | 110.9s | 47.8s |
+ * | 5.3 fixes | 15 | 53.5s | 47.5s |
+ *
+ * Two things follow. The cost is driven by the tokens generated, not by the
+ * prompt — 9,504 characters cost the same as 2,155. And **every one of those
+ * was a coin flip against a 60-second timeout**, which is what produced three
+ * `dependency_unavailable` fallbacks in one 74-case run and made the
+ * template-fallback count vary between runs (`docs/10` §10.2, §11).
+ *
+ * 180 seconds clears the slowest measured call with room for a cold start. A
+ * timeout still has to exist: a wedged model must cost prose, not the query.
+ */
+export const DEFAULT_GENERATION_TIMEOUT_MS = 180_000;
 
 const GENERATOR_OPTION_FIELDS = new Set(["host", "model", "fetchImpl", "timeoutMs", "options"]);
 
 /**
  * Deterministic decoding for the fixed local baseline.
  *
- * The same question over the same dataset must produce the same answer, or an
+ * The same question over the same dataset should produce the same answer, or an
  * evaluation report describes one run rather than the system. Temperature is
  * therefore zero and the seed fixed; this is a knowledge assistant, not a
  * writing aid.
+ *
+ * It is not sufficient. Three runs of the same 74 cases differed on 4 answers
+ * with these options set — see `docs/10-generation-on-multi-section-evidence.md`
+ * §10.2. The statuses and every machine metric held; the prose did not. Treat a
+ * single run's prose as one sample, not as the system's behaviour.
  */
 export const DEFAULT_GENERATION_OPTIONS = Object.freeze({
   temperature: 0,
@@ -51,50 +77,68 @@ export function createOllamaGenerator(options) {
     // HTTP request open until the client gives up on the whole query.
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
-    let response;
     try {
-      response = await fetchImpl(`${host}${OLLAMA_CHAT_PATH}`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        signal: controller.signal,
-        body: JSON.stringify({
-          model,
-          stream: false,
-          options: generationOptions,
-          messages: [
-            ...(isStableString(request.system)
-              ? [{ role: "system", content: request.system }]
-              : []),
-            { role: "user", content: request.prompt },
-          ],
-        }),
-      });
-    } catch (error) {
-      throw failure(
-        ERROR_CODES.DEPENDENCY_UNAVAILABLE,
-        `Ollama at ${host} could not be reached for generation.`,
-        error,
-      );
+      let response;
+      try {
+        response = await fetchImpl(`${host}${OLLAMA_CHAT_PATH}`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          signal: controller.signal,
+          body: JSON.stringify({
+            model,
+            stream: false,
+            options: generationOptions,
+            messages: [
+              ...(isStableString(request.system)
+                ? [{ role: "system", content: request.system }]
+                : []),
+              { role: "user", content: request.prompt },
+            ],
+          }),
+        });
+      } catch (error) {
+        throw failure(
+          ERROR_CODES.DEPENDENCY_UNAVAILABLE,
+          `Ollama at ${host} could not be reached for generation.`,
+          error,
+        );
+      }
+
+      if (!response.ok) {
+        throw failure(
+          ERROR_CODES.DEPENDENCY_UNAVAILABLE,
+          `Ollama at ${host} answered with HTTP ${response.status}.`,
+        );
+      }
+
+      // The body is read while the timer is still running. `fetch` resolves as
+      // soon as the headers arrive, so clearing the timeout here — which is
+      // where it used to be cleared — left the read below with nothing to abort
+      // it: a model that answered 200 and then stopped mid-stream held the
+      // query open for ever, and the fallback to the template that exists for
+      // exactly that failure was never reached.
+      let payload;
+      try {
+        payload = await response.json();
+      } catch (error) {
+        throw failure(
+          ERROR_CODES.DEPENDENCY_UNAVAILABLE,
+          `Ollama at ${host} sent a reply that could not be read.`,
+          error,
+        );
+      }
+
+      const content = payload?.message?.content;
+      if (!isRecord(payload) || typeof content !== "string") {
+        throw failure(
+          ERROR_CODES.DEPENDENCY_UNAVAILABLE,
+          "Ollama returned a response without an assistant message.",
+        );
+      }
+      return content;
     } finally {
       clearTimeout(timer);
     }
-
-    if (!response.ok) {
-      throw failure(
-        ERROR_CODES.DEPENDENCY_UNAVAILABLE,
-        `Ollama at ${host} answered with HTTP ${response.status}.`,
-      );
-    }
-
-    const payload = await response.json();
-    const content = payload?.message?.content;
-    if (!isRecord(payload) || typeof content !== "string") {
-      throw failure(
-        ERROR_CODES.DEPENDENCY_UNAVAILABLE,
-        "Ollama returned a response without an assistant message.",
-      );
-    }
-    return content;
   }
 
   return Object.freeze({ model, host, generate });

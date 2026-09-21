@@ -1,7 +1,7 @@
 import { isRecord, isStableString } from "../domain/contract-validation.js";
 import { checkAnswerGrounding } from "./answer-grounding.js";
 
-export const ANSWER_GENERATION_RULESET_VERSION = 1;
+export const ANSWER_GENERATION_RULESET_VERSION = 2;
 
 export const ANSWER_GENERATION_MAX_CHARS = 400;
 
@@ -31,6 +31,7 @@ export const ANSWER_GENERATION_RULES = Object.freeze({
   refusalsAreNeverGenerated: true,
   fallsBackToTemplate: true,
   quotedNamesMustAppearInEvidence: true,
+  characterElementMustMatchEvidence: true,
   maxChars: ANSWER_GENERATION_MAX_CHARS,
 });
 
@@ -134,10 +135,17 @@ export function createAnswerGenerator(options) {
     // read the source.
     const grounding = checkAnswerGrounding({ answerText, contents: request.contents });
     if (!grounding.grounded) {
+      const details = [
+        ...grounding.unsupportedTerms.map((term) => `${term} appears in no evidence`),
+        ...grounding.diagnostics.elementContradictions.map(
+          ({ subject, assertedElement, evidenceElements }) =>
+            `${subject} is claimed as ${assertedElement}元素 but evidence says ${evidenceElements.join("、")}元素`,
+        ),
+      ];
       recordFallback(
         request,
         "ungrounded_answer",
-        `Answer generation fell back to the template: ${grounding.unsupportedTerms.join("、")} appears in no evidence.`,
+        `Answer generation fell back to the template: ${details.join("；")}.`,
       );
       return undefined;
     }
