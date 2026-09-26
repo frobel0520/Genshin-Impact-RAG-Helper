@@ -8,9 +8,11 @@ evidence does not support an answer.
 Every non-refused answer carries citations. Nothing costs money to run: the
 embedding model, the generation model and both stores are local.
 
-- **Status:** v1.2.0 plus an unreleased corpus change. The three machine gate
-  criteria pass; the two human-judged ones are unscored on the current corpus —
-  [Release gate](#release-gate) below.
+- **Status:** [v1.3.0](https://github.com/frobel0520/Genshin-Impact-RAG-Helper/releases/tag/v1.3.0)
+  (2026-09-21): version overviews select sections instead of taking whole
+  announcements, 5.1–5.5 are back in the corpus, and template fallbacks are now
+  reported. The three machine gate criteria pass; the two human-judged ones are
+  unscored on the current corpus — [Release gate](#release-gate) below.
 - **Docs:** the full SDLC record lives in [`docs/`](docs/); see
   [Documents](#documents).
 
@@ -21,6 +23,7 @@ embedding model, the generation model and both stores are local.
 | Refuses when no chunk clears the similarity floor | [`src/query/document-retrieval.js`](src/query/document-retrieval.js) |
 | Refuses when the model itself says the evidence does not answer | [`src/generation/answer-grounding.js`](src/generation/answer-grounding.js) |
 | Falls back to a citation-only template when a name in the answer appears in no evidence | [`src/generation/answer-grounding.js`](src/generation/answer-grounding.js) |
+| Falls back to the template when the answer gives a character an element the evidence contradicts | [`src/generation/answer-grounding.js`](src/generation/answer-grounding.js) |
 | Reports `uncertain` when the evidence carries no game version | [`src/policy/conflict-version-policy.js`](src/policy/conflict-version-policy.js) |
 | Ranks sources by authority and records the losing claim rather than dropping it | [`src/policy/conflict-version-policy.js`](src/policy/conflict-version-policy.js) |
 | Never lets the model see a policy decision, a URL, or a rejected claim | [`src/generation/answer-generation.js`](src/generation/answer-generation.js) |
@@ -133,7 +136,9 @@ while any case is still unreviewed.
 npm run check
 ```
 
-437 tests, syntax check and module-boundary check, all under an offline guard —
+To see how stable generation is on a warm or cold model, `node scripts/t44-generation-probe.js` repeats fixed prompts against Ollama and writes hashes, timings and raw output to `artifacts/t44-generation-probe.json` (`T44_REPEATS` sets the repeat count; limits in [`docs/10`](docs/10-generation-on-multi-section-evidence.md) §12).
+
+455 tests, syntax check and module-boundary check, all under an offline guard —
 CI needs neither a model nor a live source, because both fetchers and the
 generation stage are tested with their network calls replaced by fakes.
 
@@ -147,7 +152,9 @@ Module dependencies are one-directional and enforced by
    fixed the trivia openings (`docs/08-version-section-shapes.md` §8), but on 10
    to 15 sections the model tends to invent a name — or drift into Simplified
    Chinese — and the verbatim-name guard then falls the answer back to the
-   citation-only template. The citations are intact and nothing fabricated
+   citation-only template. Since T44 the same guard also catches an answer that
+   gives a character the wrong element (5.0 once called 卡齊娜 Pyro while the
+   evidence says Geo). The citations are intact and nothing fabricated
    ships, but the reader gets less than the evidence supports. Prompting does
    not fix it — measured in
    [`docs/10-generation-on-multi-section-evidence.md`](docs/10-generation-on-multi-section-evidence.md);
@@ -178,7 +185,7 @@ Module dependencies are one-directional and enforced by
 | [`07-scale-test.md`](docs/07-scale-test.md) | what a 5x corpus did to retrieval |
 | [`08-version-section-shapes.md`](docs/08-version-section-shapes.md) | section-shape statistics behind #83 |
 | [`09-demo-script.md`](docs/09-demo-script.md) | a 10-minute walkthrough |
-| [`10-generation-on-multi-section-evidence.md`](docs/10-generation-on-multi-section-evidence.md) | why prompting does not fix limitation 1, and what the six new cases exposed |
+| [`10-generation-on-multi-section-evidence.md`](docs/10-generation-on-multi-section-evidence.md) | why prompting does not fix limitation 1, what the six new cases exposed, and how to use the T44 generation probe (§12) |
 
 ## Configuration
 
