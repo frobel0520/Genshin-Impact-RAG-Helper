@@ -350,3 +350,11 @@ probe 沒有重新執行完整 retrieval、conflict/version policy 或 API pipel
 | 5.4 version changes | 4 節 | 2,155 | 25.606s / 404 字 | 14.287s、14.677s / 322 字 | `2b24...`（相同） |
 
 兩題的首次輸出都與後兩次不同，後兩次各自相同。這是兩題的觀測，不能推廣成全系統的 deterministic 或 warmup 結論，也不能把 Ollama 模型卸載等同於清除 OS/GPU cache。5.4 的後兩次 composer replay 觸發 `ungrounded_answer`；5.0 的後兩次則觀測到一個守門漏網：輸出把卡齊娜寫成「火元素」，但同一份 evidence 明寫「卡齊娜(岩)／神之眼：岩」。現在的 `answer-grounding` 只在同一完整角色名稱後第一組括號中有明確 `X元素`、`X元素角色` 或 `X元素屬性` 欄位，且證據同一角色標頭與神之眼／神之心一致時判斷矛盾；傷害、抗性、否定、比較、缺證據或多元素證據都略過。這個狹窄檢查已由 replay 驗證 5.0 後兩次新增 fallback，5.4 的既有 fallback 維持。
+
+## 13. 2026-09-29 後續驗收準備
+
+依 `sources/` 的固定指標重新抓取後，source pack 仍是 14 文件、89 切塊，`input_version` 為 `f49336564cad616201faeed46de5dde48a5e01c154b70fa776b6920df5cb16c7`，與 74 題題庫相同。Node 24 的 459 項離線測試全部通過，索引也已在本機重建。正式查詢預設不再呼叫只供記錄的 evidence coverage 模型判讀；`ENFORCE_COVERAGE=true` 仍可明確啟用原實驗。
+
+`scripts/evaluate.js` 現在預設連跑三次，報告 `answered_with_template` 的每次值與最小／最大值、答案文字不同的題目、機器指標與狀態分佈，並逐題記錄端到端時間。任一題超過 10 秒，命令即回傳失敗。單次模板數只能在個別 run 中查看，不再當作總結數字。
+
+本輪嘗試在這台 macOS arm64 電腦以 `qwen2.5:7b-instruct` 生成 5.5 長篇總覽，第一次呼叫在 180 秒後逾時，沒有取得答案；它不是原 RTX 3060 12 GB 的效能或品質量測。使用者指定改在另一台裝置做 Ollama 實測，這台電腦的 Ollama 已關閉。因此 #87 的散文品質、#92 的三次正式評估與 #94 的 10 秒門檻均尚未重新驗收；不能把程式測試通過當作這三項的解決證據。

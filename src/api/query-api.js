@@ -244,17 +244,18 @@ export function createQueryServiceForStores(options) {
   });
 
   const contentResolver = createEvidenceContentResolver({ structuredStore, documentStore });
-  // One extra model call per answered query, before the answer exists: the
-  // similarity floor stopped separating answerable questions from unanswerable
-  // ones once the corpus grew (docs/07-scale-test.md §3.1), and reading is what
-  // still separates them.
-  const coverage = createCoverageJudge({
-    ...(logger === undefined ? {} : { logger }),
-    chat: createOllamaGenerator({
-      host: config.ollamaHost,
-      model: config.generationModel,
-    }).generate,
-  });
+  // Coverage enforcement is an explicit experiment. In the default service its
+  // verdict was only logged and never changed a 74-case result, while adding a
+  // full model call to every answer (T43/T45).
+  const coverage = config.enforceCoverage === true
+    ? createCoverageJudge({
+        ...(logger === undefined ? {} : { logger }),
+        chat: createOllamaGenerator({
+          host: config.ollamaHost,
+          model: config.generationModel,
+        }).generate,
+      })
+    : undefined;
   const generator = createAnswerGenerator({
     ...(logger === undefined ? {} : { logger }),
     generate: createOllamaGenerator({
@@ -266,13 +267,15 @@ export function createQueryServiceForStores(options) {
   return createQueryService({
     ...(logger === undefined ? {} : { logger }),
     enforceCoverage: config.enforceCoverage === true,
-    judgeCoverage: async ({ question, evidenceItems, traceId, queryId }) =>
-      coverage.judge({
-        question,
-        contents: contentResolver.resolve(evidenceItems),
-        traceId,
-        queryId,
-      }),
+    ...(coverage === undefined ? {} : {
+      judgeCoverage: async ({ question, evidenceItems, traceId, queryId }) =>
+        coverage.judge({
+          question,
+          contents: contentResolver.resolve(evidenceItems),
+          traceId,
+          queryId,
+        }),
+    }),
     composeAnswerText: ({ question, evidenceItems, versionScope, traceId, queryId }) =>
       generator.composeAnswerText({
         question,
