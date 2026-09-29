@@ -1,5 +1,9 @@
 # Genshin Impact RAG Helper
 
+> A local-first Traditional Chinese Genshin Impact knowledge assistant that cites evidence or refuses unsupported answers.
+
+## Overview
+
 A local-first Traditional Chinese knowledge assistant for Genshin Impact. It
 answers questions about characters, weapons, materials, quests and version
 updates from three real sources, and **refuses rather than guessing** when the
@@ -16,7 +20,7 @@ embedding model, the generation model and both stores are local.
 - **Docs:** the full SDLC record lives in [`docs/`](docs/); see
   [Documents](#documents).
 
-## What it does that a chatbot does not
+## Main features and content
 
 | Behaviour | Where it lives |
 |---|---|
@@ -32,6 +36,56 @@ The generation stage is built so a model failure costs prose and never
 correctness: a refusal is never written by the model, the model is handed only
 the approved evidence, and any failure, timeout or ungrounded name falls back to
 a deterministic template **with the citations intact**.
+
+## Status and known limitations
+
+1. **A long version overview often answers in the template.** Section selection
+   fixed the trivia openings (`docs/08-version-section-shapes.md` §8), but on 10
+   to 15 sections the model tends to invent a name — or drift into Simplified
+   Chinese — and the verbatim-name guard then falls the answer back to the
+   citation-only template. Since T44 the same guard also catches an answer that
+   gives a character the wrong element (5.0 once called 卡齊娜 Pyro while the
+   evidence says Geo). The citations are intact and nothing fabricated
+   ships, but the reader gets less than the evidence supports. Prompting does
+   not fix it — measured in
+   [`docs/10-generation-on-multi-section-evidence.md`](docs/10-generation-on-multi-section-evidence.md);
+   tracked as [#87](https://github.com/frobel0520/Genshin-Impact-RAG-Helper/issues/87).
+2. **The similarity floor has topped out.** At 89 chunks the question the corpus
+   cannot answer scores inside the band of questions it can, so no threshold
+   separates them. What refuses it now is the model reporting the gap itself —
+   correct behaviour that depends entirely on the model noticing.
+   [`docs/07-scale-test.md`](docs/07-scale-test.md) §3.1.
+3. **The evidence-coverage check is recorded, not enforced.** It catches the
+   question the floor misses and misjudges roughly one answerable question in
+   fifty, systematically. `ENFORCE_COVERAGE=true` turns it into a gate for
+   anyone measuring the trade. [`docs/07-scale-test.md`](docs/07-scale-test.md) §5.
+4. **The corpus is small** — 14 documents, 89 chunks, 22 entities, 91 facts:
+   seven HoYoLAB announcements, six Fandom profiles and one genshin-db tree. It
+   is a demonstrable pipeline, not a complete Genshin knowledge base.
+
+## License and sources
+
+**Sources**
+
+| Source | Used for | Authority | How it is imported |
+|---|---|---:|---|
+| HoYoLAB official announcements | version updates, fixes, known issues | 1 | public post API, section locators + `content_hash` |
+| Fandom zh wiki | character profiles, lore | 2 | MediaWiki `action=parse`, pinned `revision_id` |
+| genshin-db | structured facts (element, weapon type, rarity) | 3 | pinned commit SHA, enums mapped through a table |
+
+An unmapped enum value **stops the import** rather than passing through: a
+guessed value would arrive as a fact with a source behind it. See
+[`sources/README.md`](sources/README.md) for the pointer format.
+
+**Licence and rights**
+
+Independent, non-commercial project. Game data and announcement text belong to
+HoYoverse; Fandom text is CC BY-SA 3.0 Unported; the genshin-db package code is
+MIT (theBowja) while the game data it carries is not. This repository
+redistributes none of it — it stores URLs, section markers and hashes, and each
+citation leads back to the source.
+
+---
 
 ## Requirements
 
@@ -79,18 +133,6 @@ Without an `.env` file, use `npm run start:local`.
 Running the pipeline twice from a cleared `artifacts/` produces an identical
 pack hash, so `dataset_version` is stable and two evaluation runs can be
 compared.
-
-## Sources
-
-| Source | Used for | Authority | How it is imported |
-|---|---|---:|---|
-| HoYoLAB official announcements | version updates, fixes, known issues | 1 | public post API, section locators + `content_hash` |
-| Fandom zh wiki | character profiles, lore | 2 | MediaWiki `action=parse`, pinned `revision_id` |
-| genshin-db | structured facts (element, weapon type, rarity) | 3 | pinned commit SHA, enums mapped through a table |
-
-An unmapped enum value **stops the import** rather than passing through: a
-guessed value would arrive as a fact with a source behind it. See
-[`sources/README.md`](sources/README.md) for the pointer format.
 
 ## Release gate
 
@@ -148,32 +190,6 @@ Module dependencies are one-directional and enforced by
 [`scripts/check-boundaries.js`](scripts/check-boundaries.js); the layout is in
 [`src/README.md`](src/README.md).
 
-## Known limitations
-
-1. **A long version overview often answers in the template.** Section selection
-   fixed the trivia openings (`docs/08-version-section-shapes.md` §8), but on 10
-   to 15 sections the model tends to invent a name — or drift into Simplified
-   Chinese — and the verbatim-name guard then falls the answer back to the
-   citation-only template. Since T44 the same guard also catches an answer that
-   gives a character the wrong element (5.0 once called 卡齊娜 Pyro while the
-   evidence says Geo). The citations are intact and nothing fabricated
-   ships, but the reader gets less than the evidence supports. Prompting does
-   not fix it — measured in
-   [`docs/10-generation-on-multi-section-evidence.md`](docs/10-generation-on-multi-section-evidence.md);
-   tracked as [#87](https://github.com/frobel0520/Genshin-Impact-RAG-Helper/issues/87).
-2. **The similarity floor has topped out.** At 89 chunks the question the corpus
-   cannot answer scores inside the band of questions it can, so no threshold
-   separates them. What refuses it now is the model reporting the gap itself —
-   correct behaviour that depends entirely on the model noticing.
-   [`docs/07-scale-test.md`](docs/07-scale-test.md) §3.1.
-3. **The evidence-coverage check is recorded, not enforced.** It catches the
-   question the floor misses and misjudges roughly one answerable question in
-   fifty, systematically. `ENFORCE_COVERAGE=true` turns it into a gate for
-   anyone measuring the trade. [`docs/07-scale-test.md`](docs/07-scale-test.md) §5.
-4. **The corpus is small** — 14 documents, 89 chunks, 22 entities, 91 facts:
-   seven HoYoLAB announcements, six Fandom profiles and one genshin-db tree. It
-   is a demonstrable pipeline, not a complete Genshin knowledge base.
-
 ## Documents
 
 | Document | What it records |
@@ -199,11 +215,3 @@ Module dependencies are one-directional and enforced by
 | `DOCUMENT_DB_PATH` | `artifacts/index.db` | |
 | `DOCUMENT_MIN_SCORE` | `0.42` | similarity floor; measured, not guessed |
 | `ENFORCE_COVERAGE` | `false` | see limitation 3 |
-
-## Licence and rights
-
-Personal, non-commercial side project. Game data and announcement text belong to
-HoYoverse; Fandom text is CC BY-SA 3.0 Unported; the genshin-db package code is
-MIT (theBowja) while the game data it carries is not. This repository
-redistributes none of it — it stores URLs, section markers and hashes, and each
-citation leads back to the source.
