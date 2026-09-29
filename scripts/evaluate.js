@@ -8,10 +8,12 @@ import { loadRuntimeConfig } from "../src/config/runtime-config.js";
 import { createDocumentStore } from "../src/data/document-store.js";
 import { createStructuredStore } from "../src/data/structured-store.js";
 import { meetsAllTargets, runEvaluation } from "../src/evaluation/evaluation-runner.js";
+import { summarizeLatency } from "../src/evaluation/latency-summary.js";
+import { summarizeRepeatedRuns } from "../src/evaluation/repeated-run-summary.js";
 import { createJsonLineLogger } from "../src/observability/run-log-adapter.js";
 
 const USAGE = `Usage:
-  node scripts/evaluate.js <eval-cases.json> [--report <path>]
+  node scripts/evaluate.js <eval-cases.json> [--report <path>] [--repeats 2..10]
 
 Runs every EvalCase through the same query service the API serves, using the
 databases named by STRUCTURED_DB_PATH and DOCUMENT_DB_PATH. Exits non-zero when
@@ -58,38 +60,49 @@ export async function main(argv, streams = {}) {
       documentStore,
       logger,
     });
-    const { run, results, metrics, cases: caseSummary } = await runEvaluation({
-      cases,
-      answer: service.answer,
-      logger,
-      ...(flags.report === undefined ? {} : { reportPath: flags.report }),
-    });
+    const repeats = flags.repeats === undefined ? 3 : Number(flags.repeats);
+    if (!Number.isInteger(repeats) || repeats < 2 || repeats > 10) {
+      throw new TypeError("--repeats must be an integer from 2 to 10.");
+    }
+    const runs = [];
+    for (let index = 0; index < repeats; index += 1) {
+      const timings = [];
+      let caseIndex = 0;
+      const evaluation = await runEvaluation({
+        cases,
+        answer: async (request) => {
+          const caseId = cases[caseIndex].case_id;
+          caseIndex += 1;
+          const started = performance.now();
+          try {
+            return await service.answer(request);
+          } finally {
+            timings.push({ case_id: caseId, duration_ms: Math.ceil(performance.now() - started) });
+          }
+        },
+        logger,
+        ...(flags.report === undefined ? {} : { reportPath: flags.report }),
+      });
+      runs.push({ ...evaluation, timings, latency: summarizeLatency(timings) });
+    }
+    const variability = summarizeRepeatedRuns(runs);
 
     if (flags.report !== undefined) {
       writeFileSync(
         resolve(flags.report),
-        `${JSON.stringify({ run, metrics, cases: caseSummary, results }, null, 2)}\n`,
+        `${JSON.stringify({ variability, runs }, null, 2)}\n`,
         "utf8",
       );
     }
-    out(`${JSON.stringify({ run, metrics, cases: caseSummary }, null, 2)}\n`);
+    out(`${JSON.stringify({
+      variability,
+      runs: runs.map(({ run, metrics, cases: caseSummary, latency }) => ({
+        run, metrics, cases: caseSummary, latency,
+      })),
+    }, null, 2)}\n`);
 
-    // Every machine criterion can pass while an answer says nothing but "see
-    // the sources". That is the safe outcome, not a failure, so it is reported
-    // here rather than folded into a metric — but it is reported, because a run
-    // where it happens is not the same as a run where it does not.
-    if (caseSummary.answered_with_template > 0) {
-      out(
-        `\n${caseSummary.answered_with_template} of ${caseSummary.evaluated} answers came from ` +
-          "the template, not the model. They carry their citations and pass every machine " +
-          "criterion; they also tell the reader nothing. Cases:\n",
-      );
-      for (const result of results.filter((entry) => entry.answered_with_template === true)) {
-        out(`  ${result.case_id}\n`);
-      }
-    }
-
-    return run.status === "passed" && meetsAllTargets(metrics) ? 0 : 1;
+    return runs.every(({ run, metrics, latency }) =>
+      run.status === "passed" && meetsAllTargets(metrics) && latency.meets_target) ? 0 : 1;
   } finally {
     structuredStore.close();
     documentStore.close();

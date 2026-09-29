@@ -117,8 +117,10 @@ builds and have not been carried forward. Full record:
 -overview cases added on 2026-09-06 all pass all three — and five of the six
 produce a bad answer, three falling back to the citation-only template and two
 answering a different question than the one asked. `npm run evaluate` now
-reports how many answers came from the template and names them — an
-observation, not a metric, because falling back is the safe outcome. See
+compares three runs and reports the range of template answers and which answer
+texts changed. It also measures each end-to-end response against the 10-second
+gate. These are observations until the model runs have been repeated on the
+target device. See
 limitation 1.
 
 ```powershell
