@@ -1,5 +1,7 @@
 # MVP E2E Release Gate (T31)
 
+> 2026-09-29 新增每題端到端 10 秒門檻，並把評估改為預設三次執行。下列歷史紀錄沒有依新門檻重跑；請見 [`progress.md`](../progress.md)。
+
 > **Latest re-run: 2026-09-06 · 74 cases · Dataset version `f49336564cad6162`
 > (14 documents, 89 chunks). See §8 and §9 — the three machine criteria still pass; the two
 > human-judged criteria are `not_scored` again, because the corpus they were

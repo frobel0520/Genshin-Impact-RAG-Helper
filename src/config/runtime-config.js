@@ -32,6 +32,9 @@ export function loadRuntimeConfig(environment = process.env) {
   const ollamaHost = parseOllamaHost(
     environment.OLLAMA_HOST ?? RUNTIME_DEFAULTS.ollamaHost,
   );
+  const generationModel = parseModelName(
+    environment.GENERATION_MODEL ?? RUNTIME_DEFAULTS.generationModel,
+  );
   const structuredDatabasePath = parseDatabasePath(
     environment.STRUCTURED_DB_PATH ?? RUNTIME_DEFAULTS.structuredDatabasePath,
     "STRUCTURED_DB_PATH",
@@ -53,11 +56,20 @@ export function loadRuntimeConfig(environment = process.env) {
     ...RUNTIME_DEFAULTS,
     port,
     ollamaHost,
+    generationModel,
     structuredDatabasePath,
     documentDatabasePath,
     documentMinScore,
     enforceCoverage,
   });
+}
+
+function parseModelName(rawModel) {
+  const value = String(rawModel).trim();
+  if (value.length === 0 || value !== rawModel) {
+    throw new Error("GENERATION_MODEL must be a non-empty model name without surrounding whitespace.");
+  }
+  return value;
 }
 
 /**

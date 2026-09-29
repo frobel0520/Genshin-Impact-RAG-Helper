@@ -26,6 +26,14 @@ test("runtime config accepts an explicit local port and Ollama host", () => {
   assert.equal(config.ollamaHost, "http://localhost:11434");
 });
 
+test("generation model can be selected for a measured comparison", () => {
+  assert.equal(
+    loadRuntimeConfig({ GENERATION_MODEL: "qwen2.5:7b-instruct" }).generationModel,
+    "qwen2.5:7b-instruct",
+  );
+  assert.throws(() => loadRuntimeConfig({ GENERATION_MODEL: "  " }), /GENERATION_MODEL/);
+});
+
 test("runtime config rejects invalid ports and Ollama hosts", () => {
   assert.throws(
     () => loadRuntimeConfig(null),
