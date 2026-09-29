@@ -10,7 +10,7 @@
 
 ## 待另一台裝置的 Ollama 實測
 
-使用者指定在另一台裝置做 Ollama 實測；這台 Mac 的 Ollama 已關閉。這台 Mac 曾以 `qwen2.5:7b-instruct` 嘗試 5.5 長篇總覽，180 秒逾時，沒有可用答案；這不是原 RTX 3060 基線的驗收結果。
+使用者指定在另一台裝置做 Ollama 實測；2026-09-29 已從這台 Mac 刪除 Ollama App、本機模型、設定與快取。`/usr/local/bin/ollama` 是 root 擁有的失效連結，仍須由具管理員密碼的使用者執行 `sudo rm /usr/local/bin/ollama` 才能清除。這台 Mac 曾以 `qwen2.5:7b-instruct` 嘗試 5.5 長篇總覽，180 秒逾時，沒有可用答案；這不是原 RTX 3060 基線的驗收結果。
 
 | GitHub issue | 現況 | 關閉前需要的證據 |
 |---|---|---|
