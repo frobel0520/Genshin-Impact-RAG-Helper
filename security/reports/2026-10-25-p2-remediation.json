@@ -1,0 +1,34 @@
+{
+  "taskId": "SEC-P2-20261025",
+  "date": "2026-10-25",
+  "name": "Genshin-Impact-RAG-Helper",
+  "baseCommit": "dfa6fa14c96e4e2a26629a2a12b574cadd480828",
+  "baseBranch": "dev",
+  "branch": "feature/sec-p2-20261025",
+  "state": "隔離修補已備妥，待整合",
+  "change": "固定CI Action SHA與受測Node24.22.1；保留原始分岔與同名tags。無npm外部依賴，未改檢索、模型或來源資料。",
+  "checks": [
+    "455個既有離線測試通過",
+    "本機伺服器及來源邊界由既有fixture測試涵蓋",
+    "提交身分尚待使用者核准repo-local noreply；未自行改設定"
+  ],
+  "counts": null,
+  "python": null,
+  "securityGate": "passed_within_checked_scope",
+  "performance": {
+    "result": "not_applicable",
+    "reason": "Only CI source/pins changed or separately recorded runtime fixture metric; no production performance claim"
+  },
+  "validation": "固定CI Action SHA與受測Node24.22.1；保留原始分岔與同名tags。無npm外部依賴，未改檢索、模型或來源資料。 455個既有離線測試通過；本機伺服器及來源邊界由既有fixture測試涵蓋；提交身分尚待使用者核准repo-local noreply；未自行改設定",
+  "integrationNeeded": true,
+  "pushed": false,
+  "deployed": false,
+  "merged": false,
+  "noreplyIdentityVerified": false,
+  "actionPins": 2,
+  "monthlyCost": "Local checks only. No paid APIs, cloud data writes, new recurring services, remote CI, merge or deployment.",
+  "limitations": [
+    "原始工作目錄、未提交修改與分支全部保留；本報告僅適用此隔離分支。",
+    "完整history／秘密輪替／正式服務與二進位鑑識不在此輪驗收，未評項目not_scored。"
+  ]
+}
