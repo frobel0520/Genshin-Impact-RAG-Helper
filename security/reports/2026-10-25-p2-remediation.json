@@ -10,7 +10,7 @@
   "checks": [
     "455個既有離線測試通過",
     "本機伺服器及來源邊界由既有fixture測試涵蓋",
-    "提交身分尚待使用者核准repo-local noreply；未自行改設定"
+    "使用者已核准並套用repo-local既定noreply後提交；未改全域設定"
   ],
   "counts": null,
   "python": null,
@@ -19,12 +19,12 @@
     "result": "not_applicable",
     "reason": "Only CI source/pins changed or separately recorded runtime fixture metric; no production performance claim"
   },
-  "validation": "固定CI Action SHA與受測Node24.22.1；保留原始分岔與同名tags。無npm外部依賴，未改檢索、模型或來源資料。 455個既有離線測試通過；本機伺服器及來源邊界由既有fixture測試涵蓋；提交身分尚待使用者核准repo-local noreply；未自行改設定",
+  "validation": "固定CI Action SHA與受測Node24.22.1；保留原始分岔與同名tags。無npm外部依賴，未改檢索、模型或來源資料。 455個既有離線測試通過；本機伺服器及來源邊界由既有fixture測試涵蓋；使用者已核准並套用repo-local既定noreply後提交；未改全域設定",
   "integrationNeeded": true,
   "pushed": false,
   "deployed": false,
   "merged": false,
-  "noreplyIdentityVerified": false,
+  "noreplyIdentityVerified": true,
   "actionPins": 2,
   "monthlyCost": "Local checks only. No paid APIs, cloud data writes, new recurring services, remote CI, merge or deployment.",
   "limitations": [

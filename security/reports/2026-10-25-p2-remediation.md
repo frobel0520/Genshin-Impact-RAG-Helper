@@ -8,7 +8,7 @@
 
 - 455個既有離線測試通過
 - 本機伺服器及來源邊界由既有fixture測試涵蓋
-- 提交身分尚待使用者核准repo-local noreply；未自行改設定
+- 使用者已核准並套用repo-local既定noreply後提交；未改全域設定
 
 npm公告：不適用／另依原生工具記錄，不視為零漏洞。
 Python公告：不適用／未做Python解析。
