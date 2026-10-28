@@ -8,7 +8,13 @@
 - 評估命令預設連跑三次，列出模板回答數的範圍、答案文字變動的題目、逐題端到端時間與 10 秒門檻結果。`GENERATION_MODEL` 可指定待比較的模型。
 - SA／SD 已補上 10 秒效能門檻；既有 44–111 秒量測代表目前**未通過**。
 
-## 待另一台裝置的 Ollama 實測
+## 待辦
+
+- [ ] 【中】待外部：[#87](https://github.com/frobel0520/Genshin-Impact-RAG-Helper/issues/87) 在目標 Ollama 裝置驗證長證據生成品質與74題回歸。
+- [ ] 【中】待外部：[#92](https://github.com/frobel0520/Genshin-Impact-RAG-Helper/issues/92) 同設定連跑三次，核對答案／模板數／指標的可重現性。
+- [ ] 【中】待外部：[#94](https://github.com/frobel0520/Genshin-Impact-RAG-Helper/issues/94) 驗證每題完整回應10秒門檻，或先明確決定串流驗收與日誌遮罩規則。
+
+## 目標裝置的驗證方式
 
 使用者指定在另一台裝置做 Ollama 實測；2026-09-29 已從這台 Mac 刪除 Ollama App、本機模型、設定與快取。`/usr/local/bin/ollama` 是 root 擁有的失效連結，仍須由具管理員密碼的使用者執行 `sudo rm /usr/local/bin/ollama` 才能清除。這台 Mac 曾以 `qwen2.5:7b-instruct` 嘗試 5.5 長篇總覽，180 秒逾時，沒有可用答案；這不是原 RTX 3060 基線的驗收結果。
 
@@ -26,3 +32,4 @@ npm run evaluate -- evaluation\eval-cases.json --report artifacts\eval-report.js
 ```
 
 報告須保留每次 run 的結果與延遲；目前三個 issue 維持 open，不把離線單元測試當成模型驗收。
+
