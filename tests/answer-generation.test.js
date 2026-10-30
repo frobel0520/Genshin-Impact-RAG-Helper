@@ -106,6 +106,30 @@ test("a model failure falls back to the template and is logged, not thrown", asy
   assert.match(failures[0].message, /fell back to the template/);
 });
 
+test("fallback logs never copy arbitrary adapter messages or error codes", async () => {
+  const privateText = "synthetic-private-prompt Authorization: Bearer synthetic-only https://user:synthetic@example.test";
+  for (const code of ["dependency_unavailable", privateText, undefined]) {
+    const failures = [];
+    const generator = createAnswerGenerator({
+      logger: {logFailure: record => failures.push(record)},
+      generate: async () => { throw Object.assign(new Error(privateText), {code}); },
+    });
+    assert.equal(await generator.composeAnswerText({question: "問題", contents, traceId: "trace:synthetic"}), undefined);
+    assert.equal(failures.length, 1);
+    assert.equal(failures[0].code, code === "dependency_unavailable" ? code : "generation_error");
+    assert.equal(JSON.stringify(failures).includes(privateText), false);
+    assert.equal(JSON.stringify(failures).includes("Authorization"), false);
+  }
+});
+
+test("ungrounded generated terms remain outside fallback logs", async () => {
+  const failures = [];
+  const generator = createAnswerGenerator({generate: async () => "「合成機密角色」是水元素。", logger: {logFailure: record => failures.push(record)}});
+  assert.equal(await generator.composeAnswerText({question: "問題", contents, traceId: "trace:synthetic"}), undefined);
+  assert.equal(failures[0].code, "ungrounded_answer");
+  assert.equal(JSON.stringify(failures).includes("合成機密角色"), false);
+});
+
 test("an unusable reply is discarded so the template speaks instead", async () => {
   for (const reply of ["", "   ", 42, null, "字".repeat(ANSWER_GENERATION_MAX_CHARS * 2 + 1)]) {
     const generator = createAnswerGenerator({ generate: async () => reply });
