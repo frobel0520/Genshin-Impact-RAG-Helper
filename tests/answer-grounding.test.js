@@ -63,9 +63,8 @@ test("an element contradiction uses the existing composer fallback and logger co
   assert.equal(text, undefined);
   assert.equal(failures.length, 1);
   assert.equal(failures[0].code, "ungrounded_answer");
-  assert.match(failures[0].message, /斑金礦樸·卡齊娜/);
-  assert.match(failures[0].message, /火/);
-  assert.match(failures[0].message, /岩/);
+  assert.match(failures[0].message, /grounding check failed/);
+  assert.doesNotMatch(failures[0].message, /斑金礦樸·卡齊娜|火|岩/);
 });
 
 test("element evidence stays attached to its own character", () => {
@@ -227,7 +226,8 @@ test("an ungrounded answer falls back to the template and is logged", async () =
   assert.equal(failures.length, 1);
   assert.equal(failures[0].code, "ungrounded_answer");
   assert.equal(failures[0].traceId, "trace-1");
-  assert.match(failures[0].message, /蓋石山/);
+  assert.match(failures[0].message, /grounding check failed/);
+  assert.doesNotMatch(failures[0].message, /蓋石山/);
 });
 
 test("a logger that rejects the record does not turn a safe fallback into a failure", async () => {

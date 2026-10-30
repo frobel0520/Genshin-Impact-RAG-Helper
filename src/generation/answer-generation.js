@@ -117,8 +117,8 @@ export function createAnswerGenerator(options) {
         // a malformed prompt, a bug in this module — is a generation error, and
         // filing it under an unreachable dependency sends whoever reads the log
         // to the wrong place.
-        error?.code ?? "generation_error",
-        `Answer generation fell back to the template: ${error?.message ?? "unknown error"}`,
+        error?.code === "dependency_unavailable" ? "dependency_unavailable" : "generation_error",
+        "Answer generation fell back to the template: generation failed.",
       );
       return undefined;
     }
@@ -135,17 +135,10 @@ export function createAnswerGenerator(options) {
     // read the source.
     const grounding = checkAnswerGrounding({ answerText, contents: request.contents });
     if (!grounding.grounded) {
-      const details = [
-        ...grounding.unsupportedTerms.map((term) => `${term} appears in no evidence`),
-        ...grounding.diagnostics.elementContradictions.map(
-          ({ subject, assertedElement, evidenceElements }) =>
-            `${subject} is claimed as ${assertedElement}元素 but evidence says ${evidenceElements.join("、")}元素`,
-        ),
-      ];
       recordFallback(
         request,
         "ungrounded_answer",
-        `Answer generation fell back to the template: ${details.join("；")}.`,
+        "Answer generation fell back to the template: grounding check failed.",
       );
       return undefined;
     }
