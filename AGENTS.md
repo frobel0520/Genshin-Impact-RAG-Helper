@@ -19,3 +19,13 @@
 5. 不確定算不算敏感，就當作敏感，先問使用者。
 6. 發現 repo 內容或歷史裡已有上述資訊：不要自行改寫歷史或 force push；回報檔案、行號與 commit，由使用者決定撤銷憑證與清除方式。
 <!-- END:privacy-guard -->
+
+<!-- BEGIN:shared-standards（跨 repo 共用規則，修改時同步更新所有 repo） -->
+## 共用規範（Harbor）
+
+- 開發規範：frobel0520/harbor 的 `standards/DevelopmentStandards.md`。
+- 部署：frobel0520/harbor 的 `standards/DeploymentHandbook.md`（範本在 `standards/deployment-templates/`）。
+- 本 repo 的規則或現況與上述文件衝突時，以權威文件為準；不符合的地方列為本 repo 待辦。repo 既有慣例（例如分支命名）依開發規範的規定保留。
+- 專案級別：個人級
+<!-- END:shared-standards -->
+
