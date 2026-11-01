@@ -25,6 +25,7 @@
 
 - 開發規範：frobel0520/harbor 的 `standards/DevelopmentStandards.md`。
 - 部署：frobel0520/harbor 的 `standards/DeploymentHandbook.md`（範本在 `standards/deployment-templates/`）。
+- 讀取方式：本機 session 讀本機的 Harbor clone；雲端 session 沒有 Harbor 時，自行以唯讀方式把 `frobel0520/harbor` 加入 session 再讀（Claude Code 用 add_repo；Codex 雲端沒有這個功能，開 session 時要選 Harbor）。仍讀不到時，先照本檔規則進行並告知使用者。
 - 本 repo 的規則或現況與上述文件衝突時，以權威文件為準；不符合的地方列為本 repo 待辦。repo 既有慣例（例如分支命名）依開發規範的規定保留。
 - 專案級別：個人級
 <!-- END:shared-standards -->
